@@ -1,0 +1,16 @@
+.codex-job/
+node_modules/
+out/
+cache/
+.env
+.env*
+!.env.example
+.next/
+.npm-cache/
+.local/
+coverage/
+*.tsbuildinfo
+broadcast/
+tools/solc.exe
+LAPORAN-*.md
+web/.next/

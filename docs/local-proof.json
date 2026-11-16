@@ -1,0 +1,33 @@
+{
+  "network": "Anvil local only",
+  "stageHash": "0x083adb2e9ffa03dd0d8a4f2ecb888c1d8a2b859c7f23453d1726310dd61777e1",
+  "executeHash": "0x4e91e6503e0f7b2cfb3494a249881ab5a9c9edf2706cd6a3a7c8ab515b5dc34b",
+  "batchId": "1",
+  "rows": [
+    {
+      "reference": "KP-001",
+      "name": "Kopi Pagi",
+      "payee": "0x1111111111111111111111111111111111111111",
+      "amount": "0.25",
+      "status": "Dibayar",
+      "transactionHash": "0x4e91e6503e0f7b2cfb3494a249881ab5a9c9edf2706cd6a3a7c8ab515b5dc34b"
+    },
+    {
+      "reference": "KK-002",
+      "name": "Kertas Kita",
+      "payee": "0x2222222222222222222222222222222222222222",
+      "amount": "0.4",
+      "status": "Dibayar",
+      "transactionHash": "0x4e91e6503e0f7b2cfb3494a249881ab5a9c9edf2706cd6a3a7c8ab515b5dc34b"
+    },
+    {
+      "reference": "KP-003",
+      "name": "Kopi Pagi",
+      "payee": "0x1111111111111111111111111111111111111112",
+      "amount": "0.15",
+      "status": "Nama tidak cocok",
+      "transactionHash": "0x4e91e6503e0f7b2cfb3494a249881ab5a9c9edf2706cd6a3a7c8ab515b5dc34b"
+    }
+  ],
+  "poisonBalance": "0"
+}

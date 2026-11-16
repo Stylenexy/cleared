@@ -1,0 +1,7 @@
+INVOICE DEMO FIKTIF • Kopi Pagi
+Reference: KP-001
+Name: Kopi Pagi
+Address: 0x1111111111111111111111111111111111111111
+Amount: 0.25
+Currency: tUSD8
+Description: Biji kopi untuk kedai. Sampel lokal, bukan tagihan sungguhan.

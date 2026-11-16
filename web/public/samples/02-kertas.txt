@@ -1,0 +1,7 @@
+INVOICE DEMO FIKTIF • Kertas Kita
+Reference: KK-002
+Name: Kertas Kita
+Address: 0x2222222222222222222222222222222222222222
+Amount: 0.40
+Currency: tUSD8
+Description: Kertas pembungkus. Sampel lokal, bukan tagihan sungguhan.
