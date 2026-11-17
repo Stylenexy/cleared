@@ -36,6 +36,29 @@ const columns = [
 export function SiteFooter() {
   return (
     <footer className="site-footer">
+      <div className="footer-pill-links" aria-label="Continue exploring">
+        {[
+          ["GitHub", REPOSITORY_URL],
+          [
+            "Aevum explorer",
+            "https://explorer-test.qday.info/address/0x8fba7dd67e294b3ba5ca164748b9f41c03bad13c",
+          ],
+          ["Attack lab", "/attack"],
+          ["Treasury", "/app"],
+        ].map(([label, href]) => (
+          <a
+            href={href}
+            data-cursor="Open"
+            key={label}
+            {...(href.startsWith("https:")
+              ? { target: "_blank", rel: "noreferrer" }
+              : {})}
+          >
+            {label}
+            <span aria-hidden="true">↗</span>
+          </a>
+        ))}
+      </div>
       <div className="footer-peek" aria-hidden="true">
         <Clerk pose="peek" />
       </div>

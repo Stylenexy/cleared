@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Navigation } from "./components/navigation";
 import { SiteFooter } from "./components/landing/site-footer";
+import { SmoothScroll } from "./components/smooth-scroll";
+import { CustomCursor } from "./components/custom-cursor";
 import "./globals.css";
 // Nonce-bearing Next scripts must be rendered per request, never prerendered.
 export const dynamic = "force-dynamic";
@@ -34,6 +36,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
+        <SmoothScroll />
+        <CustomCursor />
         <a className="skip-link" href="#main-content">
           Skip to content
         </a>

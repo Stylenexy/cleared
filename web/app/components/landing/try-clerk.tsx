@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { KOPI_PAGI, KOPI_PAGI_LOOKALIKES } from "../../../lib/sample-addresses";
-import { Arrow } from "../brand";
+import { PillLink } from "./pill-link";
 import { AddressComparison } from "./address-comparison";
 import { compareAddress, poisonAddress } from "./address-diff";
 import { Clerk } from "./clerk";
@@ -49,7 +49,10 @@ export function TryClerk() {
         ))}
       </div>
       <div className="try-clerk-content">
-        <h2 id="try-clerk-title">Try to fool Clerk.</h2>
+        <span className="eyebrow">YOUR TURN / LOCAL PREVIEW</span>
+        <h2 id="try-clerk-title">
+          Try to <em className="serif-accent">fool</em> Clerk.
+        </h2>
         <p className="registered-address">
           Registered to Northwind Design Studio<code>{KOPI_PAGI}</code>
         </p>
@@ -92,9 +95,9 @@ export function TryClerk() {
             Use the real address
           </button>
         </div>
-        <a className="button landing-primary" href="/attack">
-          Open the full attack lab <Arrow />
-        </a>
+        <PillLink href="/attack" primary>
+          Open the full attack lab
+        </PillLink>
         <p id="clerk-preview-note" className="clerk-preview-note">
           Local preview of the registry rule. The attack lab runs a live model
           and reads the Aevum contract.

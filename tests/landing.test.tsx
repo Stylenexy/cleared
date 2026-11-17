@@ -33,29 +33,29 @@ describe("landing address comparison", () => {
 });
 
 describe("landing content", () => {
-  it("renders a readable four-step story and full sample addresses before hydration", () => {
+  it("renders the clearing desk and every story in a readable static version", () => {
     const html = renderToStaticMarkup(<Home />);
     expect(html.match(/<h1\b/g)).toHaveLength(1);
-    expect(html).toContain('aria-hidden="true">CLEARED</div>');
-    expect(html).toContain("Your AI can read the invoice.");
-    for (const title of [
-      "Read the invoice.",
-      "Follow the address.",
-      "Compare every character.",
-      "Refuse the destination.",
-    ]) {
+    expect(html).toContain("Let your agent");
+    expect(html).toContain("the contract keeps");
+    for (const title of ["Read.", "Compare.", "Refuse."])
       expect(html).toContain(`<h3>${title}</h3>`);
-    }
-    expect(html).toContain('data-pinned="false"');
+    expect(html).not.toContain('data-animated="true"');
     expect(html).toContain(KOPI_PAGI);
     expect(html).toContain(KOPI_PAGI_LOOKALIKES[0]);
     expect(html).toContain("Illustrated sample");
-    expect(html).toContain("Sample decisions");
+    expect(html).toContain("Sample decision");
     expect(html).toContain('href="/app/keys"');
     expect(html).toContain('href="/app#ledger"');
-    for (const plate of ["read", "follow", "compare", "refuse"])
-      expect(html).toContain(`src="/plates/story-${plate}.webp"`);
-    expect(html).toContain('src="/plates/desk.webp"');
+    for (const object of [
+      "terminal",
+      "stamp",
+      "vault",
+      "printer",
+      "clerk-sticker",
+    ])
+      expect(html).toContain(`src="/objects/${object}.webp"`);
+    expect(html).not.toContain('src="/plates/');
     expect(html).toContain(
       'src="/clerk-hd/read.webp" width="677" height="1100"',
     );
@@ -63,12 +63,16 @@ describe("landing content", () => {
     expect(html).not.toContain('class="story-clerk"');
     for (const field of [
       "NDS-0142",
-      "DAO treasury",
       "Brand system sprint",
       "Motion assets",
-      "Pay to · Registered address",
+      "CLEARED RECEIPT",
+      "verified",
+      "44005",
     ])
       expect(html).toContain(field);
+    expect(html).toContain('role="switch" aria-checked="false"');
+    expect(html).toContain("Interactive preview · no transaction");
+    expect(html).not.toContain("7 on-chain scenarios");
   });
   it.each(["ready", "unavailable"] as const)(
     "keeps the %s ledger honest without fabricated rows",

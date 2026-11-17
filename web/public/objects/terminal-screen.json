@@ -1,0 +1,10 @@
+{
+ "left": 16.0,
+ "top": 17.5,
+ "width": 55.0,
+ "height": 43.5,
+ "rotation": -1.2,
+ "imageWidth": 1095,
+ "imageHeight": 928,
+ "note": "Safe text area inside the empty screen, percentages of the image box."
+}
