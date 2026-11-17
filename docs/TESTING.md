@@ -25,7 +25,7 @@ Verified: 70 Foundry + 212 Vitest tests. The test runners print the authoritativ
 - **Gitleaks:** committed Git history. `.gitleaksignore` suppresses one exact historical fingerprint for the public tUSD8 token address; it is not a broad rule exemption. Uncommitted changes require a separate working-tree review before release.
 - **Contrast:** committed color pairs and UI contrast tokens. This does not replace a visual review.
 
-Tests use synthetic credentials and mocked fetch for providers. No real LLM reliability, testnet availability, deployment success or independent audit is implied. The old Pagar contract/test/package are retired and excluded from compilation/workspaces; active tests import only Cleared code.
+Tests use synthetic credentials and mocked fetch for providers. No real LLM reliability, testnet availability, deployment success or independent audit is implied.
 
 ## Production HTTP verification without a browser
 
