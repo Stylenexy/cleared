@@ -1,3 +1,4 @@
+import { Wallpaper } from "./wallpaper";
 import { Arrow } from "../brand";
 
 const skills = [
@@ -37,7 +38,8 @@ export function SafetyGrid() {
       className="safety-section desk-section"
       aria-labelledby="safety-title"
     >
-      <div className="section-rule">
+      <div className="section-rule safety-photo-header photo-section">
+        <Wallpaper scene="steel" />
         <h2 id="safety-title">How it stays safe</h2>
         <span>Contract-enforced</span>
       </div>

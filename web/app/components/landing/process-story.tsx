@@ -1,7 +1,8 @@
 "use client";
 
+import { Wallpaper } from "./wallpaper";
 import { useEffect, useRef } from "react";
-import { DESK_MOTION, gsap } from "./motion";
+import { animateWallpaper, DESK_MOTION, gsap } from "./motion";
 import { PillLink } from "./pill-link";
 
 const steps = [
@@ -80,6 +81,7 @@ export function ProcessStory() {
             );
           });
         });
+        animateWallpaper(timeline, scope);
         return () => {
           delete scope.dataset.animated;
           words.forEach((word) => {
@@ -94,9 +96,10 @@ export function ProcessStory() {
   return (
     <section
       ref={root}
-      className="process-story desk-texture"
+      className="process-story desk-texture photo-section"
       aria-labelledby="process-title"
     >
+      <Wallpaper scene="steel" pinned />
       <span className="eyebrow process-label">
         02 / THREE VERBS. ONE BOUNDARY.
       </span>

@@ -4,6 +4,7 @@ import Home from "../web/app/page";
 import { addressDiff } from "../web/app/components/landing/address-diff";
 import { LedgerPanel } from "../web/app/components/landing/ledger-preview";
 import { SiteFooter } from "../web/app/components/landing/site-footer";
+import { Wallpaper } from "../web/app/components/landing/wallpaper";
 import { KOPI_PAGI, KOPI_PAGI_LOOKALIKES } from "../web/lib/sample-addresses";
 
 describe("landing address comparison", () => {
@@ -33,6 +34,25 @@ describe("landing address comparison", () => {
 });
 
 describe("landing content", () => {
+  it.each(["hero", "desk", "steel", "skyline"] as const)(
+    "serves responsive local %s photography with appropriate loading priority",
+    (scene) => {
+      const html = renderToStaticMarkup(<Wallpaper scene={scene} />);
+      expect(html).toContain(
+        `media="(max-width: 767px)" srcSet="/walls/${scene}-sm.webp"`,
+      );
+      expect(html).toContain(`src="/walls/${scene}.webp"`);
+      expect(html).toContain('decoding="async"');
+      expect(html).toContain('aria-hidden="true"');
+      expect(html).toContain('alt=""');
+      expect(html).toContain(
+        `loading="${scene === "hero" ? "eager" : "lazy"}"`,
+      );
+      if (scene === "hero") expect(html).toContain('fetchPriority="high"');
+      else expect(html).not.toContain('fetchPriority="high"');
+    },
+  );
+
   it("renders the clearing desk and every story in a readable static version", () => {
     const html = renderToStaticMarkup(<Home />);
     expect(html.match(/<h1\b/g)).toHaveLength(1);

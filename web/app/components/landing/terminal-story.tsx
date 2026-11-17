@@ -1,8 +1,9 @@
 "use client";
 
+import { Wallpaper } from "./wallpaper";
 import { useEffect, useRef } from "react";
 import screen from "../../../public/objects/terminal-screen.json";
-import { DESK_MOTION, gsap } from "./motion";
+import { animateWallpaper, DESK_MOTION, gsap } from "./motion";
 import { progressWithin, typedLines } from "./story-progress";
 
 export const TERMINAL_LINES = [
@@ -76,6 +77,7 @@ export function TerminalStory() {
             },
             0.84,
           );
+        animateWallpaper(timeline, scope);
         timeline.eventCallback("onUpdate", () => {
           typedLines(
             TERMINAL_LINES,
@@ -96,10 +98,11 @@ export function TerminalStory() {
   }, []);
   return (
     <section
-      className="terminal-story desk-texture"
+      className="terminal-story desk-texture photo-section"
       ref={root}
       aria-labelledby="terminal-title"
     >
+      <Wallpaper scene="desk" pinned />
       <div className="story-kicker">
         <span className="eyebrow">01 / THE INSPECTION</span>
         <h2 id="terminal-title">

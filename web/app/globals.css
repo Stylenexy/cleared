@@ -2447,7 +2447,21 @@ body {
   inset: 0;
   border-radius: inherit;
   opacity: 0.18;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23909aa4' opacity='.15' filter='url(%23g)' d='M0 0h120v120H0z'/%3E%3C/svg%3E");
+  background-image:
+    repeating-radial-gradient(
+      ellipse at 17% 31%,
+      var(--text) 0 0.5px,
+      transparent 0.8px 3px
+    ),
+    repeating-radial-gradient(
+      ellipse at 73% 61%,
+      transparent 0 1px,
+      var(--background) 1.2px 1.7px,
+      transparent 2px 4px
+    );
+  background-size:
+    7px 11px,
+    13px 9px;
   pointer-events: none;
 }
 .invoice-letterhead {
@@ -5938,4 +5952,166 @@ html.lenis body {
 }
 .footer-story[data-animated="true"] .printer-assembly {
   width: min(100%, 68svh);
+}
+
+/* Photographic stages stay inside their section, including its pin. */
+.photo-section {
+  position: relative;
+  isolation: isolate;
+}
+.signal-hero.photo-section,
+.safety-section {
+  max-width: none;
+  padding-inline: max(
+    var(--desk-gutter),
+    calc((100% - 1600px) / 2 + var(--desk-gutter))
+  );
+}
+.story-wallpaper {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  overflow: clip;
+  pointer-events: none;
+  background: var(--background);
+}
+.story-wallpaper picture,
+.story-wallpaper img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.story-wallpaper img {
+  object-fit: cover;
+  transform-origin: center;
+}
+.story-wallpaper::before,
+.story-wallpaper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.story-wallpaper::before {
+  /* Even a white photo pixel is capped by 84% background: secondary text
+     exceeds 4.5:1 and display ink exceeds 3:1 across the whole stage. */
+  background:
+    radial-gradient(
+      ellipse at center,
+      transparent 25%,
+      color-mix(in srgb, var(--background) 65%, transparent)
+    ),
+    linear-gradient(
+      color-mix(in srgb, var(--background) 84%, transparent),
+      color-mix(in srgb, var(--background) 85%, transparent)
+    );
+}
+.story-wallpaper::after {
+  opacity: 0.025;
+  background-image:
+    repeating-radial-gradient(
+      ellipse at 17% 31%,
+      var(--text) 0 0.5px,
+      transparent 0.8px 3px
+    ),
+    repeating-radial-gradient(
+      ellipse at 73% 61%,
+      transparent 0 1px,
+      var(--background) 1.2px 1.7px,
+      transparent 2px 4px
+    );
+  background-size:
+    7px 11px,
+    13px 9px;
+}
+.wallpaper-hero::before {
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--background) 94%, transparent),
+      color-mix(in srgb, var(--background) 85%, transparent) 55%,
+      transparent 85%
+    ),
+    radial-gradient(
+      ellipse at 65% 42%,
+      transparent,
+      color-mix(in srgb, var(--background) 75%, transparent)
+    ),
+    linear-gradient(
+      color-mix(in srgb, var(--background) 84%, transparent),
+      color-mix(in srgb, var(--background) 85%, transparent)
+    );
+}
+.photo-section.desk-texture::before {
+  opacity: 0.18;
+}
+.photo-section .eyebrow,
+.photo-section .hero-meta small,
+.photo-section .hero-footnote,
+.photo-section .story-caption > span,
+.photo-section .process-last-word small,
+.safety-photo-header > span {
+  color: var(--text-2);
+}
+.photo-section .preview-strip {
+  background: radial-gradient(
+    ellipse,
+    color-mix(in srgb, var(--background) 85%, transparent),
+    transparent 75%
+  );
+}
+.terminal-story.photo-section .pixel-tiles {
+  opacity: 0.1;
+}
+.footer-story.photo-section .pixel-tiles {
+  opacity: 0.16;
+}
+.footer-story.photo-section .pixel-tiles i {
+  background: color-mix(in srgb, var(--surface-hover) 50%, transparent);
+}
+.footer-story.photo-section .pixel-tiles [data-tone="signal"] {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.safety-photo-header {
+  padding: 38px var(--desk-gutter);
+  margin-inline: calc(-1 * var(--desk-gutter));
+}
+.safety-photo-header .story-wallpaper::before {
+  background: color-mix(in srgb, var(--background) 90%, transparent);
+}
+@media (min-width: 768px) {
+  .terminal-story.photo-section {
+    height: 100svh;
+    min-height: 600px;
+  }
+  .terminal-story.photo-section .story-kicker {
+    position: absolute;
+    top: 60px;
+    left: var(--desk-gutter);
+  }
+  .terminal-story.photo-section .terminal-object {
+    position: absolute;
+    width: min(40vw, 49svh);
+    left: 65%;
+    bottom: 40%;
+    margin: 0;
+    translate: -50% 0;
+    transform-origin: 50% 100%;
+  }
+  .terminal-story.photo-section .terminal-object::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    bottom: -2%;
+    left: 10%;
+    width: 80%;
+    height: 12%;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--background) 90%, transparent);
+    filter: blur(12px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .story-wallpaper img {
+    transform: none !important;
+  }
 }

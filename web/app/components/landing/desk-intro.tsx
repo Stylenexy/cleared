@@ -1,5 +1,6 @@
 "use client";
 
+import { Wallpaper } from "./wallpaper";
 import { useEffect, useRef, useState } from "react";
 import { Clerk } from "./clerk";
 import { DESK_MOTION, gsap } from "./motion";
@@ -138,9 +139,10 @@ export function DeskIntro() {
   return (
     <div ref={root} className="desk-intro">
       <section
-        className="signal-hero desk-texture"
+        className="signal-hero desk-texture photo-section"
         aria-labelledby="hero-title"
       >
+        <Wallpaper scene="hero" />
         <div className="hero-meta">
           <span className="eyebrow">THE CLEARING DESK / 001</span>
           <span>

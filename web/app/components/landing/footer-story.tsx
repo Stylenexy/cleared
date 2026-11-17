@@ -1,7 +1,8 @@
 "use client";
 
+import { Wallpaper } from "./wallpaper";
 import { useEffect, useRef } from "react";
-import { DESK_MOTION, gsap } from "./motion";
+import { animateWallpaper, DESK_MOTION, gsap } from "./motion";
 import { PillLink } from "./pill-link";
 import { PixelTiles } from "./terminal-story";
 
@@ -83,6 +84,7 @@ export function FooterStory() {
             },
             1.5,
           );
+        animateWallpaper(timeline, scope);
         return () => {
           delete scope.dataset.animated;
         };
@@ -93,10 +95,11 @@ export function FooterStory() {
   }, []);
   return (
     <section
-      className="footer-story desk-texture"
+      className="footer-story desk-texture photo-section"
       ref={root}
       aria-labelledby="start-title"
     >
+      <Wallpaper scene="skyline" pinned />
       <PixelTiles />
       <div className="footer-story-copy">
         <span className="eyebrow">YOUR NEXT MOVE</span>
