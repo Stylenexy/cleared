@@ -1,5 +1,4 @@
 import { ClerkIntro } from "./components/landing/clerk-intro";
-import { FooterTransition } from "./components/landing/footer-transition";
 import { DeskIntro } from "./components/landing/desk-intro";
 import { TerminalStory } from "./components/landing/terminal-story";
 import { ProcessStory } from "./components/landing/process-story";
@@ -48,7 +47,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-      <FooterTransition />
       <FooterStory />
     </main>
   );

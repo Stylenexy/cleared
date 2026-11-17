@@ -88,7 +88,7 @@ export function FooterStory() {
       ref={root}
       aria-labelledby="start-title"
     >
-      <Wallpaper scene="footer" pinned />
+      <Wallpaper scene="colonnade" pinned />
       <PixelTiles />
       <div className="footer-story-copy">
         <h2 id="start-title">

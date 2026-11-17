@@ -45,21 +45,35 @@ export function ProcessStory() {
             anticipatePin: 1,
           },
         });
+        // The first word rises while the section scrolls in, so the screen is never empty.
+        gsap.from(words[0].querySelectorAll(".word-plain .motion-letter"), {
+          yPercent: 30,
+          opacity: 0,
+          stagger: 0.06,
+          ease: "power1.out",
+          scrollTrigger: {
+            trigger: scope,
+            start: "top 85%",
+            end: "top 15%",
+            scrub: 0.8,
+          },
+        });
         cards.forEach((card, index) => {
           const start = index * 2.1;
           const word = words[index];
-          timeline
-            .from(
+          if (index > 0)
+            timeline.from(
               word.querySelectorAll(".word-plain .motion-letter"),
               {
-                yPercent: 100,
+                yPercent: 30,
                 opacity: 0,
-                stagger: 0.055,
-                duration: 0.35,
-                ease: "none",
+                stagger: 0.06,
+                duration: 0.45,
+                ease: "power1.out",
               },
               start,
-            )
+            );
+          timeline
             .fromTo(
               card,
               {
@@ -76,15 +90,17 @@ export function ProcessStory() {
               },
               start + 0.55,
             )
-            .to(
-              word.querySelector(".word-plain"),
-              { opacity: 0, duration: 0.3 },
-              start + 1.8,
-            )
-            .to(
-              word.querySelector("em"),
-              { opacity: 1, duration: 0.3 },
-              start + 1.8,
+            // Each letter eases from white to the signal blue while its card passes.
+            .fromTo(
+              word.querySelectorAll(".word-plain .motion-letter"),
+              { color: "#EEF3F8" },
+              {
+                color: "#00BFFF",
+                stagger: 0.09,
+                duration: 0.5,
+                ease: "sine.inOut",
+              },
+              start + 0.7,
             );
         });
         timeline
@@ -124,9 +140,6 @@ export function ProcessStory() {
             <span className="word-plain" aria-hidden="true">
               <Letters text={word} />
             </span>
-            <em className="serif-accent" aria-hidden="true">
-              {word}
-            </em>
           </span>
         ))}
       </h2>

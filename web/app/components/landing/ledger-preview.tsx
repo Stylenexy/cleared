@@ -25,9 +25,7 @@ export function LedgerPreview() {
         if (!Array.isArray(data.rows)) throw new Error("Ledger unavailable");
         if (!mounted) return;
         setRows(
-          data.rows
-            .filter((row) => row.event === "Paid" || row.event === "Rejected")
-            .slice(0, 3),
+          data.rows.slice(0, 6),
         );
         setStatus("ready");
       } catch {
@@ -44,6 +42,27 @@ export function LedgerPreview() {
     };
   }, []);
   return <LedgerPanel rows={rows} status={status} />;
+}
+
+export function ledgerLabel(row: Pick<LedgerRow, "event" | "reason" | "frozen">) {
+  switch (row.event) {
+    case "Paid":
+      return "Paid";
+    case "Rejected":
+      return "Refused";
+    case "Staged":
+      return "Batch staged";
+    case "AgentConfigured":
+      return "Agent key granted";
+    case "AgentRevoked":
+      return "Agent key revoked";
+    case "FreezeChanged":
+      return row.frozen ? "Kill switch on" : "Kill switch off";
+    case "Withdrawn":
+      return "Owner withdrawal";
+    default:
+      return row.event;
+  }
 }
 
 export function LedgerPanel({
@@ -82,8 +101,9 @@ export function LedgerPanel({
                     <span
                       className="ledger-event"
                       data-rejected={row.event === "Rejected"}
+                      data-paid={row.event === "Paid"}
                     >
-                      {row.event}
+                      {ledgerLabel(row)}
                     </span>
                   </td>
                   <td>
@@ -97,7 +117,18 @@ export function LedgerPanel({
                   </td>
                   <td>{row.amount ? `${row.amount} tUSD8` : "—"}</td>
                   <td>
-                    {row.event === "Paid" ? "Paid" : (row.reason ?? "Rejected")}
+                    <a
+                      href={`https://explorer-test.qday.info/tx/${row.txHash}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {row.event === "Paid"
+                        ? "Paid"
+                        : row.event === "Rejected"
+                          ? (row.reason ?? "Refused")
+                          : "View tx"}{" "}
+                      &#8599;
+                    </a>
                   </td>
                 </tr>
               ))}
@@ -110,7 +141,7 @@ export function LedgerPanel({
               <p>Reading the Aevum ledger…</p>
             ) : (
               <>
-                <p>No payments recorded yet.</p>
+                <p>No vault events yet.</p>
                 <a
                   href="https://explorer-test.qday.info/address/0x8fba7dd67e294b3ba5ca164748b9f41c03bad13c"
                   target="_blank"

@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import Home from "../web/app/page";
 import { addressDiff } from "../web/app/components/landing/address-diff";
-import { LedgerPanel } from "../web/app/components/landing/ledger-preview";
+import { LedgerPanel, ledgerLabel } from "../web/app/components/landing/ledger-preview";
 import { SiteFooter } from "../web/app/components/landing/site-footer";
 import { Wallpaper } from "../web/app/components/landing/wallpaper";
 import { KOPI_PAGI, KOPI_PAGI_LOOKALIKES } from "../web/lib/sample-addresses";
@@ -99,7 +99,7 @@ describe("landing content", () => {
       const html = renderToStaticMarkup(
         <LedgerPanel rows={[]} status={status} />,
       );
-      expect(html).toContain("No payments recorded yet.");
+      expect(html).toContain("No vault events yet.");
       expect(html).toContain("/clerk-hd/tablet.webp");
       expect(html).not.toContain("Refreshes when you reload.");
       expect(html).not.toContain("spinner-dot");
@@ -148,9 +148,23 @@ describe("landing content", () => {
     expect(html).toContain(`title="${KOPI_PAGI}"`);
     expect(html).toContain("0x166F…1d5A");
     expect(html).toContain("NameMismatch");
-    expect(html).toMatch(/Rejected<\/span><\/td><td>—<\/td><td>—<\/td>/);
+    expect(html).toMatch(/Refused<\/span><\/td><td>—<\/td><td>—<\/td>/);
+    expect(html).toContain('href="https://explorer-test.qday.info/tx/test-rejected"');
     expect(html).toContain("/clerk-hd/tablet.webp");
-    expect(html).not.toContain("No payments recorded yet.");
+    expect(html).not.toContain("No vault events yet.");
+  });
+});
+
+describe("ledger labels", () => {
+  it("names every vault event in plain words", () => {
+    expect(ledgerLabel({ event: "Paid" })).toBe("Paid");
+    expect(ledgerLabel({ event: "Rejected", reason: "Name mismatch" })).toBe("Refused");
+    expect(ledgerLabel({ event: "Staged" })).toBe("Batch staged");
+    expect(ledgerLabel({ event: "AgentConfigured" })).toBe("Agent key granted");
+    expect(ledgerLabel({ event: "AgentRevoked" })).toBe("Agent key revoked");
+    expect(ledgerLabel({ event: "FreezeChanged", frozen: true })).toBe("Kill switch on");
+    expect(ledgerLabel({ event: "FreezeChanged", frozen: false })).toBe("Kill switch off");
+    expect(ledgerLabel({ event: "Something" })).toBe("Something");
   });
 });
 

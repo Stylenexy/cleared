@@ -49,16 +49,16 @@ export function RepeatStory() {
               },
               start + 0.2,
             )
-            .to(
-              words[index].querySelector(".word-plain"),
-              { opacity: 0, duration: 0.25 },
-              start + 0.8,
-            )
             .fromTo(
-              words[index].querySelector("em"),
-              { opacity: 0 },
-              { opacity: 1, duration: 0.25 },
-              start + 0.8,
+              words[index].querySelectorAll(".word-plain .motion-letter"),
+              { color: "#EEF3F8" },
+              {
+                color: "#00BFFF",
+                stagger: 0.05,
+                duration: 0.3,
+                ease: "sine.inOut",
+              },
+              start + 0.6,
             )
             .from(
               slip.querySelector("strong"),
@@ -145,9 +145,6 @@ export function RepeatStory() {
             <span className="word-plain" aria-hidden="true">
               <Letters text={word} />
             </span>
-            <em className="serif-accent" aria-hidden="true">
-              {word}
-            </em>
           </span>
         ))}
       </h2>

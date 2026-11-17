@@ -5965,6 +5965,9 @@ html.lenis body {
   overflow: clip;
   pointer-events: none;
   background: var(--background);
+  /* Photos fade into the page at both ends, so sections never meet on a hard image edge. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 16%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 16%, #000 84%, transparent 100%);
 }
 .story-wallpaper picture,
 .story-wallpaper img {
