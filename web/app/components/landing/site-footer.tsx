@@ -1,5 +1,7 @@
 import { BrandImage } from "../brand";
 
+import { Clerk } from "./clerk";
+
 const REPOSITORY_URL = "https://github.com/Stylenexy/cleared";
 const columns = [
   {
@@ -34,6 +36,9 @@ const columns = [
 export function SiteFooter() {
   return (
     <footer className="site-footer">
+      <div className="footer-peek" aria-hidden="true">
+        <Clerk pose="peek" />
+      </div>
       <div className="site-footer-grid">
         <div className="footer-brand">
           <a className="wordmark" href="/" aria-label="Cleared home">
@@ -41,6 +46,10 @@ export function SiteFooter() {
             Cleared
           </a>
           <p>Let your agent pay. Keep the last word.</p>
+          <span className="footer-status">
+            <span className="live-dot" aria-hidden="true" />
+            Live on Aevum testnet
+          </span>
         </div>
         {columns.map(({ title, links }) => (
           <div className="footer-column" key={title}>
@@ -65,6 +74,9 @@ export function SiteFooter() {
       <div className="footer-bottom">
         <span>Testnet prototype. Not audited. Test tokens only.</span>
         <span>Aevum Builder Challenge #1</span>
+      </div>
+      <div className="footer-wordmark" aria-hidden="true">
+        CLEARED
       </div>
     </footer>
   );

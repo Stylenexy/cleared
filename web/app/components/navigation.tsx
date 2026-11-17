@@ -25,6 +25,9 @@ export function Navigation() {
           </a>
         ))}
       </nav>
+      <a className="nav-attack-pill" href="/attack">
+        Open the attack lab
+      </a>
     </header>
   );
 }

@@ -110,10 +110,11 @@ export function LedgerPanel({
               <p>Reading the Aevum ledger…</p>
             ) : (
               <>
-                <p>
-                  No payments recorded yet. The testnet proof run fills this
-                  ledger.
-                </p>
+                <p>Waiting for the first on-chain run.</p>
+                <small className="ledger-refresh">
+                  <span className="spinner-dot" aria-hidden="true" />
+                  Refreshes when you reload.
+                </small>
                 {status === "unavailable" && (
                   <small>
                     Live ledger unavailable. No payment history could be loaded.
@@ -128,7 +129,7 @@ export function LedgerPanel({
         </a>
       </div>
       <div className="ledger-clerk">
-        <Clerk pose={rows.length ? "tablet" : "standby"} />
+        <Clerk pose="tablet" />
       </div>
     </div>
   );

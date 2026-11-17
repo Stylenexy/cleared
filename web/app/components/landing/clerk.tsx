@@ -1,11 +1,15 @@
 const poses = {
-  read: [315, 466],
-  point: [385, 465],
-  stand: [319, 468],
-  refuse: [436, 448],
-  tablet: [300, 458],
-  wave: [364, 466],
-  standby: [299, 482],
+  read: [677, 1100],
+  point: [844, 1100],
+  scan: [663, 1100],
+  stand: [723, 1100],
+  refuse: [715, 1100],
+  tablet: [708, 1100],
+  wave: [767, 1100],
+  standby: [725, 1100],
+  thumbs: [708, 1100],
+  peek: [552, 826],
+  cheer: [865, 1100],
 } as const;
 
 export function Clerk({
@@ -19,7 +23,7 @@ export function Clerk({
   return (
     <img
       className="clerk-pose"
-      src={`/clerk/clerk-${pose}.webp`}
+      src={`/clerk-hd/${pose}.webp`}
       width={width}
       height={height}
       alt=""

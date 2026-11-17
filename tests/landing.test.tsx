@@ -17,7 +17,9 @@ describe("landing address comparison", () => {
       expect(diff.map(({ character }) => character).join("")).toBe(address);
       expect(diff).toHaveLength(42);
       diff.forEach(({ different }, index) => {
-        expect(different).toBe(address[index] !== against[index]);
+        expect(different).toBe(
+          address[index].toLowerCase() !== against[index].toLowerCase(),
+        );
         if (index < 6 || index >= 38) expect(different).toBe(false);
       });
       expect(diff.some(({ different }) => different)).toBe(true);
@@ -51,6 +53,22 @@ describe("landing content", () => {
     expect(html).toContain("Sample decisions");
     expect(html).toContain('href="/app/keys"');
     expect(html).toContain('href="/app#ledger"');
+    for (const plate of ["read", "follow", "compare", "refuse"])
+      expect(html).toContain(`src="/plates/story-${plate}.webp"`);
+    expect(html).toContain('src="/plates/desk.webp"');
+    expect(html).toContain(
+      'src="/clerk-hd/read.webp" width="677" height="1100"',
+    );
+    expect(html).not.toContain('src="/clerk/');
+    expect(html).not.toContain('class="story-clerk"');
+    for (const field of [
+      "NDS-0142",
+      "DAO treasury",
+      "Brand system sprint",
+      "Motion assets",
+      "Pay to · Registered address",
+    ])
+      expect(html).toContain(field);
   });
   it.each(["ready", "unavailable"] as const)(
     "keeps the %s ledger honest without fabricated rows",
@@ -58,10 +76,9 @@ describe("landing content", () => {
       const html = renderToStaticMarkup(
         <LedgerPanel rows={[]} status={status} />,
       );
-      expect(html).toContain(
-        "No payments recorded yet. The testnet proof run fills this ledger.",
-      );
-      expect(html).toContain("/clerk/clerk-standby.webp");
+      expect(html).toContain("Waiting for the first on-chain run.");
+      expect(html).toContain("/clerk-hd/tablet.webp");
+      expect(html).toContain("Refreshes when you reload.");
       expect(html).not.toContain("tUSD8");
       expect(html).not.toContain("ledger-event");
       if (status === "unavailable")
@@ -74,7 +91,7 @@ describe("landing content", () => {
     );
     expect(html).toContain('aria-busy="true"');
     expect(html).toContain("Reading the Aevum ledger");
-    expect(html).not.toContain("No payments recorded yet.");
+    expect(html).not.toContain("Waiting for the first on-chain run.");
   });
   it("renders real decision fields without inventing absent rejection fields", () => {
     const html = renderToStaticMarkup(
@@ -104,7 +121,7 @@ describe("landing content", () => {
     expect(html).toContain("0x166F…1d5A");
     expect(html).toContain("NameMismatch");
     expect(html).toMatch(/Rejected<\/span><\/td><td>—<\/td><td>—<\/td>/);
-    expect(html).toContain("/clerk/clerk-tablet.webp");
+    expect(html).toContain("/clerk-hd/tablet.webp");
     expect(html).not.toContain("No payments recorded yet.");
   });
 });
@@ -124,5 +141,8 @@ describe("shared footer", () => {
     expect(html).toContain("Testnet prototype. Not audited. Test tokens only.");
     expect(html).toContain("Aevum Builder Challenge #1");
     expect(html).toContain('src="/mark-3d.webp"');
+    expect(html).toContain('src="/clerk-hd/peek.webp"');
+    expect(html).toContain("Live on Aevum testnet");
+    expect(html).toContain('class="footer-wordmark" aria-hidden="true"');
   });
 });
