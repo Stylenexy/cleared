@@ -32,10 +32,14 @@ import {
   type Config,
 } from "../../lib/client";
 import { readPaymentState } from "../../lib/payment-state";
-import { demoDecision } from "../../lib/demo";
+import { demoDecision, demoVerified } from "../../lib/demo";
+import { KOPI_PAGI, KERTAS_KITA } from "../../lib/sample-addresses";
 import type { LedgerResponse } from "../../lib/ledger";
 import { ClearingFlow, DecisionStamp } from "../components/clearing-flow";
+import { AppShell } from "../components/app-shell/app-shell";
+import { InvoiceTable, PageHeader } from "../components/app-shell/ui";
 export default function Treasury() {
+  const [paymentFrozen, setPaymentFrozen] = useState<boolean>();
   const [ledger, setLedger] = useState<LedgerResponse>();
   const [ledgerLoading, setLedgerLoading] = useState(false);
   const [ledgerError, setLedgerError] = useState("");
@@ -60,6 +64,7 @@ export default function Treasury() {
   }, [config?.network]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [labels, setLabels] = useState<string[]>([]);
+  const [registryVerified, setRegistryVerified] = useState<boolean[]>([]);
   const [holds, setHolds] = useState<bigint[]>([]);
   const [batch, setBatch] = useState<bigint>();
   const [wallet, setWallet] = useState<WalletClient>();
@@ -93,6 +98,8 @@ export default function Treasury() {
     if (!config) throw new Error("Configuration is not loaded.");
     if (config.vault) {
       const state = await readPaymentState(config, items);
+      setPaymentFrozen(state.frozen);
+      setRegistryVerified(state.items.map((item) => item.verified));
       const decisions = state.items.map((i) => i.decision);
       if (stagedBatch !== null) {
         const stagedHolds = await Promise.all(
@@ -118,6 +125,7 @@ export default function Treasury() {
       );
     } else {
       setLabels(items.map((i) => demoDecision(i)));
+      setRegistryVerified(items.map(demoVerified));
       setHolds(items.map(() => 0n));
       setSource("Sample registry preview. No network payment is available.");
     }
@@ -127,6 +135,7 @@ export default function Treasury() {
     setRows([]);
     setTx(undefined);
     setLabels([]);
+    setRegistryVerified([]);
     setHolds([]);
     const form = new FormData();
     files.forEach((f) => form.append("files", f));
@@ -245,403 +254,398 @@ export default function Treasury() {
     URL.revokeObjectURL(url);
   }
   return (
-    <main className="desk">
-      <div className="page-heading">
-        <div>
-          <h1>
-            Treasury desk.
-            <br />
-            <span className="chrome">Every payment, checked.</span>
-          </h1>
-          <p>
-            Contractor invoices, verified destinations and a bounded agent
-            budget.
-          </p>
-        </div>
-        <Link href="/app/keys">Agent controls &amp; kill switch</Link>
-      </div>
-      <p className="notice">
-        {config?.vault
-          ? config.network === "local"
-            ? "Local Anvil | chain 31337"
-            : "Aevum testnet | chain 44005"
-          : "Demo preview | no contract configured"}
-        . <Link href="/try">Try without a wallet</Link>
-      </p>
-      <ClearingFlow
-        step={
-          rows.length ? 4 : batch !== undefined ? 3 : invoices.length ? 2 : 0
-        }
-        busy={busy}
-      />
-      {error && (
-        <p role="alert" className="notice danger">
-          {error}
+    <AppShell active="/app" config={config} frozen={paymentFrozen}>
+      <main className="desk treasury-page">
+        <PageHeader
+          title="Invoices"
+          description="Review destinations, stage a batch and reconcile every payment."
+          action={
+            <label className="button primary upload-invoices">
+              <span aria-hidden="true">↥</span> Upload invoices
+              <input
+                aria-label="Choose invoices"
+                type="file"
+                multiple
+                accept=".txt,.csv,.pdf"
+                disabled={busy || !config}
+                onChange={(e) => {
+                  const files = Array.from(e.target.files ?? []);
+                  if (files.length) void run(() => upload(files));
+                  e.target.value = "";
+                }}
+              />
+            </label>
+          }
+        />
+        <p className="notice">
+          {config?.vault
+            ? config.network === "local"
+              ? "Local Anvil | chain 31337"
+              : "Aevum testnet | chain 44005"
+            : "Demo preview | no contract configured"}
+          . <Link href="/try">Try without a wallet</Link>
         </p>
-      )}
-      {busy && <p role="status">Working...</p>}
-      <section>
-        <h2>1. Read invoices</h2>
-        <p>
-          TXT templates, CSV or text PDFs. Up to 10 files, 2 MB each, 10 PDF
-          pages and 20,000 extracted characters. No scanned PDFs.
-        </p>
-        <div className="actions">
-          <label className="button">
-            Choose invoices
-            <input
-              aria-label="Choose invoices"
-              type="file"
-              multiple
-              accept=".txt,.csv,.pdf"
-              disabled={busy || !config}
-              onChange={(e) => {
-                const files = Array.from(e.target.files ?? []);
-                if (files.length) void run(() => upload(files));
-                e.target.value = "";
-              }}
-            />
-          </label>
-          <button onClick={() => run(samples)} disabled={busy || !config}>
-            Use three samples
-          </button>
-          <a href="/samples/invoices.csv" download>
-            Download sample CSV
-          </a>
-        </div>
-        {config?.llmAvailable && (
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={llm}
-              onChange={(e) => setLlm(e.target.checked)}
-            />
-            Use live extraction (sends invoice text to the configured provider)
-          </label>
-        )}
-      </section>
-      <section>
-        <h2>2. Review and stage</h2>
-        <p>{source}</p>
-        {batch !== undefined && (
-          <button
-            disabled={busy}
-            onClick={() =>
-              run(async () => {
-                setBatch(undefined);
-                setRows([]);
-                setTx(undefined);
-                await check(invoices, null);
-              })
-            }
-          >
-            Start a fresh review
-          </button>
-        )}
-        <ol className="invoice-list">
-          {invoices.map((i, n) => (
-            <li
-              className="invoice"
-              key={n}
-              data-rejected={
-                !!labels[n] &&
-                labels[n] !== "Verified" &&
-                !labels[n].startsWith("PayeeOnHold")
-              }
-            >
-              <div className="receipt-title">
-                <strong>
-                  {i.name} | {i.reference}
-                </strong>
-                <span
-                  className={
-                    "badge " +
-                    (labels[n] === "Verified"
-                      ? "safe"
-                      : labels[n]?.startsWith("PayeeOnHold")
-                        ? "hold"
-                        : labels[n]
-                          ? "danger"
-                          : "")
-                  }
-                >
-                  {labels[n] ?? "Not checked"}
-                </span>
-              </div>
-              <code>{i.payee}</code>
-              <p className="amount">
-                {displayAmount(i.amount)} <small>tUSD8</small>
-              </p>
-              {labels[n] && !labels[n].startsWith("PayeeOnHold") && (
-                <div className="result-line">
-                  <DecisionStamp rejected={labels[n] !== "Verified"} />
-                </div>
-              )}
-              {holds[n] > 0n && (
-                <p>
-                  Hold remaining: {holdClock(holds[n])}. Refresh to read the
-                  latest chain time.
-                </p>
-              )}
-              <details>
-                <summary>Document hash</summary>
-                <code>{i.invoiceHash}</code>
-              </details>
-            </li>
-          ))}
-        </ol>
-        {!invoices.length && (
-          <div className="empty-state">
-            Your clearing desk is ready. Upload an invoice or load the three
-            samples to inspect every destination.
-          </div>
-        )}
-        <p>
-          New or changed recipients are held for 24 hours. A batch staged during
-          a hold requires owner approval even after the timer expires. Rejected
-          items in an executed batch must be staged again with a fresh review.
-        </p>
-        <div className="actions">
-          <button
-            disabled={busy || !invoices.length}
-            onClick={() => run(() => check(invoices))}
-          >
-            Refresh checks
-          </button>
-          <button
-            disabled={
-              busy || !config?.vault || !invoices.length || batch !== undefined
-            }
-            onClick={() => run(stageBatch)}
-          >
-            Stage as agent
-          </button>
-        </div>
-        {batch !== undefined && (
-          <p className="notice">
-            Batch #{batch.toString()} stored. Execution rechecks every policy.
+        <ClearingFlow
+          step={
+            rows.length ? 4 : batch !== undefined ? 3 : invoices.length ? 2 : 0
+          }
+          busy={busy}
+        />
+        {error && (
+          <p role="alert" className="notice danger">
+            {error}
           </p>
         )}
-      </section>
-      <section>
-        <h2>3. Pay within policy</h2>
-        <p>
-          The batch agent can pay mature verified recipients without the owner.
-          Owner approval can clear a hold, but cannot bypass identity, caps,
-          expiry, revocation or the kill switch.
-        </p>
-        <div className="actions">
-          <button
-            className="primary"
-            disabled={busy || batch === undefined || !!rows.length}
-            onClick={() => run(() => execute(false))}
-          >
-            Pay automatically as agent
-          </button>
-          <button
-            disabled={busy || !config?.vault}
-            onClick={() =>
-              run(async () => {
-                if (config) setWallet(await connectWallet(config));
-              })
-            }
-          >
-            Connect owner wallet
-          </button>
-          {config?.network === "local" && (
-            <button
-              disabled={busy || !config.owner}
-              onClick={() =>
-                run(async () => setWallet(await connectWallet(config, true)))
-              }
-            >
-              Use Anvil owner
-            </button>
-          )}
-          <button
-            disabled={busy || batch === undefined || !wallet || !!rows.length}
-            onClick={() => run(() => execute(true))}
-          >
-            Owner approve and execute
-          </button>
-        </div>
-        <p className="hash">
-          {wallet?.account?.address ?? "No owner wallet connected."}
-        </p>
-        {tx && (
-          <p>
-            Latest transaction:{" "}
-            {config?.network === "aevum" ? (
-              <a
-                className="hash"
-                href={"https://explorer-test.qday.info/tx/" + tx}
-              >
-                {tx}
-              </a>
-            ) : (
-              <code>{tx} (local)</code>
+        {busy && <p role="status">Working...</p>}
+        <section
+          className="invoice-toolbar"
+          aria-label="Invoice upload options"
+        >
+          <div className="actions">
+            {invoices.length > 0 && (
+              <button onClick={() => run(samples)} disabled={busy || !config}>
+                Use sample invoices
+              </button>
             )}
-          </p>
-        )}
-      </section>
-      <section>
-        <h2>4. Reconcile</h2>
-        {rows.length ? (
-          <>
-            <div className="reconciliation-summary">
-              <DecisionStamp rejected={false} children="RECONCILED" />
-              <p>Confirmed contract events matched to invoice references.</p>
-            </div>
-            <div
-              className="table-wrap"
-              tabIndex={0}
-              role="region"
-              aria-label="Confirmed reconciliation table"
-            >
-              <table>
-                <caption className="sr-only">
-                  Confirmed invoice reconciliation
-                </caption>
-                <thead>
-                  <tr>
-                    <th>Reference</th>
-                    <th>Payee</th>
-                    <th>tUSD8</th>
-                    <th>Contract result</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((r, n) => (
-                    <tr key={n}>
-                      <td>{r.reference}</td>
-                      <td>{r.name}</td>
-                      <td>{r.amount}</td>
-                      <td>{r.status}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <button onClick={exportCsv}>Export reconciliation CSV</button>
-          </>
-        ) : (
+            <a href="/samples/invoices.csv" download>
+              Download sample CSV
+            </a>
+            <Link href="/app/keys">Agent controls &amp; kill switch</Link>
+          </div>
           <p>
-            No confirmed results yet. Only contract events count as payments.
+            TXT templates, CSV or text PDFs. Up to 10 files, 2 MB each, 10 PDF
+            pages and 20,000 extracted characters. No scanned PDFs.
           </p>
-        )}
-      </section>
-      {config?.network === "aevum" && (
-        <section id="ledger" aria-labelledby="ledger-heading">
-          <h2 id="ledger-heading">Aevum ledger</h2>
-          <p>
-            Every decision the vault has made on Aevum testnet. Read from public
-            contract events; no wallet needed.
-          </p>
-          <button onClick={() => void loadLedger()} disabled={ledgerLoading}>
-            Refresh
-          </button>
-          {ledgerLoading && (
-            <p role="status">Reading public contract events...</p>
-          )}
-          {ledgerError && (
-            <p role="alert" className="notice danger">
-              {ledgerError}
-            </p>
-          )}
-          {ledger && (
-            <>
-              <p>
-                {ledger.summary.paid} paid · {ledger.summary.refused} refused ·{" "}
-                {ledger.summary.clearedAmount} tUSD8 cleared
-              </p>
-              <p>
-                Totals cover the loaded events from {ledger.source}. Read at{" "}
-                {ledger.fetchedAt}.
-                {ledger.truncated &&
-                  " Only the latest five explorer pages are shown; older events are excluded from these totals."}
-                {ledgerError &&
-                  " These are the last successfully loaded events."}
-              </p>
-              {ledger.rows.length ? (
-                <div
-                  className="table-wrap"
-                  tabIndex={0}
-                  role="region"
-                  aria-label="Aevum on-chain ledger table"
-                >
-                  <table>
-                    <caption className="sr-only">
-                      Public Aevum vault events
-                    </caption>
-                    <thead>
-                      <tr>
-                        <th>Block</th>
-                        <th>Event</th>
-                        <th>Reference</th>
-                        <th>Payee</th>
-                        <th>Amount</th>
-                        <th>Result</th>
-                        <th>Transaction</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {ledger.rows.map((row) => (
-                        <tr key={`${row.txHash}:${row.logIndex}`}>
-                          <td>{row.block}</td>
-                          <td>
-                            {row.event}
-                            {row.agent && (
-                              <>
-                                <br />
-                                <code>{row.agent}</code>
-                              </>
-                            )}
-                          </td>
-                          <td title={row.ref}>
-                            {row.ref
-                              ? `${row.ref.slice(0, 10)}…${row.ref.slice(-6)}`
-                              : "—"}
-                          </td>
-                          <td>
-                            <code>{row.payee ?? "—"}</code>
-                          </td>
-                          <td>
-                            {row.amount === undefined
-                              ? "—"
-                              : `${row.amount} tUSD8`}
-                          </td>
-                          <td>
-                            {row.event === "Paid"
-                              ? "Paid"
-                              : (row.reason ??
-                                (row.frozen === undefined
-                                  ? "—"
-                                  : row.frozen
-                                    ? "Frozen"
-                                    : "Unfrozen"))}
-                          </td>
-                          <td>
-                            <a
-                              href={`https://explorer-test.qday.info/tx/${row.txHash}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              title={row.txHash}
-                            >
-                              {row.txHash.slice(0, 10)}…{row.txHash.slice(-6)}
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p>No recorded vault events were found.</p>
-              )}
-            </>
+          {config?.llmAvailable && (
+            <label className="checkbox">
+              <input
+                type="checkbox"
+                checked={llm}
+                onChange={(e) => setLlm(e.target.checked)}
+              />
+              Use live extraction (sends invoice text to the configured
+              provider)
+            </label>
           )}
         </section>
-      )}
-    </main>
+        <section>
+          <h2>Review invoices</h2>
+          <p>{source}</p>
+          {batch !== undefined && (
+            <button
+              disabled={busy}
+              onClick={() =>
+                run(async () => {
+                  setBatch(undefined);
+                  setRows([]);
+                  setTx(undefined);
+                  await check(invoices, null);
+                })
+              }
+            >
+              Start a fresh review
+            </button>
+          )}
+          <InvoiceTable
+            invoices={invoices}
+            labels={labels}
+            registryVerified={registryVerified}
+            expectedAddress={
+              config?.vault
+                ? undefined
+                : (invoice) =>
+                    invoice.name === "Northwind Design Studio"
+                      ? KOPI_PAGI
+                      : invoice.name === "Ledgerline Audits"
+                        ? KERTAS_KITA
+                        : undefined
+            }
+            holds={holds}
+            results={rows.map((row) => row.status)}
+            emptyAction={
+              <button disabled={busy || !config} onClick={() => run(samples)}>
+                Use sample invoices
+              </button>
+            }
+            detailActions={
+              <button
+                disabled={busy}
+                onClick={() => run(() => check(invoices))}
+              >
+                Refresh checks
+              </button>
+            }
+          />
+          <p>
+            New or changed recipients are held for 24 hours. A batch staged
+            during a hold requires owner approval even after the timer expires.
+            Rejected items in an executed batch must be staged again with a
+            fresh review.
+          </p>
+          <div
+            className="batch-bar"
+            role="group"
+            aria-label="Batch payment actions"
+          >
+            <p>
+              <strong>
+                {labels.filter((label) => label === "Verified").length} verified
+              </strong>{" "}
+              ·{" "}
+              {displayAmount(
+                invoices.reduce((sum, invoice) => sum + invoice.amount, 0n),
+              )}{" "}
+              tUSD8 in this batch
+              <small>
+                Staging includes all {invoices.length} loaded invoices.
+                Execution rechecks every policy.
+              </small>
+            </p>
+            <div className="actions">
+              <button
+                disabled={busy || !invoices.length}
+                onClick={() => run(() => check(invoices))}
+              >
+                Refresh checks
+              </button>
+              <button
+                disabled={
+                  busy ||
+                  !config?.vault ||
+                  !invoices.length ||
+                  batch !== undefined
+                }
+                onClick={() => run(stageBatch)}
+              >
+                Stage as agent
+              </button>
+              <button
+                disabled={busy || batch === undefined || !!rows.length}
+                onClick={() => run(() => execute(false))}
+              >
+                Pay automatically as agent
+              </button>
+            </div>
+          </div>
+          {batch !== undefined && (
+            <p className="notice">
+              Batch #{batch.toString()} stored. Execution rechecks every policy.
+            </p>
+          )}
+        </section>
+        <section>
+          <h2>Pay within policy</h2>
+          <p>
+            The batch agent can pay mature verified recipients without the
+            owner. Owner approval can clear a hold, but cannot bypass identity,
+            caps, expiry, revocation or the kill switch.
+          </p>
+          <div className="actions">
+            <button
+              disabled={busy || !config?.vault}
+              onClick={() =>
+                run(async () => {
+                  if (config) setWallet(await connectWallet(config));
+                })
+              }
+            >
+              Connect owner wallet
+            </button>
+            {config?.network === "local" && (
+              <button
+                disabled={busy || !config.owner}
+                onClick={() =>
+                  run(async () => setWallet(await connectWallet(config, true)))
+                }
+              >
+                Use Anvil owner
+              </button>
+            )}
+            <button
+              disabled={busy || batch === undefined || !wallet || !!rows.length}
+              onClick={() => run(() => execute(true))}
+            >
+              Owner approve and execute
+            </button>
+          </div>
+          <p className="hash">
+            {wallet?.account?.address ?? "No owner wallet connected."}
+          </p>
+          {tx && (
+            <p>
+              Latest transaction:{" "}
+              {config?.network === "aevum" ? (
+                <a
+                  className="hash"
+                  href={"https://explorer-test.qday.info/tx/" + tx}
+                >
+                  {tx}
+                </a>
+              ) : (
+                <code>{tx} (local)</code>
+              )}
+            </p>
+          )}
+        </section>
+        <section>
+          <h2>Reconciliation</h2>
+          {rows.length ? (
+            <>
+              <div className="reconciliation-summary">
+                <DecisionStamp rejected={false} children="RECONCILED" />
+                <p>Confirmed contract events matched to invoice references.</p>
+              </div>
+              <div
+                className="table-wrap"
+                tabIndex={0}
+                role="region"
+                aria-label="Confirmed reconciliation table"
+              >
+                <table>
+                  <caption className="sr-only">
+                    Confirmed invoice reconciliation
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th>Reference</th>
+                      <th>Payee</th>
+                      <th>tUSD8</th>
+                      <th>Contract result</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((r, n) => (
+                      <tr key={n}>
+                        <td>{r.reference}</td>
+                        <td>{r.name}</td>
+                        <td>{r.amount}</td>
+                        <td>{r.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <button onClick={exportCsv}>Export reconciliation CSV</button>
+            </>
+          ) : (
+            <p>
+              No confirmed results yet. Only contract events count as payments.
+            </p>
+          )}
+        </section>
+        {config?.network === "aevum" && (
+          <section id="ledger" aria-labelledby="ledger-heading">
+            <h2 id="ledger-heading">Aevum ledger</h2>
+            <p>
+              Every decision the vault has made on Aevum testnet. Read from
+              public contract events; no wallet needed.
+            </p>
+            <button onClick={() => void loadLedger()} disabled={ledgerLoading}>
+              Refresh
+            </button>
+            {ledgerLoading && (
+              <p role="status">Reading public contract events...</p>
+            )}
+            {ledgerError && (
+              <p role="alert" className="notice danger">
+                {ledgerError}
+              </p>
+            )}
+            {ledger && (
+              <>
+                <p>
+                  {ledger.summary.paid} paid · {ledger.summary.refused} refused
+                  · {ledger.summary.clearedAmount} tUSD8 cleared
+                </p>
+                <p>
+                  Totals cover the loaded events from {ledger.source}. Read at{" "}
+                  {ledger.fetchedAt}.
+                  {ledger.truncated &&
+                    " Only the latest five explorer pages are shown; older events are excluded from these totals."}
+                  {ledgerError &&
+                    " These are the last successfully loaded events."}
+                </p>
+                {ledger.rows.length ? (
+                  <div
+                    className="table-wrap"
+                    tabIndex={0}
+                    role="region"
+                    aria-label="Aevum on-chain ledger table"
+                  >
+                    <table>
+                      <caption className="sr-only">
+                        Public Aevum vault events
+                      </caption>
+                      <thead>
+                        <tr>
+                          <th>Block</th>
+                          <th>Event</th>
+                          <th>Reference</th>
+                          <th>Payee</th>
+                          <th>Amount</th>
+                          <th>Result</th>
+                          <th>Transaction</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {ledger.rows.map((row) => (
+                          <tr key={`${row.txHash}:${row.logIndex}`}>
+                            <td>{row.block}</td>
+                            <td>
+                              {row.event}
+                              {row.agent && (
+                                <>
+                                  <br />
+                                  <code>{row.agent}</code>
+                                </>
+                              )}
+                            </td>
+                            <td title={row.ref}>
+                              {row.ref
+                                ? `${row.ref.slice(0, 10)}…${row.ref.slice(-6)}`
+                                : "—"}
+                            </td>
+                            <td>
+                              <code>{row.payee ?? "—"}</code>
+                            </td>
+                            <td>
+                              {row.amount === undefined
+                                ? "—"
+                                : `${row.amount} tUSD8`}
+                            </td>
+                            <td>
+                              {row.event === "Paid"
+                                ? "Paid"
+                                : (row.reason ??
+                                  (row.frozen === undefined
+                                    ? "—"
+                                    : row.frozen
+                                      ? "Frozen"
+                                      : "Unfrozen"))}
+                            </td>
+                            <td>
+                              <a
+                                href={`https://explorer-test.qday.info/tx/${row.txHash}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                title={row.txHash}
+                              >
+                                {row.txHash.slice(0, 10)}…{row.txHash.slice(-6)}
+                              </a>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p>No recorded vault events were found.</p>
+                )}
+              </>
+            )}
+          </section>
+        )}
+      </main>
+    </AppShell>
   );
 }

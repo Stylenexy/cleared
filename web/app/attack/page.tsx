@@ -9,7 +9,13 @@ import {
 import { recordAttack, type AttackLedger } from "../../lib/demo";
 import type { Config } from "../../lib/client";
 import type { SerializedInvoice } from "../../lib/invoice-wire";
-import { InvoiceTheatre } from "../components/invoice-theatre";
+import { AppShell } from "../components/app-shell/app-shell";
+import {
+  PageHeader,
+  AddressDiff,
+  EmptyState,
+} from "../components/app-shell/ui";
+import { InvoicePaper } from "../components/app-shell/invoice-paper";
 interface Result {
   invoice: SerializedInvoice;
   extractionSource: string;
@@ -34,9 +40,7 @@ export default function Attack() {
     refused: 0,
     centsLost: 0,
   });
-  const [phase, setPhase] = useState(0);
-  const root = useRef<HTMLDivElement>(null),
-    decisionHeading = useRef<HTMLHeadingElement>(null);
+  const decisionHeading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     fetch("/api/config")
       .then((r) => r.json())
@@ -61,27 +65,6 @@ export default function Attack() {
         setLedger(stored);
     } catch {}
   }, []);
-  useEffect(() => {
-    const el = root.current;
-    if (!el) return;
-    if (!result) {
-      el.style.setProperty("--p", "0");
-      setPhase(0);
-      return;
-    }
-    const reduced = matchMedia("(prefers-reduced-motion: reduce)");
-    let frame = 0,
-      start: number | undefined;
-    function play(now: number) {
-      if (start === undefined) start = now;
-      const p = reduced.matches ? 1 : Math.min(1, (now - start) / 1800);
-      el!.style.setProperty("--p", String(p));
-      setPhase(Math.min(3, Math.floor(p * 4)));
-      if (p < 1) frame = requestAnimationFrame(play);
-    }
-    frame = requestAnimationFrame(play);
-    return () => cancelAnimationFrame(frame);
-  }, [result]);
   function select(a: string, h: boolean) {
     setAddress(a);
     setHidden(h);
@@ -129,126 +112,163 @@ export default function Attack() {
     result.invoice.payee.toLowerCase() !== verifiedAddress.toLowerCase() &&
     result.invoice.name === "Northwind Design Studio";
   return (
-    <main className="desk attack-lab">
-      <div className="lab-heading">
-        <div>
-          <h1>Try to redirect the invoice.</h1>
-          <p>
-            Hide an instruction. Run the extraction. See which destination
-            clears.
-          </p>
-        </div>
-        <p className="local-ledger">
-          {ledger.attempted} attempts · {ledger.refused} refused
-          <small>
-            {ledger.centsLost} simulated cents cleared. No transaction sent.
-            Stored in this browser.
-          </small>
-          <small><a href="/app#ledger">See the on-chain ledger</a></small>
-        </p>
-      </div>
-      <div className="lab-toolbar" role="group" aria-label="Invoice view">
-        <button aria-pressed={xray} onClick={() => setXray(!xray)}>
-          X-ray
-        </button>
-        <button
-          aria-pressed={editing}
-          disabled={busy}
-          onClick={() => setEditing(!editing)}
-        >
-          Edit source
-        </button>
-        <span>{text.length.toLocaleString("en-US")} / 20,000 characters</span>
-      </div>
-      <div className="attack-editor" ref={root} aria-busy={busy}>
-        <InvoiceTheatre
-          phase={phase}
-          registryAddress={config?.aevumRegistry}
-          text={text}
-          destination={result?.invoice.payee ?? address}
-          xray={xray}
-          editing={editing}
-          busy={busy}
-          shared
-          rejected={result?.rejected ?? true}
-          stamped={!!result && phase === 3}
-          onEdit={(value) => {
-            setText(value);
-            setResult(undefined);
-          }}
-          registry={
-            <>
-              <div className="attack-controls key-panel">
-                <label>
-                  Lookalike sample
-                  <select
-                    value={address}
-                    disabled={busy}
-                    onChange={(e) => select(e.target.value, hidden)}
-                  >
-                    {lookalikes.map((a, n) => (
-                      <option key={a} value={a}>
-                        {"Lookalike " +
-                          String.fromCharCode(65 + n) +
-                          " · " +
-                          a.slice(0, 6) +
-                          "…" +
-                          a.slice(6, 10) +
-                          "…" +
-                          a.slice(-4) +
-                          " (sample)"}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <code className="hash">{address}</code>
+    <AppShell active="/attack" config={config}>
+      <main className="desk attack-lab">
+        <PageHeader
+          title="Attack lab"
+          description="Internal safety testing on a test network. Simulate invoice manipulations and inspect the payment decision."
+        />
+        <div className="attack-split" aria-busy={busy}>
+          <section
+            className="app-card invoice-editor-panel"
+            aria-label="Invoice editor"
+          >
+            <h2>Invoice editor</h2>
+            <p>
+              Edit a test invoice (PDF text). X-ray reveals hidden instructions.
+            </p>
+            <div className="lab-toolbar" role="group" aria-label="Invoice view">
+              <button aria-pressed={xray} onClick={() => setXray(!xray)}>
+                X-ray
+              </button>
+              <button
+                aria-pressed={editing}
+                disabled={busy}
+                onClick={() => setEditing(!editing)}
+              >
+                Edit source
+              </button>
+              <span>
+                {text.length.toLocaleString("en-US")} / 20,000 characters
+              </span>
+            </div>
+
+            <InvoicePaper
+              text={text}
+              xray={xray}
+              editing={editing}
+              busy={busy}
+              onEdit={(value) => {
+                setText(value);
+                setResult(undefined);
+              }}
+            />
+          </section>
+          <section
+            className="app-card attack-run-panel"
+            aria-label="Run an attack"
+          >
+            <h2>Run an attack</h2>
+            <p>
+              Simulate a prompt-injection / lookalike attack and see how Cleared
+              handles it.
+            </p>
+            <div className="attack-controls key-panel">
+              <label>
+                Lookalike sample
+                <select
+                  value={address}
+                  disabled={busy}
+                  onChange={(e) => select(e.target.value, hidden)}
+                >
+                  {lookalikes.map((a, n) => (
+                    <option key={a} value={a}>
+                      {"Lookalike " +
+                        String.fromCharCode(65 + n) +
+                        " · " +
+                        a.slice(0, 6) +
+                        "…" +
+                        a.slice(6, 10) +
+                        "…" +
+                        a.slice(-4) +
+                        " (sample)"}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <code className="hash">{address}</code>
+              <label className="checkbox">
+                <input
+                  type="checkbox"
+                  disabled={busy}
+                  checked={hidden}
+                  onChange={(e) => select(address, e.target.checked)}
+                />
+                <span>Inject a hidden instruction (restores the sample)</span>
+              </label>
+              {config?.llmAvailable && (
                 <label className="checkbox">
                   <input
                     type="checkbox"
                     disabled={busy}
-                    checked={hidden}
-                    onChange={(e) => select(address, e.target.checked)}
+                    checked={live}
+                    onChange={(e) => setLive(e.target.checked)}
                   />
-                  <span>Inject a hidden instruction (restores the sample)</span>
+                  <span>
+                    Use live extraction; send invoice text to the configured
+                    provider
+                  </span>
                 </label>
-                {config?.llmAvailable && (
-                  <label className="checkbox">
-                    <input
-                      type="checkbox"
-                      disabled={busy}
-                      checked={live}
-                      onChange={(e) => setLive(e.target.checked)}
+              )}
+              {config?.network === "aevum" && config.vault && (
+                <label className="checkbox">
+                  <input
+                    type="checkbox"
+                    disabled={busy}
+                    checked={contract}
+                    onChange={(e) => setContract(e.target.checked)}
+                  />
+                  <span>Read the contract decision with eth_call</span>
+                </label>
+              )}
+              <p>
+                {live
+                  ? "Live extraction requested. The model may resist the attack."
+                  : "Sample mode. Exact samples replay authored fields; edited invoices use the template parser."}
+              </p>
+              <button
+                className="primary"
+                disabled={busy || !text.trim()}
+                onClick={attack}
+              >
+                {busy ? "Extracting and checking…" : "Run attack"}
+              </button>
+            </div>
+
+            {error && (
+              <p role="alert" className="notice danger">
+                {error}
+              </p>
+            )}
+            <div className="attack-result">
+              <h2>Result</h2>
+              {result ? (
+                <>
+                  <div className="attack-comparison">
+                    <span>What the AI read</span>
+                    <AddressDiff
+                      address={result.invoice.payee}
+                      against={verifiedAddress}
                     />
-                    <span>
-                      Use live extraction; send invoice text to the configured
-                      provider
-                    </span>
-                  </label>
-                )}
-                {config?.network === "aevum" && config.vault && (
-                  <label className="checkbox">
-                    <input
-                      type="checkbox"
-                      disabled={busy}
-                      checked={contract}
-                      onChange={(e) => setContract(e.target.checked)}
+                  </div>
+                  <div className="attack-comparison">
+                    <span>What the contract allows</span>
+                    <AddressDiff
+                      address={verifiedAddress}
+                      against={result.invoice.payee}
                     />
-                    <span>Read the contract decision with eth_call</span>
-                  </label>
-                )}
-                <p>
-                  {live
-                    ? "Live extraction requested. The model may resist the attack."
-                    : "Sample mode. Exact samples replay authored fields; edited invoices use the template parser."}
-                </p>
-                <button
-                  className="primary"
-                  disabled={busy || !text.trim()}
-                  onClick={attack}
-                >
-                  {busy ? "Extracting and checking…" : "Run attack"}
-                </button>
-              </div>
+                  </div>
+                  <p className="muted">
+                    Sample registry comparison for Northwind Design Studio. The
+                    decision below reports the selected policy source.
+                  </p>
+                </>
+              ) : (
+                <EmptyState>
+                  Run an attack to compare the extracted destination with the
+                  payment policy.
+                </EmptyState>
+              )}
               {result && (
                 <div className="lab-decision" aria-live="polite">
                   <h2 ref={decisionHeading} tabIndex={-1}>
@@ -266,56 +286,69 @@ export default function Attack() {
                   </p>
                 </div>
               )}
-            </>
-          }
-        />
-      </div>
-      {error && (
-        <p role="alert" className="notice danger">
-          {error}
-        </p>
-      )}
-      {result && (
-        <section
-          className="receipt extraction-receipt"
-          aria-label="Extraction details"
-        >
-          <h2>
-            {fooled ? "The extractor used the lookalike" : "Extracted fields"}
-          </h2>
-          <p>
-            {result.extractionSource === "provider"
-              ? "Live model response"
-              : result.extractionSource === "cached-sample"
-                ? "Authored cached sample · no model called"
-                : "Template parser · no model called"}
-          </p>
-          <dl>
-            <div>
-              <dt>Reference</dt>
-              <dd>{result.invoice.reference}</dd>
+
+              {result && (
+                <section
+                  className="receipt extraction-receipt"
+                  aria-label="Extraction details"
+                >
+                  <h2>
+                    {fooled
+                      ? "The extractor used the lookalike"
+                      : "Extracted fields"}
+                  </h2>
+                  <p>
+                    {result.extractionSource === "provider"
+                      ? "Live model response"
+                      : result.extractionSource === "cached-sample"
+                        ? "Authored cached sample · no model called"
+                        : "Template parser · no model called"}
+                  </p>
+                  <dl>
+                    <div>
+                      <dt>Reference</dt>
+                      <dd>{result.invoice.reference}</dd>
+                    </div>
+                    <div>
+                      <dt>Name</dt>
+                      <dd>{result.invoice.name}</dd>
+                    </div>
+                    <div>
+                      <dt>Destination</dt>
+                      <dd>
+                        <code className="hash">{result.invoice.payee}</code>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Amount</dt>
+                      <dd>
+                        {displayAmount(BigInt(result.invoice.amount))} tUSD8
+                      </dd>
+                    </div>
+                  </dl>
+                  <p>
+                    The contract checks identity and limits. It does not detect
+                    hidden instructions.
+                  </p>
+                </section>
+              )}
             </div>
-            <div>
-              <dt>Name</dt>
-              <dd>{result.invoice.name}</dd>
-            </div>
-            <div>
-              <dt>Destination</dt>
-              <dd>
-                <code className="hash">{result.invoice.payee}</code>
-              </dd>
-            </div>
-            <div>
-              <dt>Amount</dt>
-              <dd>{displayAmount(BigInt(result.invoice.amount))} tUSD8</dd>
-            </div>
-          </dl>
-          <p>
-            The contract checks identity and limits. It does not detect hidden
-            instructions.
-          </p>
-        </section>
-      )}
-    </main>
+            <section className="attempt-history" aria-label="Attempt history">
+              <h2>History</h2>
+              <p className="local-ledger">
+                {ledger.attempted} attempts &middot; {ledger.refused} refused
+                <small>
+                  {ledger.centsLost} simulated cents cleared. No transaction
+                  sent. Stored in this browser.
+                </small>
+                <small>
+                  <a href="/app#ledger">See the on-chain ledger</a>
+                </small>
+              </p>
+            </section>
+          </section>
+        </div>
+      </main>
+    </AppShell>
   );
 }

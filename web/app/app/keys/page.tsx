@@ -20,6 +20,8 @@ import {
   requireContracts,
   type Config,
 } from "../../../lib/client";
+import { AppShell } from "../../components/app-shell/app-shell";
+import { PageHeader, MeterBar, RingGauge } from "../../components/app-shell/ui";
 export default function Keys() {
   const [config, setConfig] = useState<Config>(),
     [wallet, setWallet] = useState<WalletClient>(),
@@ -29,6 +31,7 @@ export default function Keys() {
     [perItem, setPerItem] = useState("0.5"),
     [hours, setHours] = useState("24"),
     [daily, setDaily] = useState("1");
+  const [dailyLimit, setDailyLimit] = useState<bigint>();
   const [frozen, setFrozen] = useState(false),
     [remaining, setRemaining] = useState<bigint>(),
     [busy, setBusy] = useState(false),
@@ -75,6 +78,7 @@ export default function Keys() {
     });
     setFrozen(f);
     setDaily(displayAmount(limit));
+    setDailyLimit(limit);
     setRemaining(r);
   }
   useEffect(() => {
@@ -173,218 +177,274 @@ export default function Keys() {
     );
   }
   return (
-    <main className="desk">
-      <h1>
-        Agent controls.
-        <br />
-        <span className="chrome">Room to act. Limits to keep.</span>
-      </h1>
-      <p>
-        Mature recipients can be paid automatically. New or changed recipients
-        need owner approval. All payments remain subject to the shared daily
-        cap.
-      </p>
-      {error && (
-        <p role="alert" className="notice danger">
-          {error}
-        </p>
-      )}
-      {busy && <p role="status">Updating controls...</p>}
-      <div className="actions">
-        <button
-          disabled={busy || !config?.vault}
-          onClick={() =>
-            run(async () => {
-              if (config) setWallet(await connectWallet(config));
-            })
-          }
-        >
-          Connect owner wallet
-        </button>
-        {config?.network === "local" && (
-          <button
-            disabled={busy || !config.owner}
-            onClick={() =>
-              run(async () => setWallet(await connectWallet(config, true)))
-            }
-          >
-            Use Anvil owner
-          </button>
-        )}
-      </div>
-      <p className="hash">
-        {wallet?.account?.address ?? "No owner wallet connected."}
-      </p>
-      <section className="receipt">
-        <h2>Kill switch</h2>
-        <p>
-          {frozen
-            ? "Frozen. Every agent-originated payment is blocked, including owner-approved batches."
-            : "Payments enabled. Only invoices allowed by the contract can settle."}
-        </p>
-        <button
-          disabled={busy || !wallet || !config?.vault}
-          onClick={() => run(toggleFreeze)}
-        >
-          {frozen ? "Resume agent payments" : "Freeze all agent payments"}
-        </button>
-      </section>
-      <section className="key-panel">
-        <h2>Shared daily budget</h2>
-        <p>
-          Resets at 00:00 UTC, across all agents. A new agent grant does not
-          reset daily spend.
-        </p>
-        <p>
-          Remaining today:{" "}
-          {remaining === undefined
-            ? "Not read"
-            : displayAmount(remaining) + " tUSD8"}
-        </p>
-        <label>
-          Daily cap (tUSD8)
-          <input
-            inputMode="decimal"
-            value={daily}
-            onChange={(e) => setDaily(e.target.value)}
-          />
-        </label>
-        <button
-          disabled={busy || !wallet}
-          onClick={() => run(() => mutate("daily"))}
-        >
-          Save daily cap
-        </button>
-      </section>
-      <section className="key-panel">
-        <h2>Agent grant</h2>
-        <label>
-          Agent address
-          <input
-            value={agent}
-            spellCheck={false}
-            onChange={(e) => {
-              setAgent(e.target.value);
-              setPolicy(undefined);
-            }}
-          />
-        </label>
-        <button
-          disabled={busy || !config?.vault}
-          onClick={() =>
-            run(async () => {
-              if (config) await refresh(config, agent);
-            })
-          }
-        >
-          Refresh controls
-        </button>
-        {policy ? (
-          <dl>
-            <div>
-              <dt>Status</dt>
-              <dd>
-                {policy.version === 0n
-                  ? "Not authorized"
-                  : policy.revoked
-                    ? "Revoked"
-                    : Number(policy.expiresAt) * 1000 <= Date.now()
-                      ? "Expired"
-                      : "Active"}
-              </dd>
-            </div>
-            <div>
-              <dt>Total / spent</dt>
-              <dd>
-                {displayAmount(policy.totalLimit)} /{" "}
-                {displayAmount(policy.spent)} tUSD8
-              </dd>
-            </div>
-            <div>
-              <dt>Remaining grant</dt>
-              <dd>{displayAmount(policy.totalLimit - policy.spent)} tUSD8</dd>
-            </div>
-            <div>
-              <dt>Per invoice</dt>
-              <dd>{displayAmount(policy.perItemLimit)} tUSD8</dd>
-            </div>
-            <div>
-              <dt>Expires</dt>
-              <dd>
-                {policy.expiresAt > 0n
-                  ? new Date(Number(policy.expiresAt) * 1000).toLocaleString(
-                      "en-US",
-                    )
-                  : "Not configured"}
-              </dd>
-            </div>
-          </dl>
-        ) : (
-          <p>No agent policy read yet.</p>
-        )}
-        <div className="form-grid">
-          <label>
-            Total grant (tUSD8)
-            <input
-              value={total}
-              inputMode="decimal"
-              onChange={(e) => setTotal(e.target.value)}
-            />
-          </label>
-          <label>
-            Per invoice (tUSD8)
-            <input
-              value={perItem}
-              inputMode="decimal"
-              onChange={(e) => setPerItem(e.target.value)}
-            />
-          </label>
-          <label>
-            Expiry (hours)
-            <input
-              type="number"
-              min="1"
-              max="8760"
-              value={hours}
-              onChange={(e) => setHours(e.target.value)}
-            />
-          </label>
-        </div>
-        <p>
-          A new grant resets grant spend and invalidates pending batches from
-          the old grant. Revocation blocks both automatic and owner-approved
-          execution.
-        </p>
-        <div className="actions">
-          <button
-            disabled={busy || !wallet}
-            onClick={() => run(() => mutate("grant"))}
-          >
-            Save new grant
-          </button>
-          <button
-            disabled={busy || !wallet || !policy?.version || policy.revoked}
-            onClick={() => run(() => mutate("revoke"))}
-          >
-            Revoke agent key
-          </button>
-        </div>
-        {hash && (
-          <p>
-            Transaction:{" "}
-            {config?.network === "aevum" ? (
-              <a
-                className="hash"
-                href={"https://explorer-test.qday.info/tx/" + hash}
-              >
-                {hash}
-              </a>
-            ) : (
-              <code>{hash} (local)</code>
-            )}
+    <AppShell
+      active="/app/keys"
+      config={config}
+      frozen={policy ? frozen : undefined}
+    >
+      <main className="desk controls-page">
+        <PageHeader
+          title="Controls"
+          description="Manage agent access, spending limits and emergency controls."
+        />
+        {error && (
+          <p role="alert" className="notice danger">
+            {error}
           </p>
         )}
-      </section>
-    </main>
+        {busy && <p role="status">Updating controls...</p>}
+        <div className="actions">
+          <button
+            disabled={busy || !config?.vault}
+            onClick={() =>
+              run(async () => {
+                if (config) setWallet(await connectWallet(config));
+              })
+            }
+          >
+            Connect owner wallet
+          </button>
+          {config?.network === "local" && (
+            <button
+              disabled={busy || !config.owner}
+              onClick={() =>
+                run(async () => setWallet(await connectWallet(config, true)))
+              }
+            >
+              Use Anvil owner
+            </button>
+          )}
+        </div>
+        <p className="hash">
+          {wallet?.account?.address ?? "No owner wallet connected."}
+        </p>
+        <section className="settings-row">
+          <div className="settings-label">
+            <h2>Agent key</h2>
+            <p>
+              Manage the agent allowed to pay contractor invoices, with spending
+              limits and an expiry.
+            </p>
+          </div>
+          <div className="app-card key-panel">
+            <label>
+              Agent address
+              <input
+                value={agent}
+                spellCheck={false}
+                onChange={(e) => {
+                  setAgent(e.target.value);
+                  setPolicy(undefined);
+                }}
+              />
+            </label>
+            <button
+              disabled={busy || !config?.vault}
+              onClick={() =>
+                run(async () => {
+                  if (config) await refresh(config, agent);
+                })
+              }
+            >
+              Refresh controls
+            </button>
+            {policy ? (
+              <dl>
+                <div>
+                  <dt>Status</dt>
+                  <dd>
+                    {policy.version === 0n
+                      ? "Not authorized"
+                      : policy.revoked
+                        ? "Revoked"
+                        : Number(policy.expiresAt) * 1000 <= Date.now()
+                          ? "Expired"
+                          : "Active"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Total / spent</dt>
+                  <dd>
+                    {displayAmount(policy.totalLimit)} /{" "}
+                    {displayAmount(policy.spent)} tUSD8
+                  </dd>
+                </div>
+                <div>
+                  <dt>Remaining grant</dt>
+                  <dd>
+                    {displayAmount(policy.totalLimit - policy.spent)} tUSD8
+                  </dd>
+                </div>
+                <div>
+                  <dt>Per invoice</dt>
+                  <dd>{displayAmount(policy.perItemLimit)} tUSD8</dd>
+                </div>
+                <div>
+                  <dt>Expires</dt>
+                  <dd>
+                    {policy.expiresAt > 0n
+                      ? new Date(
+                          Number(policy.expiresAt) * 1000,
+                        ).toLocaleString("en-US")
+                      : "Not configured"}
+                  </dd>
+                </div>
+              </dl>
+            ) : (
+              <p>No agent policy read yet.</p>
+            )}
+            {policy && (
+              <MeterBar
+                value={Number(policy.spent)}
+                max={Number(policy.totalLimit)}
+                label="Agent grant spent"
+              />
+            )}
+            <div className="form-grid">
+              <label>
+                Total grant (tUSD8)
+                <input
+                  value={total}
+                  inputMode="decimal"
+                  onChange={(e) => setTotal(e.target.value)}
+                />
+              </label>
+              <label>
+                Per invoice (tUSD8)
+                <input
+                  value={perItem}
+                  inputMode="decimal"
+                  onChange={(e) => setPerItem(e.target.value)}
+                />
+              </label>
+              <label>
+                Expiry (hours)
+                <input
+                  type="number"
+                  min="1"
+                  max="8760"
+                  value={hours}
+                  onChange={(e) => setHours(e.target.value)}
+                />
+              </label>
+            </div>
+            <p>
+              A new grant resets grant spend and invalidates pending batches
+              from the old grant. Revocation blocks both automatic and
+              owner-approved execution.
+            </p>
+            <div className="actions">
+              <button
+                disabled={busy || !wallet}
+                className="primary"
+                onClick={() => run(() => mutate("grant"))}
+              >
+                Save new grant
+              </button>
+            </div>
+            {hash && (
+              <p>
+                Transaction:{" "}
+                {config?.network === "aevum" ? (
+                  <a
+                    className="hash"
+                    href={"https://explorer-test.qday.info/tx/" + hash}
+                  >
+                    {hash}
+                  </a>
+                ) : (
+                  <code>{hash} (local)</code>
+                )}
+              </p>
+            )}
+          </div>
+        </section>
+        <section className="settings-row">
+          <div className="settings-label">
+            <h2>Daily budget</h2>
+            <p>
+              Set the total amount the agent can spend each day across all
+              invoice payments.
+            </p>
+          </div>
+          <div className="app-card key-panel budget-card">
+            {remaining !== undefined && dailyLimit !== undefined && (
+              <RingGauge
+                value={Number(remaining) / 1_000_000}
+                max={Number(dailyLimit) / 1_000_000}
+                label={
+                  displayAmount(remaining) +
+                  " of " +
+                  displayAmount(dailyLimit) +
+                  " tUSD8 left today"
+                }
+              />
+            )}
+            <div className="budget-fields">
+              <p>
+                Resets at 00:00 UTC, across all agents. A new agent grant does
+                not reset daily spend.
+              </p>
+              <p>
+                Remaining today:{" "}
+                {remaining === undefined
+                  ? "Not read"
+                  : displayAmount(remaining) + " tUSD8"}
+              </p>
+              <label>
+                Daily cap (tUSD8)
+                <input
+                  inputMode="decimal"
+                  value={daily}
+                  onChange={(e) => setDaily(e.target.value)}
+                />
+              </label>
+              <button
+                disabled={busy || !wallet}
+                onClick={() => run(() => mutate("daily"))}
+              >
+                Save daily cap
+              </button>
+            </div>
+          </div>
+        </section>
+        <section className="settings-row danger-zone">
+          <div className="settings-label">
+            <h2>Danger zone</h2>
+            <p>Emergency controls that stop payments and revoke access.</p>
+          </div>
+          <div className="app-card">
+            <div className="danger-control">
+              <h2>Kill switch</h2>
+              <p>
+                {frozen
+                  ? "Frozen. Every agent-originated payment is blocked, including owner-approved batches."
+                  : "Payments enabled. Only invoices allowed by the contract can settle."}
+              </p>
+              <button
+                className="destructive"
+                disabled={busy || !wallet || !config?.vault}
+                onClick={() => run(toggleFreeze)}
+              >
+                {frozen ? "Resume agent payments" : "Freeze all agent payments"}
+              </button>
+            </div>
+            <div className="danger-control">
+              <h2>Revoke agent key</h2>
+              <p>
+                Revocation blocks both automatic and owner-approved execution.
+              </p>{" "}
+              <button
+                className="destructive"
+                disabled={busy || !wallet || !policy?.version || policy.revoked}
+                onClick={() => run(() => mutate("revoke"))}
+              >
+                Revoke agent key
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </AppShell>
   );
 }
