@@ -63,8 +63,8 @@ Supply these variables directly in the process environment; the script does not 
 | `DEPLOYER_PRIVATE_KEY` | Owner signer; must own both vault and registry |
 | `PROOF_AGENT_PRIVATE_KEY` | Separate dedicated proof agent signer |
 | `CLEARED_VAULT`, `CLEARED_REGISTRY` | Existing deployed contracts |
-| `PROOF_TRUSTED_PAYEE` | Mature, team-controlled Northwind destination |
-| `PROOF_HELD_PAYEE` | Distinct team-controlled recipient for the new-recipient scenario |
+| `PROOF_TRUSTED_PAYEE` | Mature Northwind destination (the run uses the public sample address; nobody holds its key, so payments to it are unrecoverable test tokens) |
+| `PROOF_HELD_PAYEE` | Distinct recipient for the new-recipient scenario (the run uses the public sample changed-address destination) |
 | `PROOF_LOOKALIKE_PAYEE` | Distinct unregistered lookalike of the trusted destination; it will be refused |
 | `PROOF_RUN_ID` | Unique 1–48 character identifier, letters/digits/hyphens |
 

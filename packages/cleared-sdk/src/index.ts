@@ -57,6 +57,8 @@ export const vaultAbi = parseAbi([
   "event Rejected(uint256 indexed batchId, bytes32 indexed ref, uint8 reason)",
   "event Withdrawn(address indexed owner, uint256 amount)",
   "event AgentRevoked(address indexed agent)",
+  "event AgentConfigured(address indexed agent, uint64 version)",
+  "event FreezeChanged(bool frozen)",
 ]);
 export const registryAbi = parseAbi([
   "function isVerified(string name, address account) view returns (bool)",

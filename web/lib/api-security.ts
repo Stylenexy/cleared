@@ -8,7 +8,12 @@ export class ApiError extends Error {
   }
 }
 
-export const BODY_LIMITS = { attack: 128_000, parse: 20_100_000, config: 0 };
+export const BODY_LIMITS = {
+  attack: 128_000,
+  parse: 20_100_000,
+  config: 0,
+  ledger: 0,
+};
 const WINDOW_MS = 60_000;
 export function createRateLimiter(now = Date.now, maxKeys = 4096) {
   const buckets = new Map<string, { count: number; expires: number }>();
@@ -53,8 +58,16 @@ export function guardRequest(
     (!/^\d+$/.test(length) || Number(length) > BODY_LIMITS[route])
   )
     throw new ApiError(413, "Request body is too large.");
-  if (route === "config" && (request.body || new URL(request.url).search))
-    throw new ApiError(400, "Configuration takes no input.");
+  if (
+    (route === "config" || route === "ledger") &&
+    (request.body || new URL(request.url).search)
+  )
+    throw new ApiError(
+      400,
+      route === "config"
+        ? "Configuration takes no input."
+        : "Ledger takes no input.",
+    );
 }
 
 // Count bytes while streaming, including requests without Content-Length.

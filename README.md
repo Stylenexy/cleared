@@ -16,6 +16,7 @@ Try it, no wallet: https://cleared-ecru.vercel.app/try · Attack it with a live 
 
 - **Deployed on Aevum testnet** (chain 44005, block 3380779): [ClearedVault](https://explorer-test.qday.info/address/0x8fba7dd67e294b3ba5ca164748b9f41c03bad13c) · [PayeeRegistry](https://explorer-test.qday.info/address/0xad297045531da0e71b9ecd3de215d2b63cb74e1d) · [IdentityRegistry](https://explorer-test.qday.info/address/0xBC4A33597D5f0faf11d157dE6dE74cD4E96E088f).
 - **Same code as this repository:** `forge build && node tools/verify-bytecode.mjs` compares the live runtime bytecode, including the Solidity metadata hash, with your local build. The Aevum explorer's verifier currently lists no Solidity compilers, so this script is the reproducible check.
+- **Every vault decision, no wallet:** the [Aevum ledger](https://cleared-ecru.vercel.app/app#ledger) lists the vault's Paid, Rejected (with reason), Staged, freeze and agent events, read from the public explorer API, with transaction links.
 - **Seven payment scenarios on-chain** (Paid, PayeeOnHold, one batch with the verified contractor paid and its lookalike refused, owner approval, kill switch, key revoke): [docs/TESTNET-PROOF.md](docs/TESTNET-PROOF.md). The run waits for the 24-hour trust delay of the registered contractor and is scheduled for 18 Nov 2026; until then that file says pending.
 
 First commit: 17 Nov 2026
@@ -168,7 +169,7 @@ The treasury accepts TXT, CSV and text PDFs: at most 10 files, 2 MB each, 10 pag
 
 Network configuration follows the [Aevum Starter Kit](https://github.com/qday-io/aevum-starter-kit): chain **44005**, HTTPS RPC https://rpc-test.qday.info, explorer https://explorer-test.qday.info, tUSD8 **0x456569838f1d43009A91ebA4263147Afd7233483**, **6 decimals**. Solidity targets **Shanghai**. Writes are **legacy type 0**; event requests span at most **1,000 inclusive blocks**. No WebSocket, Cancun opcodes, Kernel, ERC-4337 bundler or paymaster dependency is required.
 
-contracts/script/DeployAevum.s.sol deployed the contracts on 17 Nov 2026. The registry constructor also creates the identity directory. Northwind Design Studio was registered to a team-controlled test address in the same session; its 24-hour trust delay gates the scenario run. Use team-controlled test recipients; the fictional sample addresses are not treasury destinations.
+contracts/script/DeployAevum.s.sol deployed the contracts on 17 Nov 2026. The registry constructor also creates the identity directory. Northwind Design Studio and Ledgerline Audits are registered to the same public sample addresses the demo uses, so the web's on-chain checks agree with the samples. Those addresses are derived from public seeds ([docs/SAMPLES.md](docs/SAMPLES.md)); nobody holds their keys, so the 0.10 tUSD8 proof payments to them are unrecoverable test tokens. A real treasury registers addresses its contractors control. Ledgerline was registered later ([0x89fac2d0…0590](https://explorer-test.qday.info/tx/0x89fac2d01df0fa5f8f9a0ebe8f30877995ac7ed4bd2ec193fd430b0a977f0590)), so it stays on hold until 18 Nov 2026 14:40 WIB.
 
 | Testnet evidence | Address / transaction / explorer |
 | --- | --- |
@@ -211,7 +212,7 @@ npm run build
 npm run check:contrast
 ```
 
-Verified: 70 Foundry + 213 Vitest tests. See [TESTING.md](docs/TESTING.md) for commands, test coverage and boundaries.
+Verified: 70 Foundry + 232 Vitest tests. See [TESTING.md](docs/TESTING.md) for commands, test coverage and boundaries.
 
 The production HTTP smoke in tools/web-smoke.mjs checks five pages, PDF uploads, configuration and a saved attack over loopback without launching a browser. Run a production web server first. No network writes are used by the smoke.
 

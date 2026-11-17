@@ -33,9 +33,31 @@ import {
 } from "../../lib/client";
 import { readPaymentState } from "../../lib/payment-state";
 import { demoDecision } from "../../lib/demo";
+import type { LedgerResponse } from "../../lib/ledger";
 import { ClearingFlow, DecisionStamp } from "../components/clearing-flow";
 export default function Treasury() {
+  const [ledger, setLedger] = useState<LedgerResponse>();
+  const [ledgerLoading, setLedgerLoading] = useState(false);
+  const [ledgerError, setLedgerError] = useState("");
+  async function loadLedger() {
+    setLedgerLoading(true);
+    setLedgerError("");
+    try {
+      const response = await fetch("/api/ledger");
+      if (!response.ok) throw new Error("Explorer unavailable");
+      setLedger(await response.json());
+    } catch {
+      setLedgerError(
+        "The explorer did not answer. Recorded links are in docs/TESTNET-PROOF.md.",
+      );
+    } finally {
+      setLedgerLoading(false);
+    }
+  }
   const [config, setConfig] = useState<Config>();
+  useEffect(() => {
+    if (config?.network === "aevum") void loadLedger();
+  }, [config?.network]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [labels, setLabels] = useState<string[]>([]);
   const [holds, setHolds] = useState<bigint[]>([]);
@@ -508,6 +530,118 @@ export default function Treasury() {
           </p>
         )}
       </section>
+      {config?.network === "aevum" && (
+        <section id="ledger" aria-labelledby="ledger-heading">
+          <h2 id="ledger-heading">Aevum ledger</h2>
+          <p>
+            Every decision the vault has made on Aevum testnet. Read from public
+            contract events; no wallet needed.
+          </p>
+          <button onClick={() => void loadLedger()} disabled={ledgerLoading}>
+            Refresh
+          </button>
+          {ledgerLoading && (
+            <p role="status">Reading public contract events...</p>
+          )}
+          {ledgerError && (
+            <p role="alert" className="notice danger">
+              {ledgerError}
+            </p>
+          )}
+          {ledger && (
+            <>
+              <p>
+                {ledger.summary.paid} paid · {ledger.summary.refused} refused ·{" "}
+                {ledger.summary.clearedAmount} tUSD8 cleared
+              </p>
+              <p>
+                Totals cover the loaded events from {ledger.source}. Read at{" "}
+                {ledger.fetchedAt}.
+                {ledger.truncated &&
+                  " Only the latest five explorer pages are shown; older events are excluded from these totals."}
+                {ledgerError &&
+                  " These are the last successfully loaded events."}
+              </p>
+              {ledger.rows.length ? (
+                <div
+                  className="table-wrap"
+                  tabIndex={0}
+                  role="region"
+                  aria-label="Aevum on-chain ledger table"
+                >
+                  <table>
+                    <caption className="sr-only">
+                      Public Aevum vault events
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th>Block</th>
+                        <th>Event</th>
+                        <th>Reference</th>
+                        <th>Payee</th>
+                        <th>Amount</th>
+                        <th>Result</th>
+                        <th>Transaction</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ledger.rows.map((row) => (
+                        <tr key={`${row.txHash}:${row.logIndex}`}>
+                          <td>{row.block}</td>
+                          <td>
+                            {row.event}
+                            {row.agent && (
+                              <>
+                                <br />
+                                <code>{row.agent}</code>
+                              </>
+                            )}
+                          </td>
+                          <td title={row.ref}>
+                            {row.ref
+                              ? `${row.ref.slice(0, 10)}…${row.ref.slice(-6)}`
+                              : "—"}
+                          </td>
+                          <td>
+                            <code>{row.payee ?? "—"}</code>
+                          </td>
+                          <td>
+                            {row.amount === undefined
+                              ? "—"
+                              : `${row.amount} tUSD8`}
+                          </td>
+                          <td>
+                            {row.event === "Paid"
+                              ? "Paid"
+                              : (row.reason ??
+                                (row.frozen === undefined
+                                  ? "—"
+                                  : row.frozen
+                                    ? "Frozen"
+                                    : "Unfrozen"))}
+                          </td>
+                          <td>
+                            <a
+                              href={`https://explorer-test.qday.info/tx/${row.txHash}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              title={row.txHash}
+                            >
+                              {row.txHash.slice(0, 10)}…{row.txHash.slice(-6)}
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p>No recorded vault events were found.</p>
+              )}
+            </>
+          )}
+        </section>
+      )}
     </main>
   );
 }

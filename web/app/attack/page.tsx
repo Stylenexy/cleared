@@ -144,6 +144,7 @@ export default function Attack() {
             {ledger.centsLost} simulated cents cleared. No transaction sent.
             Stored in this browser.
           </small>
+          <small><a href="/app#ledger">See the on-chain ledger</a></small>
         </p>
       </div>
       <div className="lab-toolbar" role="group" aria-label="Invoice view">
