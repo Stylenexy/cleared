@@ -1,4 +1,4 @@
-import type { Invoice } from "@pagar/sdk";
+import type { Invoice } from "@cleared/sdk";
 export type SerializedInvoice = Omit<Invoice, "amount"> & { amount: string };
 export const serializeInvoice = (i: Invoice): SerializedInvoice => ({
   ...i,

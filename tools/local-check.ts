@@ -13,7 +13,7 @@ import {
   toCsv,
   vaultAbi,
   tokenAbi,
-} from "@pagar/sdk";
+} from "@cleared/sdk";
 import { parseInvoice } from "../web/lib/invoices.ts";
 import { reader, type Config } from "../web/lib/client.ts";
 const saved = JSON.parse(await readFile(".local/deployment.json", "utf8"));
@@ -67,8 +67,8 @@ const rows = await reconcile(
   batchId,
 );
 if (
-  rows.filter((r) => r.status === "Dibayar").length !== 2 ||
-  rows[2].status !== "Nama tidak cocok"
+  rows.filter((r) => r.status === "Paid").length !== 2 ||
+  rows[2].status !== "Name mismatch"
 )
   throw new Error("Unexpected reconciliation: " + JSON.stringify(rows));
 const poisonBalance = await client.readContract({

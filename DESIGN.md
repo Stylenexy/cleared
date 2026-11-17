@@ -1,9 +1,9 @@
-# Arah desain Pagar
+# Cleared design
 
-Dibaca sebagai meja kerja bendahara UMKM, dial E/R/M 1/2/1. Invoice adalah benda utama; status penerima dan keputusan pemilik menjadi pusat tampilan. Landing merupakan draf fungsional untuk dirombak bersama pemilik nanti, sesuai brief.
+A treasury workspace for web3 teams and DAOs paying contractor invoices in stablecoins. Invoices, full destination addresses and explicit contract decisions are the main objects.
 
-Token terpusat di `web/app/globals.css`: hijau pagar `#173f32` menandai aksi, kertas `#f5f1e6` mengacu invoice, tinta `#172b24`, merah `#a32626` khusus penolakan. Krem merupakan identitas yang diminta brief. Avenir Next dengan fallback humanist Trebuchet MS memberi angka dan nama vendor yang mudah dibaca; Georgia hanya judul editorial, monospace hanya alamat dan hash.
+Design tokens live in web/app/globals.css: deep green #173f32 for actions, paper #f5f1e6, ink #172b24, red #a32626 for rejection. Avenir Next/Trebuchet MS handles body text, Georgia headings and Consolas addresses.
 
-Halaman dalam memakai daftar invoice dengan rincian alamat utuh, status berbentuk teks, dan tindakan yang menyebut objek. Tidak ada angka pemasaran, testimoni, logo baru, ornamen tiga dimensi, atau animasi dekoratif. Lompatan fungsional: satu invoice dapat ditelusuri dari ekstraksi ke penolakan kontrak dan baris CSV dengan referensi yang sama.
+The attack screen places extracted fields beside the payment decision. Every simulation is labeled. The local ledger is not a public network metric. New or changed payees show a live hold timer, and the kill switch remains prominent.
 
-Lebar minimal 360 px, tabel memakai pembungkus scroll internal, alamat wrap, fokus keyboard terlihat, reduced motion dihormati. State kosong, memuat, galat, dan luring tersedia. Batas verifikasi: tidak menjalankan browser sesuai instruksi tugas; ukuran dan interaksi visual perlu pemeriksaan manual berikutnya. Kontras token diperiksa lewat `tools/check-contrast.mjs`.
+Layouts support 360 px with wrapping addresses, internal table scroll, visible keyboard focus and reduced motion. Contrast is checked by tools/check-contrast.mjs. No browser was launched for this task; interactive visual review remains manual.

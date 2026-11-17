@@ -19,7 +19,7 @@ import {
   vaultAbi,
   type Invoice,
   type AgentPolicy,
-} from "@pagar/sdk";
+} from "@cleared/sdk";
 const addr = "0x1111111111111111111111111111111111111111" as const;
 const hash = keccak256(toBytes("source"));
 const invoice: Invoice = {
@@ -88,10 +88,10 @@ describe("SDK", () => {
     const w = wallet();
     await expect(
       approve({ ...w.client, chain: { id: 1 } } as WalletClient, addr, 1n),
-    ).rejects.toThrow("Jaringan");
+    ).rejects.toThrow("network");
     await expect(
       approve({ ...w.client, account: undefined }, addr, 1n),
-    ).rejects.toThrow("Hubungkan");
+    ).rejects.toThrow("Connect");
   });
   it("chunks inclusive ranges to at most 1000 blocks", async () => {
     const read = vi.fn(async (a: bigint, b: bigint) => [`${a}-${b}`]);
@@ -127,7 +127,7 @@ describe("SDK", () => {
     ).rejects.toThrow("RPC down"));
   it("matches refs, address, amount and document hash", () => {
     const payment = { ...invoice, transactionHash: hash };
-    expect(reconcileRows([invoice], [payment])[0].status).toBe("Dibayar");
+    expect(reconcileRows([invoice], [payment])[0].status).toBe("Paid");
     for (const changed of [
       { amount: 1n },
       { invoiceHash: invoice.ref },
@@ -135,13 +135,13 @@ describe("SDK", () => {
     ])
       expect(
         reconcileRows([invoice], [{ ...payment, ...changed }])[0].status,
-      ).toBe("Selisih data pembayaran");
+      ).toBe("Payment data mismatch");
   });
   it("explains rejected and unpaid invoices", () => {
     expect(
       reconcileRows([invoice], [], new Map([[invoice.ref, 1]]))[0].status,
-    ).toBe("Nama tidak cocok");
-    expect(reconcileRows([invoice], [])[0].status).toBe("Belum dibayar");
+    ).toBe("Name mismatch");
+    expect(reconcileRows([invoice], [])[0].status).toBe("Unpaid");
   });
   it("does not count a duplicate invoice as paid twice", () => {
     const rows = reconcileRows(
@@ -150,8 +150,8 @@ describe("SDK", () => {
       new Map([[invoice.ref, { reason: 6, transactionHash: hash }]]),
     );
     expect(rows.map((r) => r.status)).toEqual([
-      "Dibayar",
-      "Referensi sudah dibayar",
+      "Paid",
+      "Reference already paid",
     ]);
     expect(rows[1].transactionHash).toBe(hash);
   });
@@ -173,7 +173,7 @@ describe("SDK", () => {
       getContractEvents,
     } as unknown as Parameters<typeof reconcile>[0];
     const rows = await reconcile(client, addr, [invoice], 0n, undefined, 5n);
-    expect(rows[0].status).toBe("Nama tidak cocok");
+    expect(rows[0].status).toBe("Name mismatch");
     expect(getContractEvents.mock.calls).toHaveLength(2);
   });
   it("escapes CSV quotes and neutralizes spreadsheet formulas", () => {
@@ -183,7 +183,7 @@ describe("SDK", () => {
         name: "Kopi, Pagi",
         payee: addr,
         amount: "0.25",
-        status: "Dibayar",
+        status: "Paid",
         transactionHash: hash,
       },
     ]);
@@ -192,16 +192,16 @@ describe("SDK", () => {
     expect(csv).toContain("\r\n");
   });
   it("preflight respects expiry, revoke, per-item and cumulative limits", () => {
-    expect(reviewInvoice(invoice, true, policy, 2000n)).toMatch("kedaluwarsa");
+    expect(reviewInvoice(invoice, true, policy, 2000n)).toMatch("expired");
     expect(
       reviewInvoice(invoice, true, { ...policy, revoked: true }, 1000n),
-    ).toMatch("dicabut");
+    ).toMatch("revoked");
     expect(
       reviewInvoice({ ...invoice, amount: 600_000n }, true, policy, 1000n),
-    ).toMatch("per item");
+    ).toMatch("Per-item");
     expect(reviewInvoice(invoice, true, policy, 1000n, 800_000n)).toMatch(
-      "total",
+      "Total",
     );
-    expect(reviewInvoice(invoice, true, policy, 1000n)).toBe("Terverifikasi");
+    expect(reviewInvoice(invoice, true, policy, 1000n)).toBe("Verified");
   });
 });

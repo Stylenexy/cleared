@@ -39,7 +39,9 @@ describe("upload API", () => {
     expect(j.invoices).toHaveLength(3);
     expect(j.invoices[2].payee).toMatch(/1112$/);
     expect(j.invoices[0].invoiceHash).toBe(
-      keccak256(new Uint8Array(await readFile("web/public/samples/01-kopi.pdf"))),
+      keccak256(
+        new Uint8Array(await readFile("web/public/samples/01-kopi.pdf")),
+      ),
     );
     expect(fetch).not.toHaveBeenCalled();
   });

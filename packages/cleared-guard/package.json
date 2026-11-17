@@ -1,0 +1,14 @@
+{
+  "name": "@cleared/guard",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts",
+    "./ClearedGuard.sol": "./src/ClearedGuard.sol"
+  },
+  "peerDependencies": {
+    "viem": "^2.57.0",
+    "@cleared/sdk": "*"
+  }
+}

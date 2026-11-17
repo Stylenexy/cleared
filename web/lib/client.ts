@@ -8,9 +8,9 @@ import {
   type EIP1193Provider,
   type WalletClient,
 } from "viem";
-import { aevum, local } from "@pagar/sdk";
+import { aevum, local } from "@cleared/sdk";
 export interface Config {
-  network: "local" | "aevum";
+  network: "local" | "aevum" | "demo";
   chainId: number;
   rpc: string;
   vault?: Address;
@@ -31,9 +31,7 @@ export const reader = (c: Config) =>
         : aevum.rpcUrls.default.http[0],
     ),
   });
-export function requireContracts(
-  c: Config,
-): asserts c is Config & {
+export function requireContracts(c: Config): asserts c is Config & {
   vault: Address;
   registry: Address;
   agent: Address;
@@ -47,7 +45,7 @@ export function requireContracts(
     ![c.vault, c.registry, c.agent, c.token].every((a) => isAddress(a))
   )
     throw new Error(
-      "Kontrak belum disiapkan. Jalankan npm run demo di root proyek.",
+      "Contracts are not configured. Run npm run demo from the project root.",
     );
 }
 export async function connectWallet(
@@ -56,9 +54,9 @@ export async function connectWallet(
 ): Promise<WalletClient> {
   if (localOwner) {
     if (c.network !== "local" || !c.owner)
-      throw new Error("Pemilik Anvil hanya tersedia di jaringan lokal.");
+      throw new Error("The Anvil owner is only available locally.");
     if ((await reader(c).getChainId()) !== 31337)
-      throw new Error("RPC lokal bukan Anvil chain 31337.");
+      throw new Error("Local RPC is not Anvil chain 31337.");
     return createWalletClient({
       chain: local,
       account: c.owner,
@@ -68,7 +66,7 @@ export async function connectWallet(
   const provider = (window as Window & { ethereum?: EIP1193Provider }).ethereum;
   if (!provider)
     throw new Error(
-      "Dompet browser tidak ditemukan. Untuk demo, gunakan pemilik Anvil.",
+      "No browser wallet found. Use the Anvil owner for a local demo.",
     );
   const wallet = createWalletClient({
     chain: chainFor(c),

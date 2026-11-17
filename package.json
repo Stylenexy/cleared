@@ -1,12 +1,13 @@
 {
-  "name": "pagar",
+  "name": "cleared",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "license": "MIT",
   "workspaces": [
     "web",
-    "packages/*"
+    "packages/cleared-sdk",
+    "packages/cleared-guard"
   ],
   "scripts": {
     "dev": "npm run dev --workspace web",

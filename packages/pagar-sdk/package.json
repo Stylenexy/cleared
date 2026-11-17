@@ -1,16 +1,1 @@
-{
-  "name": "@pagar/sdk",
-  "version": "0.1.0",
-  "type": "module",
-  "license": "MIT",
-  "exports": {
-    ".": "./src/index.ts"
-  },
-  "peerDependencies": {
-    "viem": "^2.57.0"
-  },
-  "scripts": {
-    "test": "vitest run ../../tests/sdk.test.ts",
-    "typecheck": "tsc --noEmit -p ../../tsconfig.json"
-  }
-}
+{"name":"@cleared/compat-sdk","private":true,"type":"module","exports":"./src/index.ts"}

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import {PagarVault, IUSD8} from "../src/PagarVault.sol";
+import {ClearedVault, IUSD8} from "../src/ClearedVault.sol";
 import {PayeeRegistry} from "../src/PayeeRegistry.sol";
 
 interface DeployVm {
@@ -15,13 +15,13 @@ interface DeployVm {
 contract DeployAevum {
     DeployVm constant vm = DeployVm(address(uint160(uint256(keccak256("hevm cheat code")))));
 
-    function run() external returns (PayeeRegistry registry, PagarVault vault) {
+    function run() external returns (PayeeRegistry registry, ClearedVault vault) {
         require(block.chainid == 44005, "Aevum testnet only");
         uint256 key = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address owner = vm.addr(key);
         vm.startBroadcast(key);
         registry = new PayeeRegistry(owner);
-        vault = new PagarVault(owner, IUSD8(0x456569838f1d43009A91ebA4263147Afd7233483), registry);
+        vault = new ClearedVault(owner, IUSD8(0x456569838f1d43009A91ebA4263147Afd7233483), registry);
         vm.stopBroadcast();
     }
 }

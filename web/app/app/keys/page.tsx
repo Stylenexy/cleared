@@ -3,10 +3,17 @@ import { useEffect, useState } from "react";
 import {
   encodeFunctionData,
   isAddress,
-  type Address,
   type WalletClient,
+  type Address,
+  type Hash,
 } from "viem";
-import { amount6, displayAmount, vaultAbi, type AgentPolicy } from "@pagar/sdk";
+import {
+  amount6,
+  displayAmount,
+  vaultAbi,
+  freeze,
+  type AgentPolicy,
+} from "@cleared/sdk";
 import {
   reader,
   connectWallet,
@@ -14,26 +21,50 @@ import {
   type Config,
 } from "../../../lib/client";
 export default function Keys() {
-  const [config, setConfig] = useState<Config>();
-  const [wallet, setWallet] = useState<WalletClient>();
-  const [policy, setPolicy] = useState<AgentPolicy>();
-  const [agent, setAgent] = useState("");
-  const [total, setTotal] = useState("1");
-  const [perItem, setPerItem] = useState("0.5");
-  const [hours, setHours] = useState("24");
-  const [busy, setBusy] = useState("");
-  const [error, setError] = useState("");
-  const [hash, setHash] = useState("");
-  async function refresh(c: Config, address: string) {
+  const [config, setConfig] = useState<Config>(),
+    [wallet, setWallet] = useState<WalletClient>(),
+    [policy, setPolicy] = useState<AgentPolicy>();
+  const [agent, setAgent] = useState(""),
+    [total, setTotal] = useState("1"),
+    [perItem, setPerItem] = useState("0.5"),
+    [hours, setHours] = useState("24"),
+    [daily, setDaily] = useState("1");
+  const [frozen, setFrozen] = useState(false),
+    [remaining, setRemaining] = useState<bigint>(),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState(""),
+    [hash, setHash] = useState<Hash>();
+  async function refresh(c: Config, a: string) {
     requireContracts(c);
-    if (!isAddress(address)) throw new Error("Alamat agen tidak sah.");
-    const [totalLimit, perItemLimit, spent, expiresAt, version, revoked] =
-      await reader(c).readContract({
+    if (!isAddress(a)) throw new Error("Invalid agent address.");
+    const client = reader(c);
+    if ((await client.getChainId()) !== c.chainId)
+      throw new Error("RPC chain mismatch.");
+    const [grant, f, limit, r] = await Promise.all([
+      client.readContract({
         address: c.vault,
         abi: vaultAbi,
         functionName: "agents",
-        args: [address],
-      });
+        args: [a],
+      }),
+      client.readContract({
+        address: c.vault,
+        abi: vaultAbi,
+        functionName: "frozen",
+      }),
+      client.readContract({
+        address: c.vault,
+        abi: vaultAbi,
+        functionName: "dailyLimit",
+      }),
+      client.readContract({
+        address: c.vault,
+        abi: vaultAbi,
+        functionName: "dailyRemaining",
+      }),
+    ]);
+    const [totalLimit, perItemLimit, spent, expiresAt, version, revoked] =
+      grant;
     setPolicy({
       totalLimit,
       perItemLimit,
@@ -42,6 +73,9 @@ export default function Keys() {
       version: BigInt(version),
       revoked,
     });
+    setFrozen(f);
+    setDaily(displayAmount(limit));
+    setRemaining(r);
   }
   useEffect(() => {
     fetch("/api/config")
@@ -49,140 +83,198 @@ export default function Keys() {
       .then(async (c: Config) => {
         setConfig(c);
         setAgent(c.agent ?? "");
-        if (c.vault && c.agent)
-          try {
-            await refresh(c, c.agent);
-          } catch {
-            setError(
-              "Anvil atau RPC tidak terjangkau. Jalankan demo lokal, lalu periksa ulang.",
-            );
-          }
+        if (c.vault && c.agent) await refresh(c, c.agent);
       })
-      .catch(() => setError("Konfigurasi gagal dimuat."));
+      .catch(() =>
+        setError("Could not read contract controls. Check the configured RPC."),
+      );
   }, []);
-  async function run(label: string, fn: () => Promise<void>) {
-    setBusy(label);
+  async function run(fn: () => Promise<void>) {
+    setBusy(true);
     setError("");
     try {
       await fn();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Proses gagal.");
+      setError(e instanceof Error ? e.message : "Operation failed.");
     } finally {
-      setBusy("");
+      setBusy(false);
     }
   }
-  async function connect(useLocal: boolean) {
-    await run("Menghubungkan pemilik", async () => {
-      if (!config) throw new Error("Konfigurasi belum dimuat.");
-      setWallet(await connectWallet(config, useLocal));
+  async function owner() {
+    if (!config || !wallet?.account)
+      throw new Error("Connect the owner wallet first.");
+    requireContracts(config);
+    const client = reader(config);
+    if ((await client.getChainId()) !== config.chainId)
+      throw new Error("RPC chain mismatch.");
+    const o = await client.readContract({
+      address: config.vault,
+      abi: vaultAbi,
+      functionName: "owner",
     });
+    if (o.toLowerCase() !== wallet.account.address.toLowerCase())
+      throw new Error("Only the vault owner can change controls.");
+    return { c: config, w: wallet };
   }
-  async function mutate(revoke: boolean) {
-    await run(revoke ? "Mencabut kunci" : "Menyimpan batas kunci", async () => {
-      if (!config || !wallet?.account)
-        throw new Error("Hubungkan dompet pemilik dahulu.");
-      requireContracts(config);
-      if (!isAddress(agent)) throw new Error("Alamat agen tidak sah.");
-      const c = reader(config);
-      const owner = await c.readContract({
-        address: config.vault,
+  async function confirmed(tx: Hash) {
+    setHash(tx);
+    if (!config) return;
+    const receipt = await reader(config).waitForTransactionReceipt({
+      hash: tx,
+    });
+    if (receipt.status !== "success")
+      throw new Error("Control update reverted.");
+    await refresh(config, agent);
+  }
+  async function toggleFreeze() {
+    const { c, w } = await owner();
+    await confirmed(await freeze(w, c.vault!, !frozen));
+  }
+  async function mutate(action: "grant" | "revoke" | "daily") {
+    const { c, w } = await owner();
+    if (!isAddress(agent)) throw new Error("Invalid agent address.");
+    let data: Hash;
+    if (action === "revoke")
+      data = encodeFunctionData({
         abi: vaultAbi,
-        functionName: "owner",
+        functionName: "revokeAgent",
+        args: [agent as Address],
       });
-      if (wallet.account.address.toLowerCase() !== owner.toLowerCase())
-        throw new Error("Hanya pemilik vault yang boleh mengatur agen.");
-      let data: `0x${string}`;
-      if (revoke)
-        data = encodeFunctionData({
-          abi: vaultAbi,
-          functionName: "revokeAgent",
-          args: [agent as Address],
-        });
-      else {
-        const t = amount6(total),
-          p = amount6(perItem),
-          h = Number(hours);
-        if (p > t || !Number.isInteger(h) || h < 1 || h > 8760)
-          throw new Error(
-            "Batas item harus ≤ total; masa berlaku 1 sampai 8.760 jam.",
-          );
-        const expires = (await c.getBlock()).timestamp + BigInt(h) * 3600n;
-        data = encodeFunctionData({
-          abi: vaultAbi,
-          functionName: "configureAgent",
-          args: [agent as Address, t, p, expires],
-        });
-      }
-      const tx = await wallet.sendTransaction({
-        account: wallet.account,
-        chain: wallet.chain,
-        to: config.vault,
+    else if (action === "daily")
+      data = encodeFunctionData({
+        abi: vaultAbi,
+        functionName: "setDailyLimit",
+        args: [amount6(daily)],
+      });
+    else {
+      const t = amount6(total),
+        p = amount6(perItem),
+        h = Number(hours);
+      if (p > t || !Number.isInteger(h) || h < 1 || h > 8760)
+        throw new Error(
+          "Per-invoice cap must be at most the total; expiry must be 1 to 8,760 hours.",
+        );
+      const expires =
+        (await reader(c).getBlock()).timestamp + BigInt(h) * 3600n;
+      data = encodeFunctionData({
+        abi: vaultAbi,
+        functionName: "configureAgent",
+        args: [agent as Address, t, p, expires],
+      });
+    }
+    await confirmed(
+      await w.sendTransaction({
+        account: w.account!,
+        chain: w.chain,
+        to: c.vault!,
         data,
         type: "legacy",
-      });
-      setHash(tx);
-      const receipt = await c.waitForTransactionReceipt({ hash: tx });
-      if (receipt.status !== "success")
-        throw new Error("Pengaturan kunci gagal.");
-      await refresh(config, agent);
-    });
+      }),
+    );
   }
   return (
     <main className="desk">
-      <h1>Kunci agen, batas jelas.</h1>
+      <h1>Agent controls.</h1>
       <p>
-        Agen hanya boleh menyiapkan batch. Setiap pembayaran tetap perlu
-        persetujuan pemilik.
+        Mature recipients can be paid automatically. New or changed recipients
+        need owner approval. All payments remain subject to the shared daily
+        cap.
       </p>
       {error && (
-        <p className="notice danger" role="alert">
+        <p role="alert" className="notice danger">
           {error}
         </p>
       )}
-      {busy && (
-        <p role="status" className="notice">
-          {busy}…
-        </p>
-      )}
+      {busy && <p role="status">Updating controls...</p>}
       <div className="actions">
-        <button disabled={!!busy || !config} onClick={() => connect(false)}>
-          Hubungkan dompet pemilik
+        <button
+          disabled={busy || !config?.vault}
+          onClick={() =>
+            run(async () => {
+              if (config) setWallet(await connectWallet(config));
+            })
+          }
+        >
+          Connect owner wallet
         </button>
         {config?.network === "local" && (
           <button
-            disabled={!!busy || !config.owner}
-            onClick={() => connect(true)}
+            disabled={busy || !config.owner}
+            onClick={() =>
+              run(async () => setWallet(await connectWallet(config, true)))
+            }
           >
-            Gunakan pemilik Anvil
+            Use Anvil owner
           </button>
         )}
       </div>
       <p className="hash">
-        {wallet?.account?.address ?? "Belum ada dompet aktif."}
+        {wallet?.account?.address ?? "No owner wallet connected."}
       </p>
+      <section className="receipt">
+        <h2>Kill switch</h2>
+        <p>
+          {frozen
+            ? "Frozen. Every agent-originated payment is blocked, including owner-approved batches."
+            : "Payments enabled. Only invoices allowed by the contract can settle."}
+        </p>
+        <button
+          className="danger"
+          disabled={busy || !wallet || !config?.vault}
+          onClick={() => run(toggleFreeze)}
+        >
+          {frozen ? "Resume agent payments" : "Freeze all agent payments"}
+        </button>
+      </section>
       <section className="key-panel">
-        <h2>Periksa dan atur kewenangan</h2>
+        <h2>Shared daily budget</h2>
+        <p>
+          Resets at 00:00 UTC, across all agents. A new agent grant does not
+          reset daily spend.
+        </p>
+        <p>
+          Remaining today:{" "}
+          {remaining === undefined
+            ? "Not read"
+            : displayAmount(remaining) + " tUSD8"}
+        </p>
         <label>
-          Alamat agen
+          Daily cap (tUSD8)
+          <input
+            inputMode="decimal"
+            value={daily}
+            onChange={(e) => setDaily(e.target.value)}
+          />
+        </label>
+        <button
+          disabled={busy || !wallet}
+          onClick={() => run(() => mutate("daily"))}
+        >
+          Save daily cap
+        </button>
+      </section>
+      <section className="key-panel">
+        <h2>Agent grant</h2>
+        <label>
+          Agent address
           <input
             value={agent}
+            spellCheck={false}
             onChange={(e) => {
               setAgent(e.target.value);
               setPolicy(undefined);
             }}
-            placeholder="0x…"
-            spellCheck={false}
           />
         </label>
         <button
-          disabled={!!busy || !config}
+          disabled={busy || !config?.vault}
           onClick={() =>
-            run("Membaca batas", async () => {
+            run(async () => {
               if (config) await refresh(config, agent);
             })
           }
         >
-          Periksa kunci
+          Refresh controls
         </button>
         {policy ? (
           <dl>
@@ -190,62 +282,62 @@ export default function Keys() {
               <dt>Status</dt>
               <dd>
                 {policy.version === 0n
-                  ? "Belum diberi izin"
+                  ? "Not authorized"
                   : policy.revoked
-                    ? "Dicabut"
+                    ? "Revoked"
                     : Number(policy.expiresAt) * 1000 <= Date.now()
-                      ? "Kedaluwarsa"
-                      : "Aktif"}
+                      ? "Expired"
+                      : "Active"}
               </dd>
             </div>
             <div>
-              <dt>Batas total / terpakai</dt>
+              <dt>Total / spent</dt>
               <dd>
                 {displayAmount(policy.totalLimit)} /{" "}
                 {displayAmount(policy.spent)} tUSD8
               </dd>
             </div>
             <div>
-              <dt>Sisa</dt>
+              <dt>Remaining grant</dt>
               <dd>{displayAmount(policy.totalLimit - policy.spent)} tUSD8</dd>
             </div>
             <div>
-              <dt>Batas per item</dt>
+              <dt>Per invoice</dt>
               <dd>{displayAmount(policy.perItemLimit)} tUSD8</dd>
             </div>
             <div>
-              <dt>Berlaku sampai</dt>
+              <dt>Expires</dt>
               <dd>
                 {policy.expiresAt > 0n
                   ? new Date(Number(policy.expiresAt) * 1000).toLocaleString(
-                      "id-ID",
+                      "en-US",
                     )
-                  : "Belum diatur"}
+                  : "Not configured"}
               </dd>
             </div>
           </dl>
         ) : (
-          <p>Belum ada data kunci yang dibaca.</p>
+          <p>No agent policy read yet.</p>
         )}
         <div className="form-grid">
           <label>
-            Batas total (tUSD8)
+            Total grant (tUSD8)
             <input
-              inputMode="decimal"
               value={total}
+              inputMode="decimal"
               onChange={(e) => setTotal(e.target.value)}
             />
           </label>
           <label>
-            Batas per invoice (tUSD8)
+            Per invoice (tUSD8)
             <input
-              inputMode="decimal"
               value={perItem}
+              inputMode="decimal"
               onChange={(e) => setPerItem(e.target.value)}
             />
           </label>
           <label>
-            Masa berlaku (jam)
+            Expiry (hours)
             <input
               type="number"
               min="1"
@@ -256,29 +348,28 @@ export default function Keys() {
           </label>
         </div>
         <p>
-          Memberi izin baru mereset batas terpakai dan membatalkan semua batch
-          tertunda dari izin lama. Mencabut kunci membuat batch tertundanya
-          ditolak saat eksekusi.
+          A new grant resets grant spend and invalidates pending batches from
+          the old grant. Revocation blocks both automatic and owner-approved
+          execution.
         </p>
         <div className="actions">
           <button
-            className="primary"
-            disabled={!!busy || !wallet}
-            onClick={() => mutate(false)}
+            disabled={busy || !wallet}
+            onClick={() => run(() => mutate("grant"))}
           >
-            Simpan izin baru
+            Save new grant
           </button>
           <button
             className="danger"
-            disabled={!!busy || !wallet || !policy?.version || policy.revoked}
-            onClick={() => mutate(true)}
+            disabled={busy || !wallet || !policy?.version || policy.revoked}
+            onClick={() => run(() => mutate("revoke"))}
           >
-            Cabut kunci agen
+            Revoke agent key
           </button>
         </div>
         {hash && (
           <p>
-            Transaksi:{" "}
+            Transaction:{" "}
             {config?.network === "aevum" ? (
               <a
                 className="hash"
@@ -287,7 +378,7 @@ export default function Keys() {
                 {hash}
               </a>
             ) : (
-              <code>{hash} (lokal)</code>
+              <code>{hash} (local)</code>
             )}
           </p>
         )}

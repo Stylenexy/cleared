@@ -5,7 +5,7 @@ import {
   parseCsv,
   extractDeterministic,
 } from "../web/lib/invoices";
-import { reviewInvoice, type AgentPolicy } from "@pagar/sdk";
+import { reviewInvoice, type AgentPolicy } from "@cleared/sdk";
 const sample = (n: string) => readFile("web/public/samples/" + n, "utf8");
 const policy: AgentPolicy = {
   totalLimit: 1_000_000n,
@@ -27,13 +27,13 @@ describe("deterministic invoices", () => {
   it("extracts the poisoned address, then flags the registry mismatch", async () => {
     const text = await sample("03-beracun.txt");
     expect(text).toContain("font-size:0");
-    expect(text).toContain("Abaikan instruksi sebelumnya");
+    expect(text).toContain("Ignore previous instructions");
     const i = await parseInvoice(text);
     expect(i.payee).toBe("0x1111111111111111111111111111111111111112");
     const verified =
       i.name === "Kopi Pagi" &&
       i.payee === "0x1111111111111111111111111111111111111111";
-    expect(reviewInvoice(i, verified, policy, 1000n)).toBe("Nama tidak cocok");
+    expect(reviewInvoice(i, verified, policy, 1000n)).toBe("Name mismatch");
   });
   it("never calls a language provider by default", async () => {
     const fetch = vi.fn(() => {

@@ -2,27 +2,29 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
 export const metadata: Metadata = {
-  title: "Pagar | Pembayaran invoice dengan batas yang jelas",
+  title: "Cleared | Stablecoin invoices with contract-enforced payees",
   description:
-    "Baca invoice, periksa nama penerima, dan setujui pembayaran tUSD8 dengan kendali pemilik.",
+    "Invoice payments for web3 teams and DAOs. Trusted contractors get paid automatically; new recipients need owner approval.",
 };
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id">
+    <html lang="en">
       <body>
         <header>
           <Link className="wordmark" href="/">
-            Pagar<span aria-hidden="true">.</span>
+            Cleared<span aria-hidden="true">.</span>
           </Link>
-          <nav aria-label="Navigasi utama">
-            <Link href="/app">Invoice</Link>
-            <Link href="/app/keys">Kunci agen</Link>
+          <nav aria-label="Main navigation">
+            <Link href="/try">Try it</Link>
+            <Link href="/attack">Attack</Link>
+            <Link href="/app">Treasury</Link>
+            <Link href="/app/keys">Controls</Link>
           </nav>
         </header>
         {children}
         <footer>
-          <span>Pagar · Prototipe Aevum Builder Challenge</span>
-          <span>Token uji saja. Tinjau setiap penerima.</span>
+          <span>Cleared | Aevum Builder Challenge prototype</span>
+          <span>Test tokens only. Contract rules decide who gets paid.</span>
         </footer>
       </body>
     </html>

@@ -133,7 +133,7 @@ try {
         stdio: "inherit",
         env: {
           ...process.env,
-          PAGAR_NETWORK: "local",
+          CLEARED_NETWORK: "local",
           NEXT_TELEMETRY_DISABLED: "1",
         },
         windowsHide: true,

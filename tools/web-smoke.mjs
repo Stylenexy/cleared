@@ -1,19 +1,26 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-const base = "http://127.0.0.1:3000";
+const port = Number(process.env.CLEARED_SMOKE_PORT ?? 3000);
+assert.ok(Number.isInteger(port) && port >= 1024 && port <= 65535);
+const base = `http://127.0.0.1:${port}`;
 for (const [route, copy] of [
-  ["/", "Invoice boleh salah."],
-  ["/app", "Meja bendahara."],
-  ["/app/keys", "Kunci agen, batas jelas."],
+  ["/", "Your agent reads the invoice."],
+  ["/app", "Treasury desk."],
+  ["/app/keys", "Agent controls."],
+  ["/try", "Try Cleared."],
+  ["/attack", "Can you redirect the invoice?"],
 ]) {
   const response = await fetch(base + route);
   assert.equal(response.status, 200);
-  assert.ok((await response.text()).includes(copy));
+  const html = await response.text();
+  assert.ok(html.includes(copy), route);
+  assert.ok(html.includes('lang="en"'));
+  assert.ok(!/pa[g]ar/i.test(html));
 }
 const config = await fetch(base + "/api/config").then((r) => r.json());
-assert.equal(config.network, "local");
-assert.equal(config.chainId, 31337);
-assert.match(config.vault, /^0x/);
+assert.equal(config.network, "demo");
+assert.equal(config.chainId, 44005);
+assert.equal(config.vault, undefined);
 assert.equal(config.llmAvailable, false);
 const form = new FormData();
 for (const name of ["01-kopi", "02-kertas", "03-beracun"])
@@ -35,6 +42,18 @@ assert.equal(
   parsed.invoices[2].payee,
   "0x1111111111111111111111111111111111111112",
 );
+const { attackText, lookalikes } = await import("../web/lib/attack-samples.ts");
+const attack = await fetch(base + "/api/attack", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ text: attackText(lookalikes[0], true), live: false }),
+});
+const data = await attack.json();
+assert.equal(attack.status, 200, JSON.stringify(data));
+assert.equal(data.rejected, true);
+assert.equal(data.extractionSource, "cached-sample");
+assert.equal(data.decisionSource, "sample-policy-simulation");
+assert.equal(data.decision, "Name mismatch");
 console.log(
-  "Production HTTP smoke PASS: 3 pages, local config, 3 PDF invoices. No browser launched.",
+  "Production HTTP smoke PASS: 5 English pages, demo config, 3 PDF uploads, cached attack rejected. No browser or transaction.",
 );

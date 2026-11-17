@@ -36,7 +36,7 @@ async function deploy(name, args = []) {
 }
 const token = await deploy("MockUSD8");
 const registry = await deploy("PayeeRegistry", [owner]);
-const vault = await deploy("PagarVault", [owner, token, registry]);
+const vault = await deploy("ClearedVault", [owner, token, registry]);
 async function write(address, name, fn, args) {
   const a = await artifact(name);
   return receipt(
@@ -59,11 +59,18 @@ await write(registry, "PayeeRegistry", "register", [
   "0x2222222222222222222222222222222222222222",
   "0x" + "00".repeat(32),
 ]);
+await write(registry, "PayeeRegistry", "registerAgent", [
+  agent,
+  "ipfs://cleared-local-agent",
+]);
+// Mature the sample payees on the isolated loopback chain before issuing the grant.
+await client.request({ method: "evm_increaseTime", params: [86401] });
+await client.request({ method: "evm_mine", params: [] });
 await write(token, "MockUSD8", "mint", [owner, 10_000_000n]);
 await write(token, "MockUSD8", "approve", [vault, 10_000_000n]);
-await write(vault, "PagarVault", "deposit", [10_000_000n]);
+await write(vault, "ClearedVault", "deposit", [10_000_000n]);
 const now = (await client.getBlock()).timestamp;
-const last = await write(vault, "PagarVault", "configureAgent", [
+const last = await write(vault, "ClearedVault", "configureAgent", [
   agent,
   1_000_000n,
   500_000n,

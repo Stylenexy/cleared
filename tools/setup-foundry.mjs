@@ -37,15 +37,15 @@ const result =
         [
           "-NoProfile",
           "-Command",
-          "Expand-Archive -LiteralPath $env:PAGAR_FOUNDRY_ARCHIVE -DestinationPath $env:PAGAR_FOUNDRY_DESTINATION -Force",
+          "Expand-Archive -LiteralPath $env:CLEARED_FOUNDRY_ARCHIVE -DestinationPath $env:CLEARED_FOUNDRY_DESTINATION -Force",
         ],
         {
           stdio: "inherit",
           windowsHide: true,
           env: {
             ...process.env,
-            PAGAR_FOUNDRY_ARCHIVE: archive,
-            PAGAR_FOUNDRY_DESTINATION: path.resolve(".local/bin"),
+            CLEARED_FOUNDRY_ARCHIVE: archive,
+            CLEARED_FOUNDRY_DESTINATION: path.resolve(".local/bin"),
           },
         },
       )

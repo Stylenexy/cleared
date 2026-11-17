@@ -3,63 +3,64 @@ export default function Home() {
   return (
     <main className="landing">
       <section className="hero">
+        <p className="eyebrow">Stablecoin invoices for web3 teams and DAOs</p>
         <h1>
-          Invoice boleh salah.
+          Your agent reads the invoice.
           <br />
-          <em>Uangmu tetap berpagar.</em>
+          <em>The contract clears the payee.</em>
         </h1>
         <p>
-          Asisten keuangan untuk UMKM yang membaca invoice dan menyiapkan
-          pembayaran tUSD8. Nama dan alamat penerima diperiksa ke registri. Kamu
-          memegang persetujuan terakhir.
+          Pay verified contractors automatically within a daily budget. Hold new
+          recipients and changed addresses for owner approval. Freeze every
+          agent payment with one switch.
         </p>
-        <Link className="button" href="/app">
-          Tinjau tiga invoice contoh
-        </Link>
-        <p className="muted">
-          Your AI can read the invoice. It can&apos;t redirect the money.
-        </p>
+        <div className="actions">
+          <Link className="button" href="/try">
+            Try three invoices
+          </Link>
+          <Link href="/attack">Try to redirect a payment</Link>
+        </div>
+        <p className="muted">No wallet or installation needed for the demo.</p>
       </section>
       <section className="story">
         <h2>
-          Satu karakter alamat.
+          Spend caps limit how much.
           <br />
-          Satu pembayaran yang dicegah.
+          Who checks to whom?
         </h2>
         <div className="receipt">
           <div className="receipt-title">
-            <strong>Kopi Pagi</strong>
-            <span className="badge danger">Nama tidak cocok</span>
+            <strong>Kopi Pagi | contractor</strong>
+            <span className="badge danger">Rejected: name mismatch</span>
           </div>
-          <p>Alamat invoice beracun</p>
+          <p>Invoice lookalike</p>
           <code>0x1111111111111111111111111111111111111112</code>
-          <p>Alamat di registri sampel</p>
+          <p>Verified identity</p>
           <code>0x1111111111111111111111111111111111111111</code>
           <p>
-            Kontrak memeriksa pasangan nama dan alamat. Teks instruksi
-            tersembunyi pada invoice tidak memberi kewenangan pembayaran.
+            A poisoned invoice can fool a model. The registry still decides
+            which address can receive funds.
           </p>
         </div>
         <p>
-          Agen hanya menyiapkan batch. Batas belanja, masa berlaku, dan
-          pencabutan kuncinya diperiksa lagi saat pemilik mengeksekusi. Invoice
-          yang lolos dibayar; penolakan tetap tercatat.
+          The contract checks identity, trust delay, daily budget, key expiry
+          and revocation on every payment. Every accepted or rejected invoice
+          leaves an event.
         </p>
       </section>
       <section className="closing">
-        <h2>Dari tagihan ke catatan kas.</h2>
+        <h2>
+          Give your agent a budget.
+          <br />
+          Keep control of the destination.
+        </h2>
         <p>
-          Unggah TXT, CSV, atau PDF teks. Tinjau setiap penerima, setujui dengan
-          dompet pemilik, lalu cocokkan catatan invoice dengan event kontrak dan
-          ekspor CSV.
+          Built for teams paying contractor invoices in stablecoins. Small
+          businesses can use the same controls for vendor payments.
         </p>
-        <Link className="button" href="/app">
-          Buka meja bendahara
+        <Link className="button" href="/try">
+          Open the demo
         </Link>
-        <p className="muted">
-          Demo lokal berjalan tanpa kunci layanan ekstraksi. Bukti Aevum testnet
-          menyusul setelah deploy terpisah.
-        </p>
       </section>
     </main>
   );

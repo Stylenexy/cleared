@@ -9,7 +9,7 @@
       "name": "Kopi Pagi",
       "payee": "0x1111111111111111111111111111111111111111",
       "amount": "0.25",
-      "status": "Dibayar",
+      "status": "Paid",
       "transactionHash": "0x4e91e6503e0f7b2cfb3494a249881ab5a9c9edf2706cd6a3a7c8ab515b5dc34b"
     },
     {
@@ -17,7 +17,7 @@
       "name": "Kertas Kita",
       "payee": "0x2222222222222222222222222222222222222222",
       "amount": "0.4",
-      "status": "Dibayar",
+      "status": "Paid",
       "transactionHash": "0x4e91e6503e0f7b2cfb3494a249881ab5a9c9edf2706cd6a3a7c8ab515b5dc34b"
     },
     {
@@ -25,7 +25,7 @@
       "name": "Kopi Pagi",
       "payee": "0x1111111111111111111111111111111111111112",
       "amount": "0.15",
-      "status": "Nama tidak cocok",
+      "status": "Name mismatch",
       "transactionHash": "0x4e91e6503e0f7b2cfb3494a249881ab5a9c9edf2706cd6a3a7c8ab515b5dc34b"
     }
   ],

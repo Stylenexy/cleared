@@ -8,11 +8,11 @@ export async function POST(request: Request) {
     const form = await request.formData();
     const files = form.getAll("files");
     if (!files.length || files.length > 10)
-      throw new Error("Pilih 1 sampai 10 berkas.");
+      throw new Error("Choose 1 to 10 files.");
     const invoices = [];
     for (const file of files) {
       if (!(file instanceof File) || file.size > 2_000_000)
-        throw new Error("Batas berkas 2 MB.");
+        throw new Error("File limit is 2 MB.");
       const bytes = new Uint8Array(await file.arrayBuffer());
       const sourceHash = keccak256(bytes);
       if (file.name.toLowerCase().endsWith(".csv"))
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         if (file.name.toLowerCase().endsWith(".pdf")) {
           const pdf = await getDocumentProxy(bytes);
           try {
-            if (pdf.numPages > 10) throw new Error("PDF maksimal 10 halaman.");
+            if (pdf.numPages > 10) throw new Error("PDF limit is 10 pages.");
             text = (await extractText(pdf, { mergePages: false })).text.join(
               "\n",
             );
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
           }
         } else if (file.name.toLowerCase().endsWith(".txt"))
           text = new TextDecoder().decode(bytes);
-        else throw new Error("Format yang didukung: TXT, CSV, PDF teks.");
+        else throw new Error("Supported formats: TXT, CSV, text PDF.");
         invoices.push(
           await parseInvoice(text, {
             hash: sourceHash,
@@ -40,11 +40,11 @@ export async function POST(request: Request) {
         );
       }
     }
-    if (invoices.length > 50) throw new Error("Batch maksimal 50 invoice.");
+    if (invoices.length > 50) throw new Error("Batch limit is 50 invoices.");
     return Response.json({ invoices: invoices.map(serializeInvoice) });
   } catch (e) {
     return Response.json(
-      { error: e instanceof Error ? e.message : "Invoice gagal dibaca." },
+      { error: e instanceof Error ? e.message : "Could not read invoice." },
       { status: 400 },
     );
   }
