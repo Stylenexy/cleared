@@ -16,7 +16,7 @@ Open **/try** on a running Cleared instance. No wallet, API key or visitor insta
 2. Select a new recipient or changed address. See **PayeeOnHold** and its remaining time. The agent cannot clear it; owner approval can.
 3. Freeze demo payments with the kill switch. Both automatic and owner-approved payments are blocked.
 4. Open **/attack**, choose a pre-generated lookalike and enable hidden instructions. Edit the invoice yourself.
-5. Compare extracted fields with the payment decision. The local ledger reads **attacks attempted / cents lost: 0** because the page never sends funds. It is a browser-local simulation counter, not a public security metric.
+5. Compare extracted fields with the payment decision. The local ledger reads **n attempts · n refused** from actual API outcomes, plus the simulated amount cleared. No transaction is sent. These are browser-local simulation totals, not public security metrics.
 
 If public Aevum contract addresses are configured, /try also offers read-only contract checks using eth_call. They are separate from the sample simulation and produce no transaction receipt. RPC failures are shown as errors.
 
@@ -128,15 +128,15 @@ const csv = toCsv(rows);
 
 Write helpers use legacy transactions. Preflight helpers are advisory; the paying contract must check identity again. See contracts/src/Checkout.sol for a user-paid transferFrom example guarded with onlyClearedPayee. The modifier enforces destination matching only; caller permissions, trust delays and treasury budgets belong in the integrating application. ClearedVault enforces those additional controls.
 
-## Extraction: live model or saved sample
+## Real AI extraction
 
-extractInvoice() is the shared extraction boundary for /attack and the invoice parser. The supported HTTP provider is Anthropic's [Messages API](https://platform.claude.com/docs/en/api/messages/create). Only server process variables are used. No credentials are required for the demo.
+extractInvoice() is the shared extraction boundary for /attack and the invoice parser. Supported HTTP providers are Gemini via Google AI Studio's [REST generateContent API](https://ai.google.dev/api/generate-content) and Anthropic's [Messages API](https://platform.claude.com/docs/en/api/messages/create). Only server process variables are used. No credentials are required for the demo.
 
 | Variable                                       | Meaning                                                                                     |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| LLM_PROVIDER                                   | anthropic enables the supported provider                                                    |
+| LLM_PROVIDER                                   | gemini or anthropic selects the provider                                                    |
 | LLM_API_KEY                                    | Server-only credential; never returned by /api/config                                       |
-| LLM_MODEL                                      | Provider model ID; default claude-haiku-4-5-20251001                                        |
+| LLM_MODEL                                      | Provider model ID; blank uses gemini-2.5-flash-lite or claude-haiku-4-5-20251001                                        |
 | CLEARED_NETWORK                                | demo by default, or local / aevum                                                           |
 | CLEARED_VAULT, CLEARED_REGISTRY, CLEARED_AGENT | Public testnet addresses; vault alone also selects Aevum mode, but all are needed for reads |
 | CLEARED_DEPLOY_BLOCK                           | Start block for efficient reconciliation                                                    |
@@ -144,6 +144,7 @@ extractInvoice() is the shared extraction boundary for /attack and the invoice p
 
 .env.example contains placeholders only. Configure environment through your own server process. Nothing reads a private key for the demo. Never give server credentials a NEXT_PUBLIC prefix.
 
+- For Gemini, select LLM_PROVIDER=gemini and supply a Google AI Studio key in the server process as LLM_API_KEY. LLM_MODEL is optional; the default is gemini-2.5-flash-lite. For Anthropic, select anthropic; its default is claude-haiku-4-5-20251001. Gemini uses x-goog-api-key in a request header, never a URL query. The server requests JSON Schema output and independently validates the returned invoice. Blocked, non-STOP, tool-call, ambiguous and malformed responses fail closed.
 - Live extraction requires explicit UI opt-in. Invoice text is then sent to the provider. The prompt treats document instructions as untrusted; the payment contract is still the authority.
 - Input is bounded to **20,000 characters**, output to 600 tokens, response size is checked, and a 20-second timeout applies. JSON must contain exactly reference, name, payee, amount and currency. Amount is a positive decimal string with at most six fractional digits in uint256 range; currency must be tUSD8. Names are bounded to 160 UTF-8 bytes. Unknown fields, malformed addresses, Markdown and truncated responses are rejected.
 - Without a key, exact attack fixtures replay **authored saved fields**, explicitly labeled cached illustration. These are staged demonstrations, not captured live-model responses. Editing input prevents an unrelated cached result from being replayed; labeled TXT templates use deterministic extraction instead.

@@ -1,3 +1,4 @@
+import { BrandMark } from "./brand";
 const stages = [
   "Invoice",
   "Extracted fields",
@@ -25,7 +26,7 @@ export function ClearingFlow({
           aria-current={n === step ? "step" : undefined}
         >
           <span aria-hidden="true">
-            {n < step ? "✓" : String(n + 1).padStart(2, "0")}
+            {n < step ? <BrandMark /> : String(n + 1).padStart(2, "0")}
           </span>
           {label}
         </li>
@@ -42,7 +43,27 @@ export function DecisionStamp({
 }) {
   return (
     <span className={"decision-stamp " + (rejected ? "refused" : "cleared")}>
-      {children ?? (rejected ? "REFUSED" : "CLEARED")}
+      <svg
+        viewBox="0 0 240 66"
+        role="img"
+        aria-label={
+          typeof children === "string"
+            ? children
+            : rejected
+              ? "REFUSED"
+              : "CLEARED"
+        }
+      >
+        <path
+          d="M3 6 237 3 235 61 5 63Z M10 13 229 10 228 54 12 56Z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+        <text x="120" y="44" textAnchor="middle" fill="currentColor">
+          {children ?? (rejected ? "REFUSED" : "CLEARED")}
+        </text>
+      </svg>
     </span>
   );
 }

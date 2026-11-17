@@ -28,11 +28,49 @@ export function Arrow() {
     <svg
       width="18"
       height="18"
-      viewBox="0 0 24 24"
+      viewBox="0 0 48 48"
       fill="none"
       aria-hidden="true"
     >
-      <path d="M4 12h15m-6-6 6 6-6 6" stroke="currentColor" strokeWidth="1.7" />
+      <path
+        d="M8 24h30M26 12l12 12-12 12"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+    </svg>
+  );
+}
+
+export function DeskIcon({
+  kind = "registry",
+}: {
+  kind?: "registry" | "clock" | "pause";
+}) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 48 48"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="4"
+      aria-hidden="true"
+    >
+      {kind === "clock" ? (
+        <>
+          <circle cx="24" cy="24" r="17" />
+          <path d="M24 12v13l9 5" />
+        </>
+      ) : kind === "pause" ? (
+        <>
+          <path d="M17 9v30M31 9v30" />
+          <path d="M7 7h34v34H7z" />
+        </>
+      ) : (
+        <>
+          <path d="M9 7h30v34H9zM17 17h14M17 25h14M17 33h8" />
+        </>
+      )}
     </svg>
   );
 }

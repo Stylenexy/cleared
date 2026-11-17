@@ -192,12 +192,29 @@ describe("extraction boundary and attack lab", () => {
   });
   it("local no-transaction ledger increments without implying money moved", () => {
     expect(
-      recordAttack({ attempted: 2, centsLost: 0 }, true, 150_000n),
-    ).toEqual({ attempted: 3, centsLost: 0 });
+      recordAttack({ attempted: 2, refused: 2, centsLost: 0 }, true, 150_000n),
+    ).toEqual({ attempted: 3, refused: 3, centsLost: 0 });
     expect(() =>
-      recordAttack({ attempted: -1, centsLost: 0 }, true, 0n),
+      recordAttack({ attempted: -1, refused: 0, centsLost: 0 }, true, 0n),
     ).toThrow();
   });
+  it("records a cleared decision and its real simulated amount", () => {
+    expect(
+      recordAttack({ attempted: 1, refused: 1, centsLost: 0 }, false, 250_000n),
+    ).toEqual({ attempted: 2, refused: 1, centsLost: 25 });
+    expect(() =>
+      recordAttack({ attempted: 1, refused: 2, centsLost: 0 }, true, 0n),
+    ).toThrow();
+  });
+  it.each(lookalikes)(
+    "sample poisoning keeps both address edges while changing the middle: %s",
+    (address) => {
+      expect(address).toMatch(/^0x[0-9a-f]{40}$/);
+      expect(address.slice(2, 6)).toBe(verifiedAddress.slice(2, 6));
+      expect(address.slice(-4)).toBe(verifiedAddress.slice(-4));
+      expect(address.slice(6, -4)).not.toBe(verifiedAddress.slice(6, -4));
+    },
+  );
   it("schema hashes do not grant identity verification", () => {
     const i = validateInvoice({ ...fields, payee: lookalikes[0] }, hash);
     expect(demoDecision(i)).toBe("Name mismatch");

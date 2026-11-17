@@ -31,6 +31,7 @@ export function demoDecision(
 }
 export interface AttackLedger {
   attempted: number;
+  refused: number;
   centsLost: number;
 }
 export function recordAttack(
@@ -41,12 +42,16 @@ export function recordAttack(
   if (
     !Number.isSafeInteger(ledger.attempted) ||
     ledger.attempted < 0 ||
+    !Number.isSafeInteger(ledger.refused) ||
+    ledger.refused < 0 ||
+    ledger.refused > ledger.attempted ||
     !Number.isSafeInteger(ledger.centsLost) ||
     ledger.centsLost < 0
   )
     throw new Error("Invalid local ledger");
   return {
     attempted: ledger.attempted + 1,
+    refused: ledger.refused + (rejected ? 1 : 0),
     centsLost: ledger.centsLost + (rejected ? 0 : Number(amount / 10_000n)),
   };
 }

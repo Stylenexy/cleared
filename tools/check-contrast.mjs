@@ -28,7 +28,7 @@ const pairs = [
   ["document-red", "document"],
   ["safe", "surface-raised"],
   ["red", "surface-raised"],
-  ["document-muted", "e5ecf6"],
+  ["document-muted", "document-well"],
   ["91a8c5", "background"],
 ];
 for (const [foreground, background] of pairs) {

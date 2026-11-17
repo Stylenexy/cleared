@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Navigation } from "./components/navigation";
-import { BrandMark } from "./components/brand";
+import { Arrow, BrandMark } from "./components/brand";
 import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     "Invoice payments for web3 teams and DAOs. Trusted contractors get paid automatically; new recipients need owner approval.",
   icons: { icon: "/favicon.svg", apple: "/apple-touch-icon.png" },
   openGraph: {
-    title: "Cleared. Your agent can be fooled. Your money stays put.",
+    title: "Let your agent pay. Keep the last word.",
     description:
       "A payee registry and guarded vault on Aevum. Let the agent prepare. Let the contract decide.",
     images: [
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Cleared — The contract has the last word. Lookalike destination refused.",
+        alt: "Cleared. Let your agent pay. Keep the last word.",
       },
     ],
     type: "website",
@@ -49,7 +49,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <br />
             Test tokens. Real boundaries.
           </span>
-          <a href="/try">Open the clearing desk ↗</a>
+          <a href="/try">
+            Open the clearing desk <Arrow />
+          </a>
         </footer>
       </body>
     </html>
