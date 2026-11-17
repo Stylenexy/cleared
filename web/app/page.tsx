@@ -1,4 +1,6 @@
-﻿import { DeskIntro } from "./components/landing/desk-intro";
+import { ClerkIntro } from "./components/landing/clerk-intro";
+import { FooterTransition } from "./components/landing/footer-transition";
+import { DeskIntro } from "./components/landing/desk-intro";
 import { TerminalStory } from "./components/landing/terminal-story";
 import { ProcessStory } from "./components/landing/process-story";
 import { SafetyGrid } from "./components/landing/safety-grid";
@@ -10,6 +12,7 @@ import { FooterStory } from "./components/landing/footer-story";
 export default function Home() {
   return (
     <main className="landing signal-landing">
+      <ClerkIntro />
       <DeskIntro />
       <TerminalStory />
       <ProcessStory />
@@ -27,6 +30,7 @@ export default function Home() {
         <div className="signal-ledger-grid">
           <LedgerPreview />
           <div className="ledger-vault">
+            <div className="contact-shadow" aria-hidden="true" />
             <img
               className="studio-object"
               src="/objects/vault.webp"
@@ -34,6 +38,7 @@ export default function Home() {
               height={732}
               alt="A cyan-lit treasury vault."
               loading="lazy"
+              decoding="async"
             />
             <p>
               Your treasury.
@@ -43,6 +48,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      <FooterTransition />
       <FooterStory />
     </main>
   );

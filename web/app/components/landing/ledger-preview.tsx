@@ -110,11 +110,14 @@ export function LedgerPanel({
               <p>Reading the Aevum ledger…</p>
             ) : (
               <>
-                <p>Waiting for the first on-chain run.</p>
-                <small className="ledger-refresh">
-                  <span className="spinner-dot" aria-hidden="true" />
-                  Refreshes when you reload.
-                </small>
+                <p>No payments recorded yet.</p>
+                <a
+                  href="https://explorer-test.qday.info/address/0x8fba7dd67e294b3ba5ca164748b9f41c03bad13c"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View the vault on the Aevum explorer &#8599;
+                </a>
                 {status === "unavailable" && (
                   <small>
                     Live ledger unavailable. No payment history could be loaded.

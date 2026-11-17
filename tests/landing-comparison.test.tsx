@@ -88,7 +88,8 @@ describe("local registry preview", () => {
     expect(html).toContain('maxLength="42"');
     expect(html).toContain('for="clerk-address"');
     expect(html).toContain('role="status"');
-    expect(html).toContain("Poison it");
+    expect(html).toContain("Poison the address");
+    expect(html.match(/data-cursor="Play"/g)).toHaveLength(2);
     expect(html).toContain("Use the real address");
     expect(html).toContain("Refused. 30 characters differ");
     expect(html).toContain("Local preview of the registry rule.");

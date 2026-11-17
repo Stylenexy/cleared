@@ -3,6 +3,7 @@
 import { Wallpaper } from "./wallpaper";
 import { useEffect, useRef } from "react";
 import { animateWallpaper, DESK_MOTION, gsap } from "./motion";
+import { Letters } from "./letters";
 import { PillLink } from "./pill-link";
 
 const steps = [
@@ -38,55 +39,68 @@ export function ProcessStory() {
           scrollTrigger: {
             trigger: scope,
             start: "top top",
-            end: "+=280%",
+            end: "+=560%",
             pin: true,
             scrub: 0.8,
             anticipatePin: 1,
           },
         });
         cards.forEach((card, index) => {
-          timeline.fromTo(
-            card,
-            {
-              y: () => window.innerHeight * 1.05,
-              xPercent: index === 1 ? 20 : -20,
-              rotate: index === 1 ? 9 : -8,
-            },
-            {
-              y: () => -window.innerHeight * 1.05,
-              xPercent: index === 1 ? -10 : 10,
-              rotate: index === 1 ? -5 : 5,
-              ease: "none",
-              duration: 1,
-            },
-            index * 0.85,
-          );
+          const start = index * 2.1;
+          const word = words[index];
+          timeline
+            .from(
+              word.querySelectorAll(".word-plain .motion-letter"),
+              {
+                yPercent: 100,
+                opacity: 0,
+                stagger: 0.055,
+                duration: 0.35,
+                ease: "none",
+              },
+              start,
+            )
+            .fromTo(
+              card,
+              {
+                y: () => window.innerHeight * 1.05,
+                xPercent: index === 1 ? 10 : -10,
+                rotation: index === 1 ? 4 : -4,
+              },
+              {
+                y: () => -window.innerHeight * 1.05,
+                xPercent: index === 1 ? -5 : 5,
+                rotation: index === 1 ? -2 : 2,
+                ease: "power2.out",
+                duration: 1.7,
+              },
+              start + 0.55,
+            )
+            .to(
+              word.querySelector(".word-plain"),
+              { opacity: 0, duration: 0.3 },
+              start + 1.8,
+            )
+            .to(
+              word.querySelector("em"),
+              { opacity: 1, duration: 0.3 },
+              start + 1.8,
+            );
         });
         timeline
           .to(
             scope.querySelector(".process-words"),
-            { yPercent: -35, scale: 0.8, duration: 0.45 },
-            2.75,
+            { yPercent: -35, scale: 0.8, duration: 0.5 },
+            6.5,
           )
           .from(
             scope.querySelector(".process-last-word"),
-            { y: 70, autoAlpha: 0, duration: 0.4 },
-            2.8,
+            { y: 70, opacity: 0, duration: 0.5 },
+            6.6,
           );
-        timeline.eventCallback("onUpdate", () => {
-          const time = timeline.time();
-          words.forEach((word, index) => {
-            word.dataset.active = String(
-              time >= index * 0.85 + 0.2 && time <= index * 0.85 + 0.8,
-            );
-          });
-        });
         animateWallpaper(timeline, scope);
         return () => {
           delete scope.dataset.animated;
-          words.forEach((word) => {
-            delete word.dataset.active;
-          });
         };
       },
       root,
@@ -100,13 +114,16 @@ export function ProcessStory() {
       aria-labelledby="process-title"
     >
       <Wallpaper scene="steel" pinned />
-      <span className="eyebrow process-label">
-        02 / THREE VERBS. ONE BOUNDARY.
-      </span>
-      <h2 id="process-title" className="process-words">
+      <h2
+        id="process-title"
+        className="process-words"
+        aria-label="Read. Compare. Refuse."
+      >
         {steps.map(({ word }) => (
-          <span className="process-word" key={word}>
-            <span>{word}</span>
+          <span className="process-word" key={word} aria-hidden="true">
+            <span className="word-plain" aria-hidden="true">
+              <Letters text={word} />
+            </span>
             <em className="serif-accent" aria-hidden="true">
               {word}
             </em>
@@ -114,11 +131,8 @@ export function ProcessStory() {
         ))}
       </h2>
       <div className="process-papers">
-        {steps.map((step, index) => (
+        {steps.map((step) => (
           <article className="process-paper" key={step.word}>
-            <span className="paper-number">
-              0{index + 1} / CLEARING PROTOCOL
-            </span>
             <h3>{step.word.replace("*", "")}.</h3>
             <p>{step.copy}</p>
             <ul>

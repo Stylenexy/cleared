@@ -34,7 +34,7 @@ describe("landing address comparison", () => {
 });
 
 describe("landing content", () => {
-  it.each(["hero", "desk", "steel", "skyline"] as const)(
+  it.each(["hero", "desk", "steel", "skyline", "footer", "colonnade"] as const)(
     "serves responsive local %s photography with appropriate loading priority",
     (scene) => {
       const html = renderToStaticMarkup(<Wallpaper scene={scene} />);
@@ -57,14 +57,22 @@ describe("landing content", () => {
     const html = renderToStaticMarkup(<Home />);
     expect(html.match(/<h1\b/g)).toHaveLength(1);
     expect(html).toContain("Let your agent");
-    expect(html).toContain("the contract keeps");
+    expect(html).toContain(
+      'aria-label="Let your agent pay. Keep the last word."',
+    );
+    expect(html).toContain("Hi, I&#x27;m Clerk.");
+    expect(html).toContain("I check every payment before it leaves.");
+    expect(html).toContain("/clerk-hd/hi.webp");
+    expect(html).toContain("/clerk-hd/present.webp");
+    expect(html).not.toContain('class="eyebrow');
+    expect(html).not.toContain('class="preview-strip"');
     for (const title of ["Read.", "Compare.", "Refuse."])
       expect(html).toContain(`<h3>${title}</h3>`);
     expect(html).not.toContain('data-animated="true"');
     expect(html).toContain(KOPI_PAGI);
     expect(html).toContain(KOPI_PAGI_LOOKALIKES[0]);
     expect(html).toContain("Illustrated sample");
-    expect(html).toContain("Sample decision");
+    expect(html).toContain("Your move.");
     expect(html).toContain('href="/app/keys"');
     expect(html).toContain('href="/app#ledger"');
     for (const object of [
@@ -76,19 +84,10 @@ describe("landing content", () => {
     ])
       expect(html).toContain(`src="/objects/${object}.webp"`);
     expect(html).not.toContain('src="/plates/');
-    expect(html).toContain(
-      'src="/clerk-hd/read.webp" width="677" height="1100"',
-    );
+    expect(html).toContain('src="/clerk-hd/hi.webp" width="805" height="1100"');
     expect(html).not.toContain('src="/clerk/');
     expect(html).not.toContain('class="story-clerk"');
-    for (const field of [
-      "NDS-0142",
-      "Brand system sprint",
-      "Motion assets",
-      "CLEARED RECEIPT",
-      "verified",
-      "44005",
-    ])
+    for (const field of ["NDS-0142", "CLEARED RECEIPT", "verified", "44005"])
       expect(html).toContain(field);
     expect(html).toContain('role="switch" aria-checked="false"');
     expect(html).toContain("Interactive preview · no transaction");
@@ -100,9 +99,14 @@ describe("landing content", () => {
       const html = renderToStaticMarkup(
         <LedgerPanel rows={[]} status={status} />,
       );
-      expect(html).toContain("Waiting for the first on-chain run.");
+      expect(html).toContain("No payments recorded yet.");
       expect(html).toContain("/clerk-hd/tablet.webp");
-      expect(html).toContain("Refreshes when you reload.");
+      expect(html).not.toContain("Refreshes when you reload.");
+      expect(html).not.toContain("spinner-dot");
+      expect(html).toContain("View the vault on the Aevum explorer");
+      expect(html).toContain(
+        'href="https://explorer-test.qday.info/address/0x8fba7dd67e294b3ba5ca164748b9f41c03bad13c"',
+      );
       expect(html).not.toContain("tUSD8");
       expect(html).not.toContain("ledger-event");
       if (status === "unavailable")

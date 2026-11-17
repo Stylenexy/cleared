@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { DESK_MOTION, gsap } from "./motion";
-import { storyStep } from "./story-progress";
+import { Letters } from "./letters";
 
 export function RepeatStory() {
   const root = useRef<HTMLElement>(null);
@@ -13,49 +13,121 @@ export function RepeatStory() {
       () => {
         const scope = root.current!;
         const words = scope.querySelectorAll<HTMLElement>(".repeat-word");
-        const slip = scope.querySelector<HTMLElement>(".stamp-slip")!;
+        const slips = scope.querySelectorAll<HTMLElement>(".stamp-slip");
         const timeline = gsap.timeline({
           scrollTrigger: {
             trigger: scope,
             start: "top top",
-            end: "+=120%",
+            end: "+=240%",
             pin: true,
             anticipatePin: 1,
             scrub: 0.7,
           },
         });
         for (let index = 0; index < 4; index++) {
+          const start = index * 1.5;
+          const slip = slips[index];
+          timeline
+            .from(
+              words[index].querySelectorAll(".word-plain .motion-letter"),
+              {
+                yPercent: 110,
+                opacity: 0,
+                stagger: 0.035,
+                duration: 0.22,
+              },
+              start,
+            )
+            .from(
+              slip,
+              {
+                x: 500,
+                rotation: 8,
+                opacity: 0,
+                duration: 0.45,
+                ease: "power2.out",
+              },
+              start + 0.2,
+            )
+            .to(
+              words[index].querySelector(".word-plain"),
+              { opacity: 0, duration: 0.25 },
+              start + 0.8,
+            )
+            .fromTo(
+              words[index].querySelector("em"),
+              { opacity: 0 },
+              { opacity: 1, duration: 0.25 },
+              start + 0.8,
+            )
+            .from(
+              slip.querySelector("strong"),
+              { scale: 1.4, opacity: 0, duration: 0.12 },
+              start + 0.8,
+            )
+            .to(
+              scope.querySelector(".stamp-stage"),
+              { x: 3, y: 2, repeat: 3, yoyo: true, duration: 0.025 },
+              start + 0.8,
+            )
+            .to(
+              scope.querySelector(".stamp-stage"),
+              { x: 0, y: 0, duration: 0.05 },
+              start + 0.9,
+            )
+            .to(
+              slip,
+              {
+                x: -320,
+                y: 25 + index * 7,
+                scale: 0.72,
+                rotation: -12 + index * 5,
+                duration: 0.4,
+              },
+              start + 1.1,
+            );
+          slip
+            .querySelectorAll<HTMLElement>(".ink-particle")
+            .forEach((particle, n) => {
+              const angle = (n * Math.PI) / 4;
+              timeline
+                .fromTo(
+                  particle,
+                  { x: 0, y: 0, scale: 0.2, opacity: 0 },
+                  {
+                    x: Math.cos(angle) * 95,
+                    y: Math.sin(angle) * 65,
+                    scale: 1,
+                    opacity: 1,
+                    duration: 0.12,
+                  },
+                  start + 0.8,
+                )
+                .to(
+                  particle,
+                  { opacity: 0, scale: 0.4, duration: 0.25 },
+                  start + 0.92,
+                );
+            });
           timeline
             .to(
               scope.querySelector(".stamp-object"),
               {
                 y: 65,
-                scaleY: 0.92,
-                rotate: index % 2 ? 5 : -5,
-                duration: 0.28,
+                scaleY: 0.88,
+                scaleX: 1.06,
+                rotate: index % 2 ? 3 : -3,
+                duration: 0.18,
                 ease: "power2.in",
               },
-              index,
+              start + 0.62,
             )
             .to(
               scope.querySelector(".stamp-object"),
-              { y: 0, scaleY: 1, duration: 0.6, ease: "power2.out" },
-              index + 0.3,
+              { y: 0, scaleY: 1, scaleX: 1, duration: 0.3, ease: "power2.out" },
+              start + 0.82,
             );
         }
-        timeline.eventCallback("onUpdate", () => {
-          const step = storyStep(timeline.progress(), 4);
-          words.forEach((word, index) => {
-            word.dataset.active = String(index === step);
-          });
-          slip.dataset.status = step % 2 ? "refused" : "cleared";
-        });
-        return () => {
-          words.forEach((word) => {
-            delete word.dataset.active;
-          });
-          slip.dataset.status = "refused";
-        };
       },
       root,
     );
@@ -67,11 +139,12 @@ export function RepeatStory() {
       className="repeat-story desk-texture"
       aria-labelledby="repeat-title"
     >
-      <span className="eyebrow">03 / CONSISTENCY IS THE POINT</span>
-      <h2 id="repeat-title">
-        {["Read.", "Compare.", "Refuse.", "Every time."].map((word, index) => (
-          <span className="repeat-word" data-final={index === 3} key={word}>
-            <span>{word}</span>
+      <h2 id="repeat-title" aria-label="Read. Compare. Refuse. Every time.">
+        {["Read.", "Compare.", "Refuse.", "Every time."].map((word) => (
+          <span className="repeat-word" key={word} aria-hidden="true">
+            <span className="word-plain" aria-hidden="true">
+              <Letters text={word} />
+            </span>
             <em className="serif-accent" aria-hidden="true">
               {word}
             </em>
@@ -79,12 +152,24 @@ export function RepeatStory() {
         ))}
       </h2>
       <div className="stamp-stage" aria-hidden="true">
-        <div className="stamp-slip" data-status="refused">
-          <small>CLEARING DESK / SAMPLE</small>
-          <strong className="stamp-cleared">CLEARED</strong>
-          <strong className="stamp-refused">REFUSED</strong>
-          <span>EXACT RULES. EVERY RUN.</span>
-        </div>
+        <div className="contact-shadow" />
+        {Array.from({ length: 4 }, (_, index) => (
+          <div
+            className="stamp-slip"
+            data-status={index % 2 ? "refused" : "cleared"}
+            key={index}
+          >
+            <strong className={index % 2 ? "stamp-refused" : "stamp-cleared"}>
+              {index % 2 ? "REFUSED" : "CLEARED"}
+            </strong>
+            <span>
+              {index % 2 ? "Destination mismatch" : "Verified destination"}
+            </span>
+            {Array.from({ length: 8 }, (_, n) => (
+              <i className="ink-particle" key={n} />
+            ))}
+          </div>
+        ))}
         <img
           className="studio-object stamp-object"
           src="/objects/stamp.webp"
@@ -92,6 +177,7 @@ export function RepeatStory() {
           height={824}
           alt=""
           loading="lazy"
+          decoding="async"
         />
       </div>
       <p className="repeat-note">

@@ -1,3 +1,5 @@
+import { DotWordmark } from "./dot-wordmark";
+import { Wallpaper } from "./wallpaper";
 import { BrandImage } from "../brand";
 
 import { Clerk } from "./clerk";
@@ -35,7 +37,8 @@ const columns = [
 
 export function SiteFooter() {
   return (
-    <footer className="site-footer">
+    <footer className="site-footer photo-section">
+      <Wallpaper scene="footer" />
       <div className="footer-pill-links" aria-label="Continue exploring">
         {[
           ["GitHub", REPOSITORY_URL],
@@ -98,9 +101,7 @@ export function SiteFooter() {
         <span>Testnet prototype. Not audited. Test tokens only.</span>
         <span>Aevum Builder Challenge #1</span>
       </div>
-      <div className="footer-wordmark" aria-hidden="true">
-        CLEARED
-      </div>
+      <DotWordmark />
     </footer>
   );
 }

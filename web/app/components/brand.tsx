@@ -5,6 +5,8 @@ export function BrandImage({ footer = false }: { footer?: boolean }) {
       src="/mark-3d.webp"
       width={640}
       height={587}
+      decoding="async"
+      loading={footer ? "lazy" : "eager"}
       alt=""
     />
   );

@@ -194,6 +194,7 @@ export function ScrollStory() {
                 height={1024}
                 alt=""
                 loading="lazy"
+                decoding="async"
               />
               <div className="story-scene-copy">
                 <span className="story-mobile-counter">0{index + 1} / 04</span>

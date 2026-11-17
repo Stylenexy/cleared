@@ -20,9 +20,18 @@ export function CustomCursor() {
         duration: 0.32,
         ease: "power3.out",
       });
-      const dotX = gsap.quickSetter(inner, "x", "px");
-      const dotY = gsap.quickSetter(inner, "y", "px");
+      const dotX = gsap.quickTo(inner, "x", { duration: 0.08 });
+      const dotY = gsap.quickTo(inner, "y", { duration: 0.08 });
+      const ringScale = gsap.quickTo(outer, "scale", { duration: 0.2 });
+      let idle: ReturnType<typeof setTimeout> | undefined;
+      let hovering = false;
+      const pause = () => {
+        [ringX, ringY, dotX, dotY, ringScale].forEach((move) =>
+          move.tween.pause(),
+        );
+      };
       const move = (event: PointerEvent) => {
+        clearTimeout(idle);
         const target = event.target instanceof Element ? event.target : null;
         const editable = target?.closest(
           "input, textarea, select, [contenteditable=true]",
@@ -36,10 +45,17 @@ export function CustomCursor() {
         dotX(event.clientX);
         dotY(event.clientY);
         const action = target?.closest("[data-cursor], a, button");
-        outer.dataset.hover = action ? "true" : "false";
+        if (Boolean(action) !== hovering) {
+          hovering = Boolean(action);
+          ringScale(hovering ? 1.8 : 1);
+          outer.dataset.hover = String(hovering);
+        }
         label.current!.textContent = action?.getAttribute("data-cursor") ?? "";
+        idle = setTimeout(pause, 450);
       };
       const leave = () => {
+        clearTimeout(idle);
+        pause();
         outer.style.opacity = inner.style.opacity = "0";
         delete document.documentElement.dataset.deskCursor;
       };
@@ -52,6 +68,9 @@ export function CustomCursor() {
         window.removeEventListener("blur", leave);
         ringX.tween.kill();
         ringY.tween.kill();
+        dotX.tween.kill();
+        dotY.tween.kill();
+        ringScale.tween.kill();
         leave();
       };
     });

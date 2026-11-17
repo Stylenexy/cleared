@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { Clerk } from "./clerk";
 import { DESK_MOTION, gsap } from "./motion";
 import { PillLink } from "./pill-link";
-import { typedLines } from "./story-progress";
+import { typingTimeline } from "../../../lib/landing-animation";
+import { Letters } from "./letters";
 
 const CHECK = ["check 0x166F5022…1d5A", "→ Name mismatch"];
 
@@ -45,88 +46,41 @@ export function DeskIntro() {
         );
         const terminal =
           scope.querySelectorAll<HTMLElement>(".mini-output span");
-        gsap.to(
-          {},
-          {
-            scrollTrigger: {
-              trigger: scope.querySelector(".desk-widgets"),
-              start: "top 80%",
-              end: "bottom 55%",
-              scrub: 0.7,
-              onUpdate: (self) =>
-                typedLines(CHECK, self.progress).forEach((line, index) => {
-                  terminal[index].textContent = line;
-                }),
-            },
-          },
-        );
-        const tiles = scope.querySelectorAll<HTMLElement>(".preview-tile");
-        const shifts = Array.from(tiles, (tile) => ({
-          x: gsap.quickTo(tile, "x", { duration: 0.7 }),
-          y: gsap.quickTo(tile, "y", { duration: 0.7 }),
-        }));
-        const strip = scope.querySelector<HTMLElement>(".preview-strip")!;
-        let drag:
-          { pointer: number; start: number; scroll: number } | undefined;
-        const resize = new ResizeObserver(() => {
-          strip.dataset.cursor =
-            strip.scrollWidth > strip.clientWidth ? "Drag" : "View";
+        const clock = { elapsed: 0 };
+        const typing = gsap.to(clock, {
+          elapsed: 3400,
+          duration: 3.4,
+          repeat: -1,
+          paused: true,
+          ease: "none",
+          onUpdate: () =>
+            typingTimeline(CHECK, clock.elapsed).forEach((line, index) => {
+              if (terminal[index].textContent !== line)
+                terminal[index].textContent = line;
+            }),
         });
-        resize.observe(strip);
-        const down = (event: PointerEvent) => {
-          if (event.button !== 0 || strip.scrollWidth <= strip.clientWidth)
-            return;
-          drag = {
-            pointer: event.pointerId,
-            start: event.clientX,
-            scroll: strip.scrollLeft,
-          };
-          strip.setPointerCapture(event.pointerId);
-        };
-        const up = () => {
-          drag = undefined;
-        };
-        const move = (event: PointerEvent) => {
-          if (drag) {
-            strip.scrollLeft = drag.scroll + drag.start - event.clientX;
-            return;
-          }
-          const bounds = strip.getBoundingClientRect();
-          shifts.forEach((shift, index) => {
-            const depth = ((index % 3) + 1) * 5;
-            shift.x(
-              ((event.clientX - bounds.left) / bounds.width - 0.5) * depth,
-            );
-            shift.y(
-              ((event.clientY - bounds.top) / bounds.height - 0.5) * depth,
-            );
-          });
-        };
-        const leave = () =>
-          shifts.forEach((shift) => {
-            shift.x(0);
-            shift.y(0);
-          });
-        strip.addEventListener("pointermove", move, { passive: true });
-        strip.addEventListener("pointerleave", leave);
-        strip.addEventListener("pointerdown", down);
-        strip.addEventListener("pointerup", up);
-        strip.addEventListener("pointercancel", up);
-        strip.addEventListener("lostpointercapture", up);
+        const observer = new IntersectionObserver(
+          ([entry]) => {
+            if (entry.intersectionRatio >= 0.3) typing.restart();
+            else typing.pause();
+          },
+          { threshold: 0.3 },
+        );
+        observer.observe(scope.querySelector(".mini-terminal")!);
+        gsap.from(scope.querySelectorAll(".hero-letter .motion-letter"), {
+          yPercent: 110,
+          opacity: 0,
+          stagger: 0.025,
+          duration: 0.65,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: scope.querySelector(".signal-hero"),
+            start: "top 65%",
+            once: true,
+          },
+        });
         return () => {
-          if (drag && strip.hasPointerCapture(drag.pointer))
-            strip.releasePointerCapture(drag.pointer);
-          resize.disconnect();
-          strip.removeEventListener("pointerdown", down);
-          strip.removeEventListener("pointerup", up);
-          strip.removeEventListener("pointercancel", up);
-          strip.removeEventListener("lostpointercapture", up);
-          strip.removeEventListener("pointermove", move);
-          strip.removeEventListener("pointerleave", leave);
-          shifts.forEach((shift) => {
-            shift.x.tween.kill();
-            shift.y.tween.kill();
-          });
+          observer.disconnect();
           terminal.forEach((line, index) => {
             line.textContent = CHECK[index];
           });
@@ -143,79 +97,38 @@ export function DeskIntro() {
         aria-labelledby="hero-title"
       >
         <Wallpaper scene="hero" />
-        <div className="hero-meta">
-          <span className="eyebrow">THE CLEARING DESK / 001</span>
-          <span>
-            <i className="signal-live" />
-            Live on Aevum testnet
-            <br />
-            <small>CHAIN 44005 · CONTRACT-ENFORCED</small>
-          </span>
-        </div>
-        <h1 id="hero-title">
-          Let your agent <em className="serif-accent">pay</em> —<br />
-          the contract keeps
-          <br />
-          the <em className="serif-accent">last word</em>.
-        </h1>
-        <div className="hero-under">
-          <p>
-            Invoices in. Verified payments out.
-            <br />A clearing desk for your treasury’s agent.
-          </p>
-          <div className="desk-actions">
-            <PillLink href="/attack" primary>
-              Open the attack lab
-            </PillLink>
-            <PillLink href="/try">Try three invoices</PillLink>
-          </div>
-        </div>
-        <div
-          className="preview-strip"
-          data-cursor="Drag"
-          aria-label="Illustrated product previews"
+        <h1
+          id="hero-title"
+          aria-label="Let your agent pay. Keep the last word."
         >
-          <div className="preview-tile preview-invoice">
-            <small>INVOICE / NDS-0142</small>
-            <strong>
-              Northwind
-              <br />
-              Design Studio
-            </strong>
-            <hr />
-            <span>Brand system sprint</span>
-            <span>Motion assets</span>
-          </div>
-          <div className="preview-tile preview-registry">
-            <small>REGISTRY MATCH</small>
-            <span className="preview-check">↳</span>
-            <strong>Name-exact.</strong>
-            <code>0x166F4C0F…1d5A</code>
-          </div>
-          <div className="preview-tile preview-refusal">
-            <span>Sample decision</span>
-            <strong>REFUSED</strong>
-            <small>NAME MISMATCH</small>
-          </div>
-          <div className="preview-tile preview-ledger">
-            <small>LEDGER / SAMPLE ROW</small>
-            <span>↗ Rejected</span>
-            <code>NameMismatch</code>
-            <i>Recorded on-chain</i>
-          </div>
-          <div className="preview-tile preview-switch">
-            <small>OWNER CONTROLS</small>
-            <span className="mini-switch" />
-            <strong>One tap. Frozen.</strong>
-          </div>
-          <div className="preview-tile preview-clerk">
-            <Clerk pose="read" eager />
-            <span>Meet Clerk ↗</span>
-          </div>
-        </div>
-        <div className="hero-footnote">
-          <span>Illustrated samples · real rules</span>
-          <span>SCROLL TO CHECK THE FINE PRINT ↓</span>
+          <span className="hero-line" aria-hidden="true">
+            {["Let", "your", "agent"].map((word) => (
+              <span className="hero-letter" key={word}>
+                <Letters text={word} />
+              </span>
+            ))}
+            <em className="serif-accent hero-letter">
+              <Letters text="pay." />
+            </em>
+          </span>
+          <span className="hero-line" aria-hidden="true">
+            {["Keep", "the"].map((word) => (
+              <span className="hero-letter" key={word}>
+                <Letters text={word} />
+              </span>
+            ))}
+            <em className="serif-accent hero-letter">
+              <Letters text="last word." />
+            </em>
+          </span>
+        </h1>
+        <div className="hero-actions">
+          <PillLink href="/attack" primary>
+            Open the attack lab
+          </PillLink>
+          <a className="hero-quiet-link" href="/try">
+            or try three invoices →
+          </a>
         </div>
       </section>
       <section className="desk-widgets" aria-labelledby="widgets-title">
@@ -227,12 +140,10 @@ export function DeskIntro() {
             <h2 id="widgets-title">Clerk, your clearing clerk.</h2>
             <p>Reads the invoice. Leaves the final say to the contract.</p>
           </div>
-          <span className="eyebrow">SMALL INTERFACE. HARD BOUNDARY.</span>
         </div>
         <div className="widget-grid">
           <article className="desk-widget">
             <div className="widget-face switch-face">
-              <span className="eyebrow">PAYMENT CIRCUIT</span>
               <button
                 type="button"
                 role="switch"
@@ -262,7 +173,6 @@ export function DeskIntro() {
           </article>
           <article className="desk-widget">
             <div className="widget-face">
-              <span className="eyebrow">TIME TO DOUBLE-CHECK</span>
               <div className="hold-dial">
                 <div className="dial-ticks" />
                 <i className="hold-hand" />
@@ -278,7 +188,6 @@ export function DeskIntro() {
           </article>
           <article className="desk-widget">
             <div className="widget-face mini-terminal">
-              <span className="eyebrow">REGISTRY.EXACT_MATCH()</span>
               <div className="mini-output" aria-hidden="true">
                 {CHECK.map((line) => (
                   <span key={line}>{line}</span>

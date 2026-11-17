@@ -4,10 +4,10 @@ import { Wallpaper } from "./wallpaper";
 import { useEffect, useRef } from "react";
 import screen from "../../../public/objects/terminal-screen.json";
 import { animateWallpaper, DESK_MOTION, gsap } from "./motion";
-import { progressWithin, typedLines } from "./story-progress";
+import { Letters } from "./letters";
 
 export const TERMINAL_LINES = [
-  "CLEARING DESK / NDS-0142",
+  "Invoice NDS-0142",
   "read invoice… ok",
   "pay_to 0x166F5022…1d5A",
   "registry[Northwind]",
@@ -16,15 +16,8 @@ export const TERMINAL_LINES = [
   "> REFUSED · name mismatch",
 ] as const;
 
-export function PixelTiles({ className = "" }: { className?: string }) {
-  return (
-    <div className={`pixel-tiles ${className}`} aria-hidden="true">
-      {Array.from({ length: 70 }, (_, index) => (
-        <i key={index} data-tone={index % 13 === 0 ? "signal" : index % 4} />
-      ))}
-    </div>
-  );
-}
+export { PixelTiles } from "./pixel-tiles";
+import { PixelTiles } from "./pixel-tiles";
 
 export function TerminalStory() {
   const root = useRef<HTMLElement>(null);
@@ -34,8 +27,8 @@ export function TerminalStory() {
       DESK_MOTION,
       () => {
         const scope = root.current!;
-        const lines = scope.querySelectorAll<HTMLElement>(
-          ".terminal-screen span",
+        const letters = scope.querySelectorAll<HTMLElement>(
+          ".terminal-screen .motion-letter",
         );
         const object = scope.querySelector(".terminal-object");
         const timeline = gsap.timeline({
@@ -56,16 +49,6 @@ export function TerminalStory() {
             { rotate: 4, scale: 1, duration: 0.84, ease: "none" },
             0,
           )
-          .from(
-            scope.querySelectorAll(".pixel-tiles i"),
-            {
-              opacity: 0,
-              scale: 0.55,
-              stagger: { each: 0.008, from: "center" },
-              duration: 0.15,
-            },
-            0.12,
-          )
           .to(
             object,
             {
@@ -77,20 +60,17 @@ export function TerminalStory() {
             },
             0.84,
           );
+        timeline.from(
+          letters,
+          {
+            opacity: 0,
+            duration: 0.001,
+            stagger: 0.74 / Math.max(1, letters.length),
+            ease: "none",
+          },
+          0.04,
+        );
         animateWallpaper(timeline, scope);
-        timeline.eventCallback("onUpdate", () => {
-          typedLines(
-            TERMINAL_LINES,
-            progressWithin(timeline.progress(), 0.04, 0.78),
-          ).forEach((line, index) => {
-            if (lines[index].textContent !== line)
-              lines[index].textContent = line;
-          });
-        });
-        return () =>
-          lines.forEach((line, index) => {
-            line.textContent = TERMINAL_LINES[index];
-          });
       },
       root,
     );
@@ -104,7 +84,6 @@ export function TerminalStory() {
     >
       <Wallpaper scene="desk" pinned />
       <div className="story-kicker">
-        <span className="eyebrow">01 / THE INSPECTION</span>
         <h2 id="terminal-title">
           Looks familiar.
           <br />
@@ -113,6 +92,7 @@ export function TerminalStory() {
       </div>
       <PixelTiles />
       <div className="terminal-object">
+        <div className="contact-shadow" aria-hidden="true" />
         <img
           className="studio-object"
           src="/objects/terminal.webp"
@@ -120,6 +100,7 @@ export function TerminalStory() {
           height={928}
           alt="A cyan-lit clearing terminal inspecting an illustrated poisoned invoice."
           loading="lazy"
+          decoding="async"
         />
         <div
           className="terminal-screen"
@@ -139,14 +120,13 @@ export function TerminalStory() {
                 index === TERMINAL_LINES.length - 1 ? "terminal-refused" : ""
               }
             >
-              {line}
+              <Letters text={line} />
             </span>
           ))}
         </div>
       </div>
       <p className="sr-only">Illustrated sample: {TERMINAL_LINES.join(". ")}</p>
       <div className="story-caption">
-        <span>ILLUSTRATED SAMPLE / NOT A LIVE TRANSACTION</span>
         <p>
           The first six. The last four.
           <br />

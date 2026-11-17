@@ -15,11 +15,13 @@ export function Navigation() {
         start: 0,
         end: "max",
         onUpdate: (self) => {
-          header.current!.dataset.hidden = String(
+          const hidden = String(
             self.direction > 0 &&
               self.scroll() > 180 &&
               !header.current!.contains(document.activeElement),
           );
+          if (header.current!.dataset.hidden !== hidden)
+            header.current!.dataset.hidden = hidden;
         },
       });
     }, header);

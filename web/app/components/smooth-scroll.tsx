@@ -28,7 +28,7 @@ export function SmoothScroll() {
     const media = gsap.matchMedia();
     media.add(DESK_MOTION, () => {
       const lenis = new Lenis({
-        duration: 1.1,
+        lerp: 0.1,
         smoothWheel: true,
         anchors: true,
         prevent: (node) =>

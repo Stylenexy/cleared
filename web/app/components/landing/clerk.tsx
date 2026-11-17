@@ -21,14 +21,18 @@ export function Clerk({
 }) {
   const [width, height] = poses[pose];
   return (
-    <img
-      className="clerk-pose"
-      src={`/clerk-hd/${pose}.webp`}
-      width={width}
-      height={height}
-      alt=""
-      loading={eager ? "eager" : "lazy"}
-      fetchPriority={eager ? "high" : "auto"}
-    />
+    <span className="clerk-object">
+      <span className="contact-shadow" aria-hidden="true" />
+      <img
+        className="clerk-pose"
+        src={`/clerk-hd/${pose}.webp`}
+        width={width}
+        height={height}
+        decoding="async"
+        alt=""
+        loading={eager ? "eager" : "lazy"}
+        fetchPriority={eager ? "high" : "auto"}
+      />
+    </span>
   );
 }

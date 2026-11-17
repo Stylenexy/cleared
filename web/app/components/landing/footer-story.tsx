@@ -28,10 +28,9 @@ export function FooterStory() {
         timeline
           .fromTo(
             scope.querySelector(".printed-receipt"),
-            { yPercent: 45, clipPath: "inset(0 0 95% 0)" },
+            { yPercent: 45 },
             {
               yPercent: -35,
-              clipPath: "inset(0 0 0% 0)",
               duration: 1,
               ease: "none",
             },
@@ -46,16 +45,6 @@ export function FooterStory() {
             scope.querySelector(".footer-story-copy"),
             { y: -100, autoAlpha: 0, duration: 0.6 },
             1.1,
-          )
-          .from(
-            scope.querySelectorAll(".pixel-tiles i"),
-            {
-              opacity: 0,
-              scale: 0.5,
-              stagger: { each: 0.007, from: "edges" },
-              duration: 0.3,
-            },
-            0.9,
           )
           .to(
             scope.querySelector(".printed-receipt"),
@@ -99,10 +88,9 @@ export function FooterStory() {
       ref={root}
       aria-labelledby="start-title"
     >
-      <Wallpaper scene="skyline" pinned />
+      <Wallpaper scene="footer" pinned />
       <PixelTiles />
       <div className="footer-story-copy">
-        <span className="eyebrow">YOUR NEXT MOVE</span>
         <h2 id="start-title">
           Getting
           <br />
@@ -125,6 +113,7 @@ export function FooterStory() {
         </div>
       </div>
       <div className="printer-assembly">
+        <div className="contact-shadow" aria-hidden="true" />
         <div className="printed-receipt">
           <span>ILLUSTRATED SAMPLE</span>
           <strong>CLEARED RECEIPT</strong>
@@ -153,19 +142,21 @@ export function FooterStory() {
           height={794}
           alt="A clearing desk printer issuing an illustrated verified payee receipt."
           loading="lazy"
+          decoding="async"
         />
       </div>
       <div className="footer-clerk-sticker">
+        <div className="contact-shadow" aria-hidden="true" />
         <img
           src="/objects/clerk-sticker.webp"
           width={685}
           height={859}
           alt="Clerk gives the verified destination a thumbs up."
           loading="lazy"
+          decoding="async"
         />
       </div>
       <div className="conviction-sticker">
-        <small>THE CLEARING DESK PROMISE</small>
         <strong>
           AI CAN
           <br />

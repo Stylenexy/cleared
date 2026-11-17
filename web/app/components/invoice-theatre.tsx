@@ -1,5 +1,5 @@
 "use client";
-import { useId, useLayoutEffect, useRef, type ReactNode } from "react";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
 import {
   attackText,
   lookalikes,
@@ -9,21 +9,7 @@ import { DecisionStamp } from "./clearing-flow";
 import type { Address } from "viem";
 
 export function PaperGrain() {
-  const id = useId();
-  return (
-    <svg className="paper-grain" aria-hidden="true" width="100%" height="100%">
-      <filter id={id}>
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency=".8"
-          numOctaves="3"
-          seed="7"
-          stitchTiles="stitch"
-        />
-      </filter>
-      <rect width="100%" height="100%" filter={`url(#${id})`} opacity=".04" />
-    </svg>
-  );
+  return <span className="paper-grain" aria-hidden="true" />;
 }
 
 export function ComparedAddress({

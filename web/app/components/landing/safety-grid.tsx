@@ -44,7 +44,7 @@ export function SafetyGrid() {
         <span>Contract-enforced</span>
       </div>
       <div className="safety-grid">
-        {skills.map((skill, index) => (
+        {skills.map((skill) => (
           <a
             className="safety-card"
             href={skill.href}
@@ -53,7 +53,7 @@ export function SafetyGrid() {
           >
             <h3>{skill.title}</h3>
             <span className="skill-index">
-              0{index + 1} <Arrow />
+              <Arrow />
             </span>
             <span className="skill-sticker">{skill.sticker} ↗</span>
             <div

@@ -13,3 +13,7 @@ Exact resolved dependency versions, integrity hashes, and package license identi
 Archivo by Omnibus-Type and Manrope by Mikhail Sharanda and Mirko Velimirović are self-hosted Latin WOFF2 fonts from Google Fonts. Both use the SIL Open Font License 1.1. License notices are included in `web/public/fonts/OFL-Archivo.txt` and `web/public/fonts/OFL-Manrope.txt`.
 
 Font sources: https://github.com/google/fonts/tree/main/ofl/archivo and https://github.com/google/fonts/tree/main/ofl/manrope.
+
+- **GSAP** 3.15 (GreenSock Standard "no charge" license, https://gsap.com/standard-license), npm dependency of `web/`, not vendored.
+- **Lenis** 1.3 (MIT, darkroomengineering/lenis), npm dependency of `web/`.
+- **Instrument Serif Italic** (SIL Open Font License 1.1), self-hosted at `web/public/fonts/instrument-serif-italic.woff2`; notice in `web/public/fonts/OFL-InstrumentSerif.txt`.
