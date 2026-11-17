@@ -12,12 +12,12 @@ export const metadata: Metadata = {
   ),
   title: "Cleared | Stablecoin invoices with contract-enforced payees",
   description:
-    "Invoice payments for web3 teams and DAOs. Trusted contractors get paid automatically; new recipients need owner approval.",
+    "For DAOs and web3 teams paying contractors in stablecoins. Your AI agent reads and pays the invoice; the contract refuses any address that isn't the verified one.",
   icons: { icon: "/favicon.svg", apple: "/apple-touch-icon.png" },
   openGraph: {
     title: "Let your agent pay. Keep the last word.",
     description:
-      "A payee registry and guarded vault on Aevum. Let the agent prepare. Let the contract decide.",
+      "For DAOs and web3 teams paying contractors in stablecoins. Your AI agent reads and pays the invoice; the contract refuses any address that isn't the verified one.",
     images: [
       {
         url: "/og.png",

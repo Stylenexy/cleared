@@ -30,29 +30,9 @@ Open **[the live /try demo](https://cleared-ecru.vercel.app/try)**. No wallet, A
 
 If public Aevum contract addresses are configured, /try also offers read-only contract checks using eth_call. They are separate from the sample simulation and produce no transaction receipt. RPC failures are shown as errors.
 
-## The first 30 seconds
+## Present the demo
 
-| Time    | Opening and action                                                                                                                                                                                          |
-| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0-7 s   | "AI agents now read invoices and pay them. Attackers noticed."                                                                                                                                              |
-| 7-14 s  | "Spend caps limit how much. Not to whom."                                                                                                                                                                   |
-| 14-20 s | "What if the AI could be fooled and the money still couldn't move?"                                                                                                                                         |
-| 20-30 s | Show three invoices, the extracted poisoned address and a red rejection. Show the changed-recipient hold. When testnet evidence exists, finish with two Paid events and one Rejected event in the explorer. |
-
-Until deployment, use the labeled simulation and local tests. Do not present sample output as explorer evidence or a live model failure.
-
-## Demo fallback ladder
-
-Start at level 1 while testnet proof is pending. Use level 0 only after contract addresses and verified receipts are recorded.
-
-| Level | Evidence / route | Switch rule |
-| --- | --- | --- |
-| 0 | Live Aevum testnet + [recorded proof](docs/TESTNET-PROOF.md) | If an RPC request fails or exceeds 10 seconds, switch to level 1. Never wait on stage. |
-| 1 | [Wallet-free /try simulation](https://cleared-ecru.vercel.app/try), then [/attack](https://cleared-ecru.vercel.app/attack) | If hosting or the demo fails, switch to level 2. Say explicitly that the simulation sends no transactions. |
-| 2 | Rehearsed demo video (recording pending) | If no recording is available, or playback fails, immediately use level 3. |
-| 3 | [Desktop screenshot](docs/shots/live/home-1440.png), [attack screenshot](docs/shots/live/attack-1440.png) + [Aevum explorer](https://explorer-test.qday.info) | Explain the flow from screenshots. Only open transaction links already recorded in TESTNET-PROOF; explorer homepage alone proves no payment. |
-
-Screenshots show the captured UI and may predate the latest contractor copy and checkbox adjustments. Video and testnet evidence are pending, not implied by the live simulation.
+See the [three-minute demo script, judge Q&A, rehearsal log and fallback ladder](docs/DEMO.md).
 
 ## Run locally
 
@@ -78,33 +58,7 @@ The demo script creates a fresh loopback Anvil chain 31337 using Shanghai, mock 
 
 In /app, load samples, stage as the agent, and choose automatic execution or connect the Anvil owner to approve. /app/keys exposes grant limits, expiry, revoke, daily budget and the kill switch. Rejected items must be reviewed and staged again after an executed batch; the batch itself is single-use.
 
-### Public sample addresses
-
-All destinations below are fictional samples. The source of truth is
-[web/lib/sample-addresses.ts](web/lib/sample-addresses.ts). They are derived from
-public UTF-8 seeds using Keccak-256 and EIP-55, without generating or using keys.
-
-| Sample | EIP-55 address | Seed (prefix `cleared/sample/v1/`) |
-| --- | --- | --- |
-| Northwind Design Studio | `0x166F4C0Ffa36b44204374aA51E2cae4C8e151d5A` | `KOPI_PAGI` |
-| Ledgerline Audits | `0xf695d707A5b57FbC7972D0f6e84E1fd04C38E37b` | `KERTAS_KITA` |
-| Northwind Design Studio lookalike A | `0x166F5022A68693C76082fEa29649e06d719b1d5A` | `KOPI_PAGI_LOOKALIKE_1/15` |
-| Northwind Design Studio lookalike B | `0x166F3e2D69846d20041caD0ddF8Fe9A284C31d5A` | `KOPI_PAGI_LOOKALIKE_2/13` |
-| Northwind Design Studio lookalike C | `0x166FD8EB81837FCfe0122EB33e9944C210fb1d5A` | `KOPI_PAGI_LOOKALIKE_3/7` |
-| Ledgerline Audits updated sample | `0xEa09D102636305ec8B3F41729803CF2a29A09E1E` | `KERTAS_KITA_UPDATED` |
-
-The original seed identifiers (`KOPI_PAGI`, `KERTAS_KITA`) and sample filenames are retained so the public destinations remain reproducible. Display names are Northwind Design Studio and Ledgerline Audits.
-
-Base addresses use the last 20 bytes of `keccak256(seed)`. Lookalikes use the
-base address's first and last four hex characters and the seed-derived address's
-middle 32 hex characters, followed by EIP-55 checksumming. Nonces select identical
-edge casing as well: every Northwind Design Studio sample begins `0x166F` and ends `1d5A`.
-These are constructed poisoning examples, not claims of known attacker accounts.
-
-Run `npm run samples` after changing the source module. It synchronizes TXT/CSV,
-the generated Foundry constants, labeled simulation exports, PDFs and the root
-public mirror. Seed reproduction, checksum validity, address edges, invoice
-consistency and per-character scene highlighting are covered by tests.
+See [sample files, public addresses and seed reproduction](docs/SAMPLES.md).
 
 ## Architecture
 
@@ -187,11 +141,11 @@ extractInvoice() is the shared extraction boundary for /attack and the invoice p
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | LLM_PROVIDER                                   | gemini or anthropic selects the provider                                                    |
 | LLM_API_KEY                                    | Server-only credential; never returned by /api/config                                       |
-| LLM_MODEL                                      | Provider model ID; blank uses gemini-2.5-flash-lite or claude-haiku-4-5-20251001                                        |
+| LLM_MODEL                                      | Provider model ID; blank uses gemini-2.5-flash-lite or claude-haiku-4-5-20251001            |
 | CLEARED_NETWORK                                | demo by default, or local / aevum                                                           |
 | CLEARED_VAULT, CLEARED_REGISTRY, CLEARED_AGENT | Public testnet addresses; vault alone also selects Aevum mode, but all are needed for reads |
 | CLEARED_DEPLOY_BLOCK                           | Start block for efficient reconciliation                                                    |
-| DEPLOYER_PRIVATE_KEY                           | Owner credential for explicitly invoked deployment/proof scripts; unused by the web                   |
+| DEPLOYER_PRIVATE_KEY                           | Owner credential for explicitly invoked deployment/proof scripts; unused by the web         |
 
 .env.example contains placeholders only. Configure environment through your own server process. Nothing reads a private key for the demo. Never give server credentials a NEXT_PUBLIC prefix.
 
@@ -210,19 +164,19 @@ Network configuration follows the [Aevum Starter Kit](https://github.com/qday-io
 
 contracts/script/DeployAevum.s.sol is prepared and compiled only. Its registry constructor also creates the identity directory. Deployment, verification, initialization and funding remain pending. Use team-controlled test recipients; the fictional sample addresses are not treasury destinations.
 
-| Required testnet evidence                | Address / transaction / explorer            |
-| ---------------------------------------- | ------------------------------------------- |
-| IdentityRegistry                         | TODO: deploy, record address and link       |
-| PayeeRegistry                            | TODO: deploy, record address and link       |
-| ClearedVault                             | TODO: deploy, record address and link       |
-| Automatic mature-payee Paid              | TODO: transaction hash and explorer link    |
-| Lookalike Rejected(NameMismatch)         | TODO: transaction hash and explorer link    |
-| New/changed payee Rejected(PayeeOnHold)  | TODO: transaction hash and explorer link    |
-| Owner-approved held-payee Paid           | TODO: transaction hash and explorer link    |
-| Kill switch and agent revoke             | TODO: transaction hashes and explorer links |
-| Deployment block and exact source commit | TODO after authorized release               |
-| Public /try URL                         | https://cleared-ecru.vercel.app/try (simulation) |
-| Demo recording                          | TODO: record the rehearsed demo             |
+| Required testnet evidence                | Address / transaction / explorer                 |
+| ---------------------------------------- | ------------------------------------------------ |
+| IdentityRegistry                         | TODO: deploy, record address and link            |
+| PayeeRegistry                            | TODO: deploy, record address and link            |
+| ClearedVault                             | TODO: deploy, record address and link            |
+| Automatic mature-payee Paid              | TODO: transaction hash and explorer link         |
+| Lookalike Rejected(NameMismatch)         | TODO: transaction hash and explorer link         |
+| New/changed payee Rejected(PayeeOnHold)  | TODO: transaction hash and explorer link         |
+| Owner-approved held-payee Paid           | TODO: transaction hash and explorer link         |
+| Kill switch and agent revoke             | TODO: transaction hashes and explorer links      |
+| Deployment block and exact source commit | TODO after authorized release                    |
+| Public /try URL                          | https://cleared-ecru.vercel.app/try (simulation) |
+| Demo recording                           | TODO: record the rehearsed demo                  |
 
 `docs/local-proof.json` and `docs/local-reconciliation.csv` are authored sample simulations using the current destinations. They contain no transaction hashes and are not chain evidence. See [testing](docs/TESTING.md) for executable verification and [testnet proof preparation](docs/TESTING.md#testnet-proof-preparation) for the six-scenario recorder.
 
@@ -231,7 +185,7 @@ contracts/script/DeployAevum.s.sol is prepared and compiled only. Its registry c
 | Criterion                                     | Implementation                                                                                             | Remaining evidence                                            |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | 1. User experience and presentation           | English UI, full addresses, explicit risk decisions, hold timer, wallet-free /try                          | Manual desktop/mobile visual review                           |
-| 2. Clear and well-structured demo             | Three invoices, editable attack lab, extraction beside decision, freeze scenario                           | Testnet receipts and video                      |
+| 2. Clear and well-structured demo             | Three invoices, editable attack lab, extraction beside decision, freeze scenario                           | Testnet receipts and video                                    |
 | 3. Comprehensive documentation                | Setup, architecture, API packages, reproduction, controls and honest limitations                           | Fill deployment evidence table                                |
 | 4. Innovation and originality                 | Destination identity plus staged-held approval, bounded autonomy and adversarial demo                      | Validation with DAO treasurers                                |
 | 5. Technical quality and platform integration | Shanghai, legacy transactions, six decimals, chunked logs, tested contracts and minimal identity directory | Aevum deployment and operational checks                       |
@@ -249,7 +203,7 @@ npm run build
 npm run check:contrast
 ```
 
-Verified: 70 Foundry + 208 Vitest tests. See [TESTING.md](docs/TESTING.md) for commands, test coverage and boundaries.
+Verified: 70 Foundry + 212 Vitest tests. See [TESTING.md](docs/TESTING.md) for commands, test coverage and boundaries.
 
 The production HTTP smoke in tools/web-smoke.mjs checks five pages, PDF uploads, configuration and a saved attack over loopback without launching a browser. Run a production web server first. No network writes are used by the smoke.
 

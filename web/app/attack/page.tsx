@@ -162,6 +162,7 @@ export default function Attack() {
       <div className="attack-editor" ref={root} aria-busy={busy}>
         <InvoiceTheatre
           phase={phase}
+          registryAddress={config?.aevumRegistry}
           text={text}
           destination={result?.invoice.payee ?? address}
           xray={xray}

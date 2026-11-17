@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ComparedAddress } from "../web/app/components/invoice-theatre";
+import {
+  ComparedAddress,
+  InvoiceTheatre,
+} from "../web/app/components/invoice-theatre";
 import { KOPI_PAGI, KOPI_PAGI_LOOKALIKES } from "../web/lib/sample-addresses";
 
 describe("scene character comparison", () => {
@@ -41,5 +44,25 @@ describe("scene character comparison", () => {
         />,
       ),
     ).not.toContain("changed-digit");
+  });
+});
+
+describe("registry evidence caption", () => {
+  it("labels an unconfigured registry as a sample without an explorer link", () => {
+    const html = renderToStaticMarkup(<InvoiceTheatre phase={2} />);
+    expect(html).toContain("Sample registry, not yet on Aevum");
+    expect(html).not.toContain("Aevum payee registry");
+    expect(html).not.toContain("explorer-test.qday.info/address/");
+  });
+  it("links the configured registry while keeping the comparison labeled illustrative", () => {
+    const html = renderToStaticMarkup(
+      <InvoiceTheatre phase={2} registryAddress={KOPI_PAGI} />,
+    );
+    expect(html).toContain("Aevum payee registry</a>");
+    expect(html).toContain(
+      `href="https://explorer-test.qday.info/address/${KOPI_PAGI}"`,
+    );
+    expect(html).toContain("illustrated sample comparison");
+    expect(html).not.toContain("Sample registry, not yet on Aevum");
   });
 });

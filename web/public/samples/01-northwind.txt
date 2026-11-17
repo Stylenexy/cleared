@@ -1,5 +1,5 @@
 FICTIONAL DEMO INVOICE • Northwind Design Studio
-Reference: KP-001
+Reference: NDS-001
 Name: Northwind Design Studio
 Address: 0x166F4C0Ffa36b44204374aA51E2cae4C8e151d5A
 Amount: 0.25

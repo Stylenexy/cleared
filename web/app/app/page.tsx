@@ -121,7 +121,7 @@ export default function Treasury() {
   async function samples() {
     await upload(
       await Promise.all(
-        ["01-kopi.txt", "02-kertas.txt", "03-beracun.txt"].map(
+        ["01-northwind.txt", "02-ledgerline.txt", "03-poisoned.txt"].map(
           async (p) =>
             new File([await fetch("/samples/" + p).then((r) => r.text())], p),
         ),

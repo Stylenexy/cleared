@@ -4,21 +4,21 @@
   "notice": "Authored sample. No transaction sent; no receipt or balance measured.",
   "rows": [
     {
-      "reference": "KP-001",
+      "reference": "NDS-001",
       "name": "Northwind Design Studio",
       "payee": "0x166F4C0Ffa36b44204374aA51E2cae4C8e151d5A",
       "amount": "0.25",
       "status": "Simulated Paid"
     },
     {
-      "reference": "KK-002",
+      "reference": "LLA-002",
       "name": "Ledgerline Audits",
       "payee": "0xf695d707A5b57FbC7972D0f6e84E1fd04C38E37b",
       "amount": "0.4",
       "status": "Simulated Paid"
     },
     {
-      "reference": "KP-003",
+      "reference": "NDS-003",
       "name": "Northwind Design Studio",
       "payee": "0x166F5022A68693C76082fEa29649e06d719b1d5A",
       "amount": "0.15",

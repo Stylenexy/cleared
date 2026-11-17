@@ -6,6 +6,7 @@ import {
   verifiedAddress,
 } from "../../lib/attack-samples";
 import { DecisionStamp } from "./clearing-flow";
+import type { Address } from "viem";
 
 export function PaperGrain() {
   const id = useId();
@@ -59,6 +60,7 @@ export function InvoiceTheatre({
   rejected = true,
   stamped = phase === 3,
   registry,
+  registryAddress,
   shared = false,
 }: {
   phase: number;
@@ -71,6 +73,7 @@ export function InvoiceTheatre({
   rejected?: boolean;
   stamped?: boolean;
   registry?: ReactNode;
+  registryAddress?: Address;
   shared?: boolean;
 }) {
   const root = useRef<HTMLDivElement>(null),
@@ -188,7 +191,7 @@ export function InvoiceTheatre({
                 [
                   "An invoice with a second instruction.",
                   "The extractor takes the bait.",
-                  "Aevum's payee registry disagrees.",
+                  "The payee registry disagrees.",
                   "The destination is refused.",
                 ][phase]
               }
@@ -226,7 +229,18 @@ export function InvoiceTheatre({
           />
         </div>
         <p className="registry-caption">
-          Aevum payee registry · illustrated sample comparison
+          {registryAddress ? (
+            <a
+              href={`https://explorer-test.qday.info/address/${registryAddress}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Aevum payee registry
+            </a>
+          ) : (
+            "Sample registry, not yet on Aevum"
+          )}
+          {" · illustrated sample comparison"}
         </p>
         {!registry && (
           <div className="scene-verdict" role="status">

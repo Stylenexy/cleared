@@ -19,7 +19,7 @@ describe("upload API", () => {
   it("parses TXT sample uploads", async () => {
     const r = await request([
       new File(
-        [await readFile("web/public/samples/01-kopi.txt")],
+        [await readFile("web/public/samples/01-northwind.txt")],
         "invoice.txt",
       ),
     ]);
@@ -32,7 +32,7 @@ describe("upload API", () => {
     });
     vi.stubGlobal("fetch", fetch);
     const files = await Promise.all(
-      ["01-kopi", "02-kertas", "03-beracun"].map(
+      ["01-northwind", "02-ledgerline", "03-poisoned"].map(
         async (n) =>
           new File([await readFile(`web/public/samples/${n}.pdf`)], n + ".pdf"),
       ),
@@ -43,11 +43,14 @@ describe("upload API", () => {
     expect(r.status).toBe(200);
     expect(j.invoices).toHaveLength(3);
     expect(
+      j.invoices.map((invoice: { reference: string }) => invoice.reference),
+    ).toEqual(["NDS-001", "LLA-002", "NDS-003"]);
+    expect(
       j.invoices.map((invoice: { payee: string }) => invoice.payee),
     ).toEqual([KOPI_PAGI, KERTAS_KITA, KOPI_PAGI_LOOKALIKES[0]]);
     expect(j.invoices[0].invoiceHash).toBe(
       keccak256(
-        new Uint8Array(await readFile("web/public/samples/01-kopi.pdf")),
+        new Uint8Array(await readFile("web/public/samples/01-northwind.pdf")),
       ),
     );
     expect(fetch).not.toHaveBeenCalled();

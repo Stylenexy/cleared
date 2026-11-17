@@ -1,10 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import {
-  createWalletClient,
-  http,
-  decodeEventLog,
-  type Address,
-} from "viem";
+import { createWalletClient, http, decodeEventLog, type Address } from "viem";
 import {
   local,
   stage,
@@ -27,7 +22,7 @@ const config: Config = {
 const client = reader(config);
 if ((await client.getChainId()) !== 31337) throw new Error("Local only");
 const invoices = await Promise.all(
-  ["01-kopi.txt", "02-kertas.txt", "03-beracun.txt"].map(async (p) =>
+  ["01-northwind.txt", "02-ledgerline.txt", "03-poisoned.txt"].map(async (p) =>
     parseInvoice(await readFile("web/public/samples/" + p, "utf8")),
   ),
 );

@@ -4,6 +4,7 @@ import { llmAvailable } from "./invoices";
 import { isAddress } from "viem";
 const address = (value: unknown) =>
   typeof value === "string" && isAddress(value) ? value : undefined;
+export const publicRegistry = () => address(process.env.CLEARED_REGISTRY);
 const block = (value: unknown) =>
   typeof value === "string" && /^\d{1,78}$/.test(value) ? value : "0";
 export async function publicConfig() {
@@ -11,6 +12,7 @@ export async function publicConfig() {
     process.env.CLEARED_NETWORK ??
     (process.env.CLEARED_VAULT ? "aevum" : "demo");
   const common = {
+    aevumRegistry: publicRegistry(),
     llmAvailable: llmAvailable(),
     deployBlock: block(process.env.CLEARED_DEPLOY_BLOCK),
   };
@@ -21,7 +23,7 @@ export async function publicConfig() {
       chainId: 44005,
       rpc: "https://rpc-test.qday.info",
       vault: address(process.env.CLEARED_VAULT),
-      registry: address(process.env.CLEARED_REGISTRY),
+      registry: publicRegistry(),
       agent: address(process.env.CLEARED_AGENT),
       token: "0x456569838f1d43009A91ebA4263147Afd7233483",
     };

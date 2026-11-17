@@ -21,6 +21,7 @@ describe("public configuration", () => {
     ).json();
     expect(config.network).toBe("demo");
     expect(config.vault).toBeUndefined();
+    expect(config.aevumRegistry).toBeUndefined();
     expect(disk.readFile).not.toHaveBeenCalled();
   });
   it("selects Aevum when a public vault address is configured", async () => {
@@ -32,6 +33,26 @@ describe("public configuration", () => {
     expect(config.network).toBe("aevum");
     expect(config.chainId).toBe(44005);
     expect(config.token).toMatch(/^0x4565/);
+  });
+  it("exposes a configured Aevum registry for captions even in demo mode", async () => {
+    vi.stubEnv("CLEARED_NETWORK", "demo");
+    vi.stubEnv("CLEARED_REGISTRY", KOPI_PAGI);
+    const config = await (
+      await GET(new Request("http://localhost/api/config"))
+    ).json();
+    expect(config.network).toBe("demo");
+    expect(config.aevumRegistry).toBe(KOPI_PAGI);
+    expect(config.vault).toBeUndefined();
+    expect(disk.readFile).not.toHaveBeenCalled();
+  });
+  it("keeps the Aevum caption address separate from a local Anvil registry", async () => {
+    vi.stubEnv("CLEARED_NETWORK", "local");
+    disk.readFile.mockResolvedValue(JSON.stringify({ registry: KOPI_PAGI }));
+    const config = await (
+      await GET(new Request("http://localhost/api/config"))
+    ).json();
+    expect(config.registry).toBe(KOPI_PAGI);
+    expect(config.aevumRegistry).toBeUndefined();
   });
   it("exposes capability without exposing provider credentials", async () => {
     vi.stubEnv("LLM_PROVIDER", "anthropic");
@@ -89,6 +110,7 @@ describe("public configuration", () => {
     const text = await response.text();
     expect(text).not.toContain("synthetic-private-test-value");
     expect(JSON.parse(text).deployBlock).toBe("0");
+    expect(JSON.parse(text).aevumRegistry).toBeUndefined();
   });
   it("validates types even for allowlisted fields in local deployment data", async () => {
     vi.stubEnv("CLEARED_NETWORK", "local");

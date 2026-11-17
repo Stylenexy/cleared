@@ -9,7 +9,7 @@ const port = Number(process.env.CLEARED_SMOKE_PORT ?? 3000);
 assert.ok(Number.isInteger(port) && port >= 1024 && port <= 65535);
 const base = `http://127.0.0.1:${port}`;
 for (const [route, copy] of [
-  ["/", "Your agent reads the invoice."],
+  ["/", "For DAOs and web3 teams paying contractors in stablecoins."],
   ["/app", "Treasury desk."],
   ["/app/keys", "Agent controls."],
   ["/try", "Try Cleared."],
@@ -66,13 +66,13 @@ for (const name of [
   "apple-touch-icon.png",
   "fonts/archivo-wide.woff2",
   "fonts/manrope-latin.woff2",
-  "samples/01-kopi.txt",
-  "samples/02-kertas.txt",
-  "samples/03-beracun.txt",
+  "samples/01-northwind.txt",
+  "samples/02-ledgerline.txt",
+  "samples/03-poisoned.txt",
   "samples/invoices.csv",
-  "samples/01-kopi.pdf",
-  "samples/02-kertas.pdf",
-  "samples/03-beracun.pdf",
+  "samples/01-northwind.pdf",
+  "samples/02-ledgerline.pdf",
+  "samples/03-poisoned.pdf",
 ]) {
   const response = await fetch(base + "/" + name);
   assert.equal(response.status, 200, name);
@@ -83,6 +83,8 @@ for (const name of [
   assert.deepEqual(mirror, source, name + " root build mirror");
 }
 const home = await fetch(base).then((r) => r.text());
+assert.ok(home.includes("Sample registry, not yet on Aevum"));
+assert.ok(!home.includes("Aevum payee registry"));
 assert.ok(home.includes(`aria-label="${KOPI_PAGI}"`));
 assert.ok(home.includes(`aria-label="${KOPI_PAGI_LOOKALIKES[0]}"`));
 const cssUrls = [...home.matchAll(/href="([^\"]+\.css[^\"]*)"/g)].map(
@@ -100,7 +102,7 @@ assert.match(css, /prefers-reduced-motion/);
 assert.match(home, /view-transition-name:\s*clearing-document/);
 assert.ok(!home.includes("eyebrow"));
 const form = new FormData();
-for (const name of ["01-kopi", "02-kertas", "03-beracun"])
+for (const name of ["01-northwind", "02-ledgerline", "03-poisoned"])
   form.append(
     "files",
     new File(

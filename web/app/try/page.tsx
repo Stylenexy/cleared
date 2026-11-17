@@ -32,7 +32,7 @@ export default function Try() {
     Promise.all([
       fetch("/api/config").then((r) => r.json()),
       Promise.all(
-        ["01-kopi.txt", "02-kertas.txt", "03-beracun.txt"].map(
+        ["01-northwind.txt", "02-ledgerline.txt", "03-poisoned.txt"].map(
           async (n) =>
             new File([await fetch("/samples/" + n).then((r) => r.text())], n),
         ),
@@ -109,7 +109,7 @@ export default function Try() {
         state.items.map(
           (i) =>
             i.decision +
-            (i.holdSeconds > 0n ? " | " + holdClock(i.holdSeconds) : ""),
+            (i.holdSeconds > 0n ? " · " + holdClock(i.holdSeconds) : ""),
         ),
       );
     } catch (e) {
@@ -192,15 +192,15 @@ export default function Try() {
           </button>
         </div>
         <p>
-          Daily cap: 1 tUSD8 | remaining: {displayAmount(1_000_000n - spent)}{" "}
-          tUSD8 | {frozen ? "Frozen" : "Enabled"}
+          Daily cap: 1 tUSD8 · remaining: {displayAmount(1_000_000n - spent)}{" "}
+          tUSD8 · {frozen ? "Frozen" : "Enabled"}
         </p>
         {scenario !== "trusted" && (
           <p className="notice hold">
-            PayeeOnHold | {holdClock(hold)} remaining | owner approval required
+            PayeeOnHold · {holdClock(hold)} remaining · owner approval required
           </p>
         )}
-        <ol className="invoice-list">
+        <ol className="invoice-list try-invoices">
           {demoInvoices.map((i, n) => (
             <li
               className="invoice"
@@ -209,9 +209,10 @@ export default function Try() {
               data-held={isVerified(i, n) && n === 1 && hold > 0n}
             >
               <div className="receipt-title">
-                <strong>
-                  {i.name} | {i.reference}
-                </strong>
+                <div className="invoice-heading">
+                  <strong>{i.name}</strong>
+                  <span className="invoice-reference">{i.reference}</span>
+                </div>
                 <span
                   className={
                     "badge " +

@@ -15,6 +15,8 @@ export interface Config {
   rpc: string;
   vault?: Address;
   registry?: Address;
+  // Public Aevum registry from the environment, separate from a local registry.
+  aevumRegistry?: Address;
   agent?: Address;
   owner?: Address;
   token?: Address;

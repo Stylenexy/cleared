@@ -2,13 +2,18 @@
 import { useEffect, useRef, useState } from "react";
 import { Arrow } from "./brand";
 import { InvoiceTheatre } from "./invoice-theatre";
+import type { Address } from "viem";
 const beats = [
   "Read the invoice",
   "Follow the address",
   "Compare every character",
   "Refuse the destination",
 ];
-export function ClearingScene() {
+export function ClearingScene({
+  registryAddress,
+}: {
+  registryAddress?: Address;
+}) {
   const root = useRef<HTMLElement>(null);
   const [phase, setPhase] = useState(0);
   useEffect(() => {
@@ -89,7 +94,11 @@ export function ClearingScene() {
             </button>
           ))}
         </div>
-        <InvoiceTheatre phase={phase} shared />
+        <InvoiceTheatre
+          phase={phase}
+          shared
+          registryAddress={registryAddress}
+        />
         <div className="scene-caption">
           <span>Authored extraction sample. No live model called.</span>
           <a href="/attack">

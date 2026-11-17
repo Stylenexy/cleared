@@ -846,6 +846,31 @@ main {
 .invoice strong {
   font-size: 18px;
 }
+.try-invoices .receipt-title {
+  flex-direction: column;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+.try-invoices .invoice-heading {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.try-invoices .invoice-heading strong {
+  /* Reserve two name lines so every status badge starts on the same row. */
+  min-height: 2.8em;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.invoice-reference {
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.try-invoices .badge {
+  white-space: nowrap;
+}
 .invoice > code {
   display: block;
   margin-top: 20px;

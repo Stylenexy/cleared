@@ -3,6 +3,7 @@ import { ClearingScene } from "./components/clearing-scene";
 import { DecisionStamp } from "./components/clearing-flow";
 import { BoundaryRoute } from "./components/boundary-route";
 import { PaperGrain } from "./components/invoice-theatre";
+import { publicRegistry } from "../lib/public-config";
 export default function Home() {
   return (
     <main className="landing">
@@ -15,9 +16,9 @@ export default function Home() {
           </h1>
           <div>
             <p>
-              Your agent reads the invoice. The contract clears the payee. Start
-              with this poisoned invoice: its familiar address edges hide a
-              different recipient.
+              For DAOs and web3 teams paying contractors in stablecoins. Your AI
+              agent reads and pays the invoice; the contract refuses any address
+              that isn't the verified one.
             </p>
             <div className="actions">
               <a className="button" href="/attack">
@@ -32,7 +33,7 @@ export default function Home() {
             </p>
           </div>
         </div>
-        <ClearingScene />
+        <ClearingScene registryAddress={publicRegistry()} />
       </section>
       <BoundaryRoute />
       <section className="receipt-trail" aria-labelledby="trail-title">
@@ -52,9 +53,17 @@ export default function Home() {
         >
           <PaperGrain />
           {[
-            { name: "Northwind Design Studio", amount: "0.25", rejected: false },
+            {
+              name: "Northwind Design Studio",
+              amount: "0.25",
+              rejected: false,
+            },
             { name: "Ledgerline Audits", amount: "0.40", rejected: false },
-            { name: "Northwind Design Studio lookalike", amount: "0.15", rejected: true },
+            {
+              name: "Northwind Design Studio lookalike",
+              amount: "0.15",
+              rejected: true,
+            },
           ].map((i) => (
             <div
               key={i.name}

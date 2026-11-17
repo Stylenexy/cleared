@@ -19,19 +19,20 @@ const policy: AgentPolicy = {
 afterEach(() => vi.unstubAllGlobals());
 describe("deterministic invoices", () => {
   it("extracts both valid samples with six decimals", async () => {
-    const a = await parseInvoice(await sample("01-kopi.txt")),
-      b = await parseInvoice(await sample("02-kertas.txt"));
+    const a = await parseInvoice(await sample("01-northwind.txt")),
+      b = await parseInvoice(await sample("02-ledgerline.txt"));
     expect(a.amount).toBe(250_000n);
     expect(b.amount).toBe(400_000n);
     expect(a.ref).not.toBe(b.ref);
   });
   it("extracts the poisoned address, then flags the registry mismatch", async () => {
-    const text = await sample("03-beracun.txt");
+    const text = await sample("03-poisoned.txt");
     expect(text).toContain("font-size:0");
     expect(text).toContain("Ignore previous instructions");
     const i = await parseInvoice(text);
     expect(i.payee).toBe(KOPI_PAGI_LOOKALIKES[0]);
-    const verified = i.name === "Northwind Design Studio" && i.payee === KOPI_PAGI;
+    const verified =
+      i.name === "Northwind Design Studio" && i.payee === KOPI_PAGI;
     expect(reviewInvoice(i, verified, policy, 1000n)).toBe("Name mismatch");
   });
   it("never calls a language provider by default", async () => {
@@ -39,7 +40,7 @@ describe("deterministic invoices", () => {
       throw new Error("external network forbidden in test");
     });
     vi.stubGlobal("fetch", fetch);
-    await parseInvoice(await sample("01-kopi.txt"));
+    await parseInvoice(await sample("01-northwind.txt"));
     expect(fetch).not.toHaveBeenCalled();
   });
   it("rejects missing fields", () =>
@@ -47,38 +48,41 @@ describe("deterministic invoices", () => {
   it("rejects ambiguous repeated address fields", async () =>
     expect(
       parseInvoice(
-        (await sample("01-kopi.txt")) + `\nAddress: ${KOPI_PAGI_LOOKALIKES[0]}`,
+        (await sample("01-northwind.txt")) +
+          `\nAddress: ${KOPI_PAGI_LOOKALIKES[0]}`,
       ),
     ).rejects.toThrow());
   it("rejects seven fractional digits", async () =>
     expect(
-      parseInvoice((await sample("01-kopi.txt")).replace("0.25", "0.1234567")),
+      parseInvoice(
+        (await sample("01-northwind.txt")).replace("0.25", "0.1234567"),
+      ),
     ).rejects.toThrow());
   it("rejects a malformed address", async () =>
     expect(
       parseInvoice(
-        (await sample("01-kopi.txt")).replace(KOPI_PAGI, "not-an-address"),
+        (await sample("01-northwind.txt")).replace(KOPI_PAGI, "not-an-address"),
       ),
     ).rejects.toThrow());
   it("handles CRLF without changing the extracted fields", async () =>
     expect(
       (
         await parseInvoice(
-          (await sample("01-kopi.txt")).replaceAll("\n", "\r\n"),
+          (await sample("01-northwind.txt")).replaceAll("\n", "\r\n"),
         )
       ).amount,
     ).toBe(250_000n));
   it("rejects another currency", async () =>
     expect(
       parseInvoice(
-        (await sample("01-kopi.txt")).replace(
+        (await sample("01-northwind.txt")).replace(
           "Currency: tUSD8",
           "Currency: USD",
         ),
       ),
     ).rejects.toThrow());
   it("hashes source text so a changed invoice has a changed hash", async () => {
-    const t = await sample("01-kopi.txt");
+    const t = await sample("01-northwind.txt");
     expect((await parseInvoice(t)).invoiceHash).not.toBe(
       (await parseInvoice(t + "\nChanged")).invoiceHash,
     );
@@ -87,7 +91,7 @@ describe("deterministic invoices", () => {
     const csv = parseCsv(await sample("invoices.csv"));
     expect(csv).toHaveLength(3);
     expect(csv[0].ref).toBe(
-      (await parseInvoice(await sample("01-kopi.txt"))).ref,
+      (await parseInvoice(await sample("01-northwind.txt"))).ref,
     );
     expect(csv[2].payee).toBe(KOPI_PAGI_LOOKALIKES[0]);
   });

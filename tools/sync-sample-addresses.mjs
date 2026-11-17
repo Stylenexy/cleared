@@ -8,16 +8,25 @@ import {
 
 // Static artifacts cannot import TypeScript; regenerate them from the same module.
 const samples = [
-  ["01-kopi", "KP-001", "Northwind Design Studio", KOPI_PAGI, "0.25"],
-  ["02-kertas", "KK-002", "Ledgerline Audits", KERTAS_KITA, "0.40"],
-  ["03-beracun", "KP-003", "Northwind Design Studio", KOPI_PAGI_LOOKALIKES[0], "0.15"],
+  ["01-northwind", "NDS-001", "Northwind Design Studio", KOPI_PAGI, "0.25"],
+  ["02-ledgerline", "LLA-002", "Ledgerline Audits", KERTAS_KITA, "0.40"],
+  [
+    "03-poisoned",
+    "NDS-003",
+    "Northwind Design Studio",
+    KOPI_PAGI_LOOKALIKES[0],
+    "0.15",
+  ],
 ];
-for (const [file, , , address] of samples) {
+for (const [file, reference, name, address] of samples) {
   const target = `web/public/samples/${file}.txt`;
   const source = await readFile(target, "utf8");
   await writeFile(
     target,
-    source.replace(/^Address: .+$/m, `Address: ${address}`),
+    source
+      .replace(/^Reference: .+$/m, `Reference: ${reference}`)
+      .replace(/^Name: .+$/m, `Name: ${name}`)
+      .replace(/^Address: .+$/m, `Address: ${address}`),
   );
 }
 await writeFile(

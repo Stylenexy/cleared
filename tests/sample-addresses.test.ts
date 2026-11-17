@@ -55,7 +55,9 @@ describe("public sample destinations", () => {
       expect(address.slice(6, -4).toLowerCase()).not.toBe(
         KOPI_PAGI.slice(6, -4).toLowerCase(),
       );
-      expect(demoVerified({ name: "Northwind Design Studio", payee: address })).toBe(false);
+      expect(
+        demoVerified({ name: "Northwind Design Studio", payee: address }),
+      ).toBe(false);
     },
   );
   it("verifies legitimate names case-insensitively by address and refuses swapped names", () => {
@@ -67,7 +69,9 @@ describe("public sample destinations", () => {
         demoVerified({ name, payee: address.toLowerCase() as typeof address }),
       ).toBe(true);
     }
-    expect(demoVerified({ name: "Northwind Design Studio", payee: KERTAS_KITA })).toBe(false);
+    expect(
+      demoVerified({ name: "Northwind Design Studio", payee: KERTAS_KITA }),
+    ).toBe(false);
     expect(
       demoVerified({ name: "Ledgerline Audits", payee: KERTAS_KITA_UPDATED }),
     ).toBe(false);
@@ -77,15 +81,17 @@ describe("public sample destinations", () => {
       await readFile("web/public/samples/invoices.csv", "utf8"),
     );
     const expected = [KOPI_PAGI, KERTAS_KITA, KOPI_PAGI_LOOKALIKES[0]];
+    const references = ["NDS-001", "LLA-002", "NDS-003"];
     for (const [n, filename] of [
-      "01-kopi",
-      "02-kertas",
-      "03-beracun",
+      "01-northwind",
+      "02-ledgerline",
+      "03-poisoned",
     ].entries()) {
       const txt = await parseInvoice(
         await readFile(`web/public/samples/${filename}.txt`, "utf8"),
       );
       expect(txt.payee).toBe(expected[n]);
+      expect(txt.reference).toBe(references[n]);
       expect(csv[n].payee).toBe(txt.payee);
       expect(csv[n].ref).toBe(txt.ref);
       expect(csv[n].amount).toBe(txt.amount);

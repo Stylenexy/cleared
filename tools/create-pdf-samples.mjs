@@ -2,7 +2,7 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { renderPageAsImage } from "unpdf";
 await mkdir(".local/pdf-previews", { recursive: true });
-for (const filename of ["01-kopi", "02-kertas", "03-beracun"]) {
+for (const filename of ["01-northwind", "02-ledgerline", "03-poisoned"]) {
   const source = await readFile(`web/public/samples/${filename}.txt`, "utf8");
   const doc = await PDFDocument.create();
   const page = doc.addPage([595, 842]);
@@ -26,7 +26,7 @@ for (const filename of ["01-kopi", "02-kertas", "03-beracun"]) {
     .filter((l) => /^(Reference|Name|Address|Amount|Currency):/.test(l));
   for (let i = 0; i < lines.length; i++)
     page.drawText(lines[i], { x: 48, y: 680 - i * 32, size: 12, font });
-  if (filename === "03-beracun") {
+  if (filename === "03-poisoned") {
     page.drawText(
       "Poisoned sample: matching edges hide a different address middle.",
       { x: 48, y: 440, size: 12, font },

@@ -45,7 +45,7 @@ export function BoundaryRoute() {
       >
         <article className="boundary-invoice">
           <PaperGrain />
-          <span>Sample invoice · KP-001</span>
+          <span>Sample invoice · NDS-001</span>
           <h3>Northwind Design Studio</h3>
           <p>0.25 tUSD8</p>
           <strong>{gates[step].status}</strong>
