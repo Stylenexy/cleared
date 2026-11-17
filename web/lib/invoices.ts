@@ -50,10 +50,19 @@ export interface ExtractionResult {
   invoice: Invoice;
   source: ExtractionSource;
 }
+// Accept the standard names, plus a Vercel variable simply named "gemini" (or GEMINI_API_KEY) for Gemini.
+function llmProvider(): string | undefined {
+  if (process.env.LLM_PROVIDER) return process.env.LLM_PROVIDER;
+  if (process.env.gemini || process.env.GEMINI_API_KEY) return "gemini";
+  return undefined;
+}
+function llmApiKey(): string | undefined {
+  return process.env.LLM_API_KEY || process.env.gemini || process.env.GEMINI_API_KEY;
+}
 export function llmAvailable(): boolean {
   return (
-    ["anthropic", "gemini"].includes(process.env.LLM_PROVIDER ?? "") &&
-    !!process.env.LLM_API_KEY
+    ["anthropic", "gemini"].includes(llmProvider() ?? "") &&
+    !!llmApiKey()
   );
 }
 export async function extractInvoice(
@@ -65,10 +74,10 @@ export async function extractInvoice(
   const hash = options.hash ?? keccak256(toBytes(text));
   if (
     options.useLLM !== false &&
-    process.env.LLM_PROVIDER &&
-    process.env.LLM_API_KEY
+    llmProvider() &&
+    llmApiKey()
   ) {
-    const provider = process.env.LLM_PROVIDER;
+    const provider = llmProvider();
     if (provider !== "anthropic" && provider !== "gemini")
       throw new Error("Unsupported LLM_PROVIDER. Choose gemini or anthropic.");
     const system =
@@ -89,9 +98,9 @@ export async function extractInvoice(
         headers: {
           "Content-Type": "application/json",
           ...(provider === "gemini"
-            ? { "x-goog-api-key": process.env.LLM_API_KEY }
+            ? { "x-goog-api-key": llmApiKey() ?? "" }
             : {
-                "x-api-key": process.env.LLM_API_KEY,
+                "x-api-key": llmApiKey() ?? "",
                 "anthropic-version": "2023-06-01",
               }),
         },
