@@ -6179,6 +6179,10 @@ html.lenis body {
   z-index: 3;
   pointer-events: none;
 }
+/* GSAP wraps the pinned intro in a pin-spacer that overlaps the hero; never let it catch clicks. */
+.pin-spacer:has(> .clerk-intro) {
+  pointer-events: none;
+}
 .signal-landing:has(.clerk-intro[data-animated="true"]) .desk-intro {
   margin-top: -100svh;
 }
