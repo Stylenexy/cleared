@@ -93,6 +93,13 @@ export async function readBody(
 export function apiFailure(error: unknown, fallback: string) {
   // Parser/provider errors can include untrusted data. Only our own errors
   // carry public messages; no environment values or provider payloads escape.
+  if (!(error instanceof ApiError)) {
+    // Server log only: error class and a bounded summary, never request bodies.
+    const e = error as { name?: string; shortMessage?: string; message?: string };
+    console.error(
+      `[api] ${fallback} ${e?.name ?? "Error"}: ${String(e?.shortMessage ?? e?.message ?? "").slice(0, 300)}`,
+    );
+  }
   return Response.json(
     { error: error instanceof ApiError ? error.message : fallback },
     {
