@@ -1,6 +1,6 @@
 // Explicit opt-in only. Never invoked by build, tests, samples or the demo.
 import assert from "node:assert/strict";
-import { mkdir, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, writeFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import {
   createPublicClient,
@@ -25,7 +25,7 @@ import {
   invoiceRef,
 } from "@cleared/sdk";
 
-const rpc = "https://rpc-test.qday.info";
+const defaultRpc = "https://rpc-test.qday.info";
 const explorer = "https://explorer-test.qday.info";
 const registryWrites = parseAbi([
   "function owner() view returns (address)",
@@ -54,6 +54,11 @@ export function proofSettings(env) {
   ])
     if (!isAddress(env[name] ?? "") || equal(env[name], zeroAddress))
       throw new Error(`Missing or invalid ${name}.`);
+  if (
+    env.CLEARED_PROOF_RPC !== undefined &&
+    !/^http:\/\/127\.0\.0\.1:\d{2,5}$/.test(env.CLEARED_PROOF_RPC)
+  )
+    throw new Error("CLEARED_PROOF_RPC may only point to a loopback fork.");
   if (!/^[a-zA-Z0-9-]{1,48}$/.test(env.PROOF_RUN_ID ?? ""))
     throw new Error(
       "Set a unique PROOF_RUN_ID (1 to 48 letters, digits or hyphens). Never reuse a run ID.",
@@ -72,6 +77,8 @@ export function proofSettings(env) {
     held: destinations[1],
     lookalike: destinations[2],
     run: env.PROOF_RUN_ID,
+    // Rehearsal only: a loopback fork of Aevum testnet (anvil --fork-url). Never a remote URL.
+    rpc: env.CLEARED_PROOF_RPC ?? defaultRpc,
     trustedName: "Northwind Design Studio",
     heldName: `Ledgerline Audits proof ${env.PROOF_RUN_ID}`,
   };
@@ -85,17 +92,19 @@ export async function runProof(env = process.env) {
     !equal(owner.address, agent.address),
     "Use a dedicated proof agent, different from the owner.",
   );
-  const transport = http(rpc, { timeout: 10_000, retryCount: 0 });
-  const client = createPublicClient({ chain: aevum, transport });
+  // Reads retry transient RPC errors; writes are never resent automatically.
+  const readTransport = http(settings.rpc, { timeout: 20_000, retryCount: 3 });
+  const writeTransport = http(settings.rpc, { timeout: 30_000, retryCount: 0 });
+  const client = createPublicClient({ chain: aevum, transport: readTransport });
   const ownerWallet = createWalletClient({
     account: owner,
     chain: aevum,
-    transport,
+    transport: writeTransport,
   });
   const agentWallet = createWalletClient({
     account: agent,
     chain: aevum,
-    transport,
+    transport: writeTransport,
   });
   const read = (address, abi, functionName, args = []) =>
     client.readContract({ address, abi, functionName, args });
@@ -111,7 +120,7 @@ export async function runProof(env = process.env) {
       .join("\n");
     await writeFile(
       "docs/TESTNET-PROOF.md",
-      `# Aevum testnet proof\n\nRun: ${settings.run}. Chain: 44005. ${complete ? "All six scenarios verified." : "INCOMPLETE: only the confirmed rows below are evidence."}\n\nVault: [${settings.vault}](${explorer}/address/${settings.vault}). Registry: [${settings.registry}](${explorer}/address/${settings.registry}).\n\n| Scenario | Verified observation | Transaction / explorer |\n| --- | --- | --- |\n${table}\n\nOnly confirmed successful receipts with decoded expected events or checked state are recorded. Setup and staging rows are supporting evidence. All writes use legacy type 0.\n`,
+      `# Aevum testnet proof\n\nRun: ${settings.run}. Chain: 44005. ${complete ? "All seven scenarios verified." : "INCOMPLETE: only the confirmed rows below are evidence."}\n\nVault: [${settings.vault}](${explorer}/address/${settings.vault}). Registry: [${settings.registry}](${explorer}/address/${settings.registry}).\n\n| Scenario | Verified observation | Transaction / explorer |\n| --- | --- | --- |\n${table}\n\nOnly confirmed successful receipts with decoded expected events or checked state are recorded. Setup and staging rows are supporting evidence. All writes use legacy type 0.\n`,
     );
   }
   async function write(
@@ -130,6 +139,14 @@ export async function runProof(env = process.env) {
       args,
       type: "legacy",
     });
+    // Record every broadcast hash before waiting, so an RPC failure never loses evidence.
+    console.log(`sent  ${scenario}: ${hash}`);
+    await mkdir(".local", { recursive: true });
+    await appendFile(
+      ".local/proof-sent.log",
+      `${new Date().toISOString()} ${settings.run} ${scenario} ${hash}
+`,
+    );
     const receipt = await client.waitForTransactionReceipt({
       hash,
       timeout: 120_000,
@@ -215,13 +232,17 @@ export async function runProof(env = process.env) {
     (await read(settings.vault, vaultAbi, "dailyRemaining")) >= 300_000n,
     "Daily budget needs 0.30 tUSD8 remaining.",
   );
+  // Owner sends 8 transactions and the agent 9; budget 3M gas each at the current price.
+  const gasPrice = await client.getGasPrice();
   assert(
-    (await client.getBalance({ address: owner.address })) > 0n,
-    "Owner needs test gas.",
+    (await client.getBalance({ address: owner.address })) >=
+      gasPrice * 3_000_000n * 8n,
+    "Owner needs more test gas for 8 transactions.",
   );
   assert(
-    (await client.getBalance({ address: agent.address })) > 0n,
-    "Agent needs test gas.",
+    (await client.getBalance({ address: agent.address })) >=
+      gasPrice * 3_000_000n * 9n,
+    "Agent needs more test gas for 9 transactions.",
   );
   const makeItem = (tag, name, payee) => ({
     ref: invoiceRef(name, `proof-${settings.run}-${tag}`),
@@ -237,7 +258,13 @@ export async function runProof(env = process.env) {
     settings.trustedName,
     settings.lookalike,
   );
-  for (const item of [trusted, held, lookalike])
+  const trustedAgain = makeItem(
+    "trusted-2",
+    settings.trustedName,
+    settings.trusted,
+  );
+  const frozenItem = makeItem("frozen", settings.trustedName, settings.trusted);
+  for (const item of [trusted, held, lookalike, trustedAgain, frozenItem])
     assert.equal(
       await read(settings.vault, vaultAbi, "paidRefs", [item.ref]),
       false,
@@ -296,14 +323,15 @@ export async function runProof(env = process.env) {
       return "Dedicated proof agent granted 1 tUSD8 total / 0.20 per invoice";
     },
   );
-  async function stage(item, tag) {
+  async function stage(itemOrItems, tag) {
+    const items = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems];
     let batch;
     await write(
       agentWallet,
       settings.vault,
       vaultAbi,
       "stageBatch",
-      [[item]],
+      [items],
       `Stage: ${tag}`,
       async (receipt) => {
         const staged = events(receipt, "Staged");
@@ -341,7 +369,9 @@ export async function runProof(env = process.env) {
         assert.equal(events(receipt, "Paid").length, 0);
         return reason === 9
           ? "Rejected: PayeeOnHold (9)"
-          : "Rejected: NameMismatch (1)";
+          : reason === 10
+            ? "Rejected: Frozen (10), kill switch on"
+            : "Rejected: NameMismatch (1)";
       },
     );
   }
@@ -375,12 +405,29 @@ export async function runProof(env = process.env) {
     "3. Hold new recipient",
     9,
   );
-  await execute(
+  // One agent batch with the real contractor and its lookalike: one Paid, one Rejected.
+  const mixedBatch = await stage([trustedAgain, lookalike], "verified + lookalike");
+  await write(
     agentWallet,
-    await stage(lookalike, "lookalike"),
-    lookalike,
-    "4. Refuse lookalike",
-    1,
+    settings.vault,
+    vaultAbi,
+    "agentExecute",
+    [mixedBatch],
+    "4. Same batch: verified paid, lookalike refused",
+    async (receipt) => {
+      const paid = events(receipt, "Paid");
+      const rejected = events(receipt, "Rejected");
+      assert.equal(paid.length, 1);
+      assert.equal(rejected.length, 1);
+      assert.equal(paid[0].batchId, mixedBatch);
+      assert.equal(paid[0].ref, trustedAgain.ref);
+      assert(equal(paid[0].payee, settings.trusted));
+      assert.equal(paid[0].amount, trustedAgain.amount);
+      assert.equal(rejected[0].batchId, mixedBatch);
+      assert.equal(rejected[0].ref, lookalike.ref);
+      assert.equal(rejected[0].reason, 1);
+      return "Paid 0.10 tUSD8 to the verified address; lookalike Rejected: NameMismatch (1)";
+    },
   );
   // Executed batches are single use; restage the same unpaid held reference.
   await execute(
@@ -389,13 +436,50 @@ export async function runProof(env = process.env) {
     held,
     "5. Owner approves held recipient",
   );
+  // Kill switch: a staged payment to a verified, mature contractor is refused while frozen.
+  const frozenBatch = await stage(frozenItem, "kill switch");
+  try {
+    await write(
+      ownerWallet,
+      settings.vault,
+      vaultAbi,
+      "setFrozen",
+      [true],
+      "Setup: kill switch on",
+      async () => {
+        assert.equal(await read(settings.vault, vaultAbi, "frozen"), true);
+        return "Vault frozen";
+      },
+    );
+    await execute(
+      agentWallet,
+      frozenBatch,
+      frozenItem,
+      "6. Kill switch blocks payment",
+      10,
+    );
+  } finally {
+    if (await read(settings.vault, vaultAbi, "frozen"))
+      await write(
+        ownerWallet,
+        settings.vault,
+        vaultAbi,
+        "setFrozen",
+        [false],
+        "Setup: kill switch off",
+        async () => {
+          assert.equal(await read(settings.vault, vaultAbi, "frozen"), false);
+          return "Vault resumed";
+        },
+      );
+  }
   await write(
     ownerWallet,
     settings.vault,
     vaultAbi,
     "revokeAgent",
     [agent.address],
-    "6. Revoke",
+    "7. Revoke agent key",
     async (receipt) => {
       assert.equal(
         await read(settings.vault, vaultAbi, "previewPayment", [
@@ -417,7 +501,7 @@ export async function runProof(env = process.env) {
   );
   complete = true;
   await save();
-  console.log("Six Aevum scenarios verified. Evidence: docs/TESTNET-PROOF.md");
+  console.log("Seven Aevum scenarios verified. Evidence: docs/TESTNET-PROOF.md");
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)

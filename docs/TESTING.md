@@ -73,8 +73,13 @@ When ready to broadcast, invoke `node tools/testnet-proof.mjs` explicitly. It fi
 1. Deposit 1 tUSD8 and check the vault balance delta.
 2. Automatically pay 0.10 tUSD8 to the mature trusted contractor and decode `Paid`.
 3. Register a fresh `Ledgerline Audits proof <run>` identity, stage it and decode `Rejected(PayeeOnHold)`.
-4. Stage the trusted name with the lookalike and decode `Rejected(NameMismatch)` with no `Paid`.
+4. Stage one batch with a second trusted invoice and the lookalike; one execution must emit exactly one `Paid` (verified address) and one `Rejected(NameMismatch)`.
 5. Restage the unpaid held invoice and execute with owner approval; verify its `Paid` fields.
-6. Revoke the dedicated agent, decode `AgentRevoked`, and verify state plus `previewPayment` refusal.
+6. Stage a trusted invoice, turn the kill switch on, execute and decode `Rejected(Frozen)`; the vault is always resumed afterwards, even if a step fails.
+7. Revoke the dedicated agent, decode `AgentRevoked`, and verify state plus `previewPayment` refusal.
 
-The recorder writes transaction hashes and direct explorer links to `docs/TESTNET-PROOF.md` after each confirmed, verified receipt, including setup/staging rows. The report stays marked **INCOMPLETE** until all six scenarios pass. Failures stop execution; already confirmed transactions remain real and are not rolled back. Do not blindly rerun after a partial failure or reuse a run ID: inspect receipts and use a fresh dedicated run. No proof script was executed to produce the currently pending report.
+The recorder writes transaction hashes and direct explorer links to `docs/TESTNET-PROOF.md` after each confirmed, verified receipt, including setup/staging rows. The report stays marked **INCOMPLETE** until all seven scenarios pass. Failures stop execution; already confirmed transactions remain real and are not rolled back. Do not blindly rerun after a partial failure or reuse a run ID: inspect receipts and use a fresh dedicated run. No proof script was executed to produce the currently pending report.
+
+Every broadcast hash is printed and appended to the ignored `.local/proof-sent.log` before the script waits for its receipt, so an RPC failure never loses a sent transaction. Reads retry transient RPC errors three times; writes are never resent automatically. Preflight requires enough test gas for 8 owner and 9 agent transactions at the current gas price.
+
+**Rehearsal on a local fork.** `CLEARED_PROOF_RPC` accepts only a loopback URL. Start `anvil --fork-url https://rpc-test.qday.info --port 8547`, advance time past the trust delay (`cast rpc evm_increaseTime 90000` then `cast rpc evm_mine`), and run the recorder with `CLEARED_PROOF_RPC=http://127.0.0.1:8547`. Nothing reaches the public chain; restore `docs/TESTNET-PROOF.md` afterwards because the fork's hashes are not evidence. A full fork rehearsal of all seven scenarios passed on 17 Nov 2026.

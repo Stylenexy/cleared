@@ -19,6 +19,17 @@ const settings = () => ({
 });
 afterEach(() => vi.unstubAllGlobals());
 describe("future testnet proof opt-in", () => {
+  it("uses Aevum testnet RPC unless a loopback rehearsal fork is given", () => {
+    expect(proofSettings(settings()).rpc).toBe("https://rpc-test.qday.info");
+    expect(
+      proofSettings({ ...settings(), CLEARED_PROOF_RPC: "http://127.0.0.1:8547" })
+        .rpc,
+    ).toBe("http://127.0.0.1:8547");
+    for (const url of ["https://evil.example", "http://localhost:8545", "http://127.0.0.1:8545/x"])
+      expect(() =>
+        proofSettings({ ...settings(), CLEARED_PROOF_RPC: url }),
+      ).toThrow("loopback");
+  });
   it("requires explicit broadcast opt-in before looking at credentials", () => {
     expect(() => proofSettings({})).toThrow("CLEARED_PROOF_BROADCAST");
   });
