@@ -12,6 +12,7 @@ import {
   type SerializedInvoice,
 } from "../../lib/invoice-wire";
 import { demoPolicy, demoVerified } from "../../lib/demo";
+import { KERTAS_KITA_UPDATED } from "../../lib/sample-addresses";
 import { readPaymentState } from "../../lib/payment-state";
 import type { Config } from "../../lib/client";
 import { ClearingFlow, DecisionStamp } from "../components/clearing-flow";
@@ -61,7 +62,7 @@ export default function Try() {
   }, [hold > 0n]);
   const demoInvoices = invoices.map((i, n) =>
     scenario === "changed" && n === 1
-      ? { ...i, payee: "0x2222222222222222222222222222222222222223" as const }
+      ? { ...i, payee: KERTAS_KITA_UPDATED }
       : i,
   );
   const isVerified = (i: Invoice, n: number) =>

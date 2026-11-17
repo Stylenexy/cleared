@@ -4,6 +4,7 @@ pragma solidity ^0.8.28;
 import {ClearedVault, IUSD8} from "../src/ClearedVault.sol";
 import {PayeeRegistry} from "../src/PayeeRegistry.sol";
 import {MockUSD8} from "../src/MockUSD8.sol";
+import {SampleAddresses} from "./SampleAddresses.sol";
 
 interface Vm {
     function prank(address) external;
@@ -28,8 +29,8 @@ contract WrongDecimals {
 abstract contract VaultFixture {
     Vm constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
     address constant AGENT = address(0xA6E);
-    address constant VENDOR = 0x1111111111111111111111111111111111111111;
-    address constant POISON = 0x1111111111111111111111111111111111111112;
+    address constant VENDOR = SampleAddresses.KOPI_PAGI;
+    address constant POISON = SampleAddresses.KOPI_PAGI_LOOKALIKE_1;
     MockUSD8 token;
     PayeeRegistry registry;
     ClearedVault vault;
@@ -41,7 +42,7 @@ abstract contract VaultFixture {
         token = new MockUSD8();
         registry = new PayeeRegistry(address(this));
         vault = new ClearedVault(address(this), IUSD8(address(token)), registry);
-        registry.register("Kopi Pagi", VENDOR, bytes32(0));
+        registry.register("Northwind Design Studio", VENDOR, bytes32(0));
         token.mint(address(this), 100e6);
         token.approve(address(vault), 100e6);
         vault.deposit(100e6);
@@ -49,7 +50,7 @@ abstract contract VaultFixture {
     }
 
     function item(uint256 ref, uint256 amount) internal pure returns (ClearedVault.Item memory) {
-        return ClearedVault.Item(bytes32(ref), "Kopi Pagi", VENDOR, amount, keccak256("invoice"));
+        return ClearedVault.Item(bytes32(ref), "Northwind Design Studio", VENDOR, amount, keccak256("invoice"));
     }
 
     function stage(ClearedVault.Item memory it) internal returns (uint256) {
@@ -68,6 +69,42 @@ abstract contract VaultFixture {
 }
 
 contract ClearedVaultTest is VaultFixture {
+    event Withdrawn(address indexed owner, uint256 amount);
+
+    function testWithdrawEmitsOwnerAndAmountAfterTransfer() public {
+        vm.expectEmit(true, false, false, true);
+        emit Withdrawn(address(this), 250_000);
+        vault.withdraw(250_000);
+        require(token.balanceOf(address(this)) == 250_000);
+        require(token.balanceOf(address(vault)) == 100e6 - 250_000);
+    }
+
+    function testNonOwnerCannotWithdraw() public {
+        vm.prank(AGENT);
+        vm.expectRevert(ClearedVault.Unauthorized.selector);
+        vault.withdraw(250_000);
+    }
+
+    function testWithdrawalTransferFailureReverts() public {
+        vm.expectRevert(ClearedVault.TransferFailed.selector);
+        vault.withdraw(100e6 + 1);
+        require(token.balanceOf(address(vault)) == 100e6);
+    }
+
+    function testAllSampleLookalikesRejected() public {
+        address[3] memory lookalikes = [
+            SampleAddresses.KOPI_PAGI_LOOKALIKE_1,
+            SampleAddresses.KOPI_PAGI_LOOKALIKE_2,
+            SampleAddresses.KOPI_PAGI_LOOKALIKE_3
+        ];
+        for (uint256 i = 0; i < lookalikes.length; i++) {
+            ClearedVault.Item memory it = item(1000 + i, 150_000);
+            it.payee = lookalikes[i];
+            reject(stage(it), 1000 + i, ClearedVault.Reason.NameMismatch);
+            require(token.balanceOf(lookalikes[i]) == 0, "lookalike received funds");
+        }
+    }
+
     function testSixDecimals() public {
         vault.approveAndExecute(stage(item(1, 10_001)));
         require(token.balanceOf(VENDOR) == 10_001);
@@ -136,13 +173,13 @@ contract ClearedVaultTest is VaultFixture {
 
     function testExactNameMatching() public {
         ClearedVault.Item memory it = item(1, 1);
-        it.name = "kopi pagi";
+        it.name = "northwind design studio";
         reject(stage(it), 1, ClearedVault.Reason.NameMismatch);
     }
 
     function testRegistryRecheckedAtExecution() public {
         uint256 id = stage(item(1, 1));
-        registry.remove("Kopi Pagi");
+        registry.remove("Northwind Design Studio");
         reject(id, 1, ClearedVault.Reason.NameMismatch);
     }
 

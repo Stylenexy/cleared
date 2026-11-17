@@ -1,3 +1,4 @@
+import { KOPI_PAGI, KOPI_PAGI_LOOKALIKES } from "../web/lib/sample-addresses";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { readFile } from "node:fs/promises";
 import {
@@ -29,10 +30,8 @@ describe("deterministic invoices", () => {
     expect(text).toContain("font-size:0");
     expect(text).toContain("Ignore previous instructions");
     const i = await parseInvoice(text);
-    expect(i.payee).toBe("0x1111111111111111111111111111111111111112");
-    const verified =
-      i.name === "Kopi Pagi" &&
-      i.payee === "0x1111111111111111111111111111111111111111";
+    expect(i.payee).toBe(KOPI_PAGI_LOOKALIKES[0]);
+    const verified = i.name === "Northwind Design Studio" && i.payee === KOPI_PAGI;
     expect(reviewInvoice(i, verified, policy, 1000n)).toBe("Name mismatch");
   });
   it("never calls a language provider by default", async () => {
@@ -48,8 +47,7 @@ describe("deterministic invoices", () => {
   it("rejects ambiguous repeated address fields", async () =>
     expect(
       parseInvoice(
-        (await sample("01-kopi.txt")) +
-          "\nAddress: 0x1111111111111111111111111111111111111112",
+        (await sample("01-kopi.txt")) + `\nAddress: ${KOPI_PAGI_LOOKALIKES[0]}`,
       ),
     ).rejects.toThrow());
   it("rejects seven fractional digits", async () =>
@@ -59,10 +57,7 @@ describe("deterministic invoices", () => {
   it("rejects a malformed address", async () =>
     expect(
       parseInvoice(
-        (await sample("01-kopi.txt")).replace(
-          "0x1111111111111111111111111111111111111111",
-          "not-an-address",
-        ),
+        (await sample("01-kopi.txt")).replace(KOPI_PAGI, "not-an-address"),
       ),
     ).rejects.toThrow());
   it("handles CRLF without changing the extracted fields", async () =>
@@ -94,14 +89,14 @@ describe("deterministic invoices", () => {
     expect(csv[0].ref).toBe(
       (await parseInvoice(await sample("01-kopi.txt"))).ref,
     );
-    expect(csv[2].payee).toMatch(/1112$/);
+    expect(csv[2].payee).toBe(KOPI_PAGI_LOOKALIKES[0]);
   });
   it("handles quoted CSV fields and rejects unterminated quotes", () => {
     expect(
       parseCsv(
-        'reference,name,payee,amount,currency\n"INV,1","Kopi, Pagi",0x1111111111111111111111111111111111111111,0.25,tUSD8',
+        `reference,name,payee,amount,currency\n"INV,1","Northwind, Design Studio",${KOPI_PAGI},0.25,tUSD8`,
       )[0].name,
-    ).toBe("Kopi, Pagi");
+    ).toBe("Northwind, Design Studio");
     expect(() =>
       parseCsv('reference,name,payee,amount,currency\n"unterminated'),
     ).toThrow();
@@ -110,9 +105,7 @@ describe("deterministic invoices", () => {
     expect(() =>
       parseCsv(
         "reference,name,payee,amount,currency\n" +
-          Array(51)
-            .fill("a,b,0x1111111111111111111111111111111111111111,1,tUSD8")
-            .join("\n"),
+          Array(51).fill(`a,b,${KOPI_PAGI},1,tUSD8`).join("\n"),
       ),
     ).toThrow());
 });

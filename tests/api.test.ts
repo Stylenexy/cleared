@@ -2,6 +2,11 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { readFile } from "node:fs/promises";
 import { keccak256 } from "viem";
 import { POST } from "../web/app/api/parse/route";
+import {
+  KOPI_PAGI,
+  KERTAS_KITA,
+  KOPI_PAGI_LOOKALIKES,
+} from "../web/lib/sample-addresses";
 afterEach(() => vi.unstubAllGlobals());
 async function request(files: File[]) {
   const form = new FormData();
@@ -37,7 +42,9 @@ describe("upload API", () => {
     expect(j.error).toBeUndefined();
     expect(r.status).toBe(200);
     expect(j.invoices).toHaveLength(3);
-    expect(j.invoices[2].payee).toMatch(/1112$/);
+    expect(
+      j.invoices.map((invoice: { payee: string }) => invoice.payee),
+    ).toEqual([KOPI_PAGI, KERTAS_KITA, KOPI_PAGI_LOOKALIKES[0]]);
     expect(j.invoices[0].invoiceHash).toBe(
       keccak256(
         new Uint8Array(await readFile("web/public/samples/01-kopi.pdf")),

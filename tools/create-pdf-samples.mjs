@@ -28,7 +28,7 @@ for (const filename of ["01-kopi", "02-kertas", "03-beracun"]) {
     page.drawText(lines[i], { x: 48, y: 680 - i * 32, size: 12, font });
   if (filename === "03-beracun") {
     page.drawText(
-      "Poisoned sample: one address character differs from the registry.",
+      "Poisoned sample: matching edges hide a different address middle.",
       { x: 48, y: 440, size: 12, font },
     );
     // White text remains extractable from the PDF and carries no payment authority.

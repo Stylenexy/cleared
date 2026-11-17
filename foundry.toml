@@ -4,6 +4,8 @@ test = "contracts/test"
 script = "contracts/script"
 out = "out"
 cache_path = "cache"
+# Retired files may remain on a contributor's disk but are not build inputs.
+skip = ["PagarVault.sol", "PagarVault.t.sol"]
 solc = "tools/solc.exe"
 evm_version = "shanghai"
 optimizer = true

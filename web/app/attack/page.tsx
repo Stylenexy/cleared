@@ -127,7 +127,7 @@ export default function Attack() {
   const fooled =
     result &&
     result.invoice.payee.toLowerCase() !== verifiedAddress.toLowerCase() &&
-    result.invoice.name === "Kopi Pagi";
+    result.invoice.name === "Northwind Design Studio";
   return (
     <main className="desk attack-lab">
       <div className="lab-heading">
@@ -207,7 +207,7 @@ export default function Attack() {
                     checked={hidden}
                     onChange={(e) => select(address, e.target.checked)}
                   />
-                  Inject a hidden instruction (restores the sample)
+                  <span>Inject a hidden instruction (restores the sample)</span>
                 </label>
                 {config?.llmAvailable && (
                   <label className="checkbox">
@@ -217,8 +217,10 @@ export default function Attack() {
                       checked={live}
                       onChange={(e) => setLive(e.target.checked)}
                     />
-                    Use live extraction; send invoice text to the configured
-                    provider
+                    <span>
+                      Use live extraction; send invoice text to the configured
+                      provider
+                    </span>
                   </label>
                 )}
                 {config?.network === "aevum" && config.vault && (
@@ -229,7 +231,7 @@ export default function Attack() {
                       checked={contract}
                       onChange={(e) => setContract(e.target.checked)}
                     />
-                    Read the contract decision with eth_call
+                    <span>Read the contract decision with eth_call</span>
                   </label>
                 )}
                 <p>

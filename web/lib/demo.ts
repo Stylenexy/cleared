@@ -1,4 +1,5 @@
 import { reviewAutonomy, type AgentPolicy, type Invoice } from "@cleared/sdk";
+import { KOPI_PAGI, KERTAS_KITA } from "./sample-addresses";
 export const demoPolicy: AgentPolicy = {
   totalLimit: 1_000_000n,
   perItemLimit: 500_000n,
@@ -9,10 +10,10 @@ export const demoPolicy: AgentPolicy = {
 };
 export function demoVerified(i: Pick<Invoice, "name" | "payee">): boolean {
   return (
-    (i.name === "Kopi Pagi" &&
-      i.payee.toLowerCase() === "0x1111111111111111111111111111111111111111") ||
-    (i.name === "Kertas Kita" &&
-      i.payee.toLowerCase() === "0x2222222222222222222222222222222222222222")
+    (i.name === "Northwind Design Studio" &&
+      i.payee.toLowerCase() === KOPI_PAGI.toLowerCase()) ||
+    (i.name === "Ledgerline Audits" &&
+      i.payee.toLowerCase() === KERTAS_KITA.toLowerCase())
   );
 }
 export function demoDecision(

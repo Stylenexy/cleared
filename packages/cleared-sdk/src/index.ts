@@ -39,6 +39,7 @@ export const vaultAbi = parseAbi([
   "function configureAgent(address agent, uint256 total, uint256 perItem, uint64 expiresAt)",
   "function revokeAgent(address agent)",
   "function deposit(uint256 amount)",
+  "function withdraw(uint256 amount)",
   "function stageBatch((bytes32 ref, string name, address payee, uint256 amount, bytes32 invoiceHash)[] items) returns (uint256)",
   "function approveAndExecute(uint256 batchId)",
   "function agentExecute(uint256 batchId)",
@@ -54,6 +55,8 @@ export const vaultAbi = parseAbi([
   "event Staged(uint256 indexed batchId, address indexed agent, uint256 count)",
   "event Paid(uint256 indexed batchId, bytes32 indexed ref, address indexed payee, uint256 amount, bytes32 invoiceHash)",
   "event Rejected(uint256 indexed batchId, bytes32 indexed ref, uint8 reason)",
+  "event Withdrawn(address indexed owner, uint256 amount)",
+  "event AgentRevoked(address indexed agent)",
 ]);
 export const registryAbi = parseAbi([
   "function isVerified(string name, address account) view returns (bool)",
@@ -263,7 +266,28 @@ export interface Reconciliation {
   payee: Address;
   amount: string;
   status: string;
+  explanation: string;
   transactionHash: string;
+}
+function explainMismatch(invoice: Invoice, payment: Settlement): string {
+  const details = [
+    `${invoice.reference} expected ${displayAmount(invoice.amount)} tUSD8 to ${invoice.payee}; Paid shows ${displayAmount(payment.amount)} tUSD8 to ${payment.payee}`,
+  ];
+  if (payment.amount < invoice.amount)
+    details.push(
+      `short by ${displayAmount(invoice.amount - payment.amount)} tUSD8`,
+    );
+  if (payment.amount > invoice.amount)
+    details.push(
+      `over by ${displayAmount(payment.amount - invoice.amount)} tUSD8`,
+    );
+  if (payment.payee.toLowerCase() !== invoice.payee.toLowerCase())
+    details.push("the recipient address differs");
+  if (payment.invoiceHash !== invoice.invoiceHash)
+    details.push(
+      `the document hash differs (expected ${invoice.invoiceHash}, Paid shows ${payment.invoiceHash})`,
+    );
+  return details.join("; ") + ".";
 }
 export interface Rejection {
   reason: number;
@@ -293,7 +317,7 @@ export function reconcileRows(
       : exact.length
         ? reasons[6]
         : matching.length
-          ? "Payment data mismatch"
+          ? explainMismatch(i, matching[0])
           : reason !== undefined
             ? (reasons[reason] ?? "Rejected")
             : "Unpaid";
@@ -303,6 +327,11 @@ export function reconcileRows(
       payee: i.payee,
       amount: displayAmount(i.amount),
       status,
+      explanation: paid
+        ? `${i.reference} was paid in full to the expected recipient with the expected document hash.`
+        : matching.length && !exact.length
+          ? status
+          : `${i.reference}: ${status}.`,
       transactionHash:
         paid?.transactionHash ??
         (typeof rejection === "object"
@@ -337,7 +366,11 @@ export async function reconcile(
   const payments: Settlement[] = [];
   const rejected = new Map<string, Rejection>();
   for (const log of logs) {
-    if (batchId !== undefined && log.args.batchId !== batchId) continue;
+    if (
+      batchId !== undefined &&
+      (!("batchId" in log.args) || log.args.batchId !== batchId)
+    )
+      continue;
     if (log.eventName === "Paid")
       payments.push({ ...log.args, transactionHash: log.transactionHash });
     if (log.eventName === "Rejected")
@@ -353,13 +386,22 @@ export function toCsv(rows: readonly Reconciliation[]): string {
   const quote = (s: string) =>
     '"' + (/^[\s]*[=+@-]/.test(s) ? "'" + s : s).replaceAll('"', '""') + '"';
   return [
-    ["Reference", "Payee", "Address", "tUSD8", "Status", "Transaction"],
+    [
+      "Reference",
+      "Payee",
+      "Address",
+      "tUSD8",
+      "Status",
+      "Explanation",
+      "Transaction",
+    ],
     ...rows.map((r) => [
       r.reference,
       r.name,
       r.payee,
       r.amount,
       r.status,
+      r.explanation,
       r.transactionHash,
     ]),
   ]

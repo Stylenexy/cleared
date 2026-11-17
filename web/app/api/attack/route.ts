@@ -2,7 +2,14 @@ import { z } from "zod";
 import { extractInvoice } from "../../../lib/invoices";
 import { serializeInvoice } from "../../../lib/invoice-wire";
 import { demoDecision } from "../../../lib/demo";
-import { GET as configGET } from "../config/route";
+import { publicConfig } from "../../../lib/public-config";
+import {
+  ApiError,
+  apiFailure,
+  guardRequest,
+  readBody,
+  BODY_LIMITS,
+} from "../../../lib/api-security";
 import { readPaymentState } from "../../../lib/payment-state";
 import type { Config } from "../../../lib/client";
 export const runtime = "nodejs";
@@ -15,22 +22,24 @@ const schema = z
   .strict();
 export async function POST(request: Request) {
   try {
+    guardRequest(request, "attack");
     if (
-      request.headers.get("origin") &&
-      request.headers.get("origin") !== new URL(request.url).origin
+      request.headers
+        .get("content-type")
+        ?.split(";")[0]
+        .trim()
+        .toLowerCase() !== "application/json"
     )
-      return Response.json(
-        { error: "Cross-origin extraction is not allowed." },
-        { status: 403 },
-      );
-    const raw = await request.text();
-    if (raw.length > 24_000) throw new Error("Attack input is too large.");
+      throw new ApiError(415, "Use application/json.");
+    const raw = new TextDecoder().decode(
+      await readBody(request, BODY_LIMITS.attack),
+    );
     const input = schema.parse(JSON.parse(raw));
     const extracted = await extractInvoice(input.text, { useLLM: input.live });
     let decision = demoDecision(extracted.invoice),
       decisionSource = "sample-policy-simulation";
     if (input.contract) {
-      const config = (await (await configGET()).json()) as Config;
+      const config = (await publicConfig()) as Config;
       if (config.network !== "aevum" || !config.vault)
         throw new Error("No Aevum contract configured.");
       const state = await readPaymentState(config, [extracted.invoice]);
@@ -45,9 +54,9 @@ export async function POST(request: Request) {
       rejected: decision !== "Verified",
     });
   } catch (e) {
-    return Response.json(
-      { error: e instanceof Error ? e.message : "Could not run attack." },
-      { status: 400 },
+    return apiFailure(
+      e,
+      "Could not run attack. Check input and provider configuration.",
     );
   }
 }

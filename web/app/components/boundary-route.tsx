@@ -12,7 +12,7 @@ const gates = [
   {
     title: "Registered to the right name",
     detail:
-      "The full address must belong to Kopi Pagi. An invoice cannot replace the registry entry.",
+      "The full address must belong to Northwind Design Studio. An invoice cannot replace the registry entry.",
     status: "Identity matches",
   },
   {
@@ -46,7 +46,7 @@ export function BoundaryRoute() {
         <article className="boundary-invoice">
           <PaperGrain />
           <span>Sample invoice · KP-001</span>
-          <h3>Kopi Pagi</h3>
+          <h3>Northwind Design Studio</h3>
           <p>0.25 tUSD8</p>
           <strong>{gates[step].status}</strong>
         </article>

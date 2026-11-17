@@ -52,9 +52,9 @@ export default function Home() {
         >
           <PaperGrain />
           {[
-            { name: "Kopi Pagi", amount: "0.25", rejected: false },
-            { name: "Kertas Kita", amount: "0.40", rejected: false },
-            { name: "Kopi Pagi lookalike", amount: "0.15", rejected: true },
+            { name: "Northwind Design Studio", amount: "0.25", rejected: false },
+            { name: "Ledgerline Audits", amount: "0.40", rejected: false },
+            { name: "Northwind Design Studio lookalike", amount: "0.15", rejected: true },
           ].map((i) => (
             <div
               key={i.name}

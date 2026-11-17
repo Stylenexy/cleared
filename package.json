@@ -14,8 +14,9 @@
     "build": "npm run build --workspace web && node tools/prepare-root-public.mjs",
     "typecheck": "tsc --noEmit && npm run typecheck --workspace web",
     "test": "vitest run",
+    "samples": "node tools/sync-sample-addresses.mjs && node tools/create-pdf-samples.mjs && node tools/prepare-root-public.mjs",
     "demo": "node tools/local-demo.mjs",
-    "demo:check": "node tools/local-check.ts",
+    "demo:check": "node --import tsx tools/local-check.ts",
     "setup": "node tools/setup-solc.mjs && node tools/setup-foundry.mjs",
     "check:contrast": "node tools/check-contrast.mjs"
   },

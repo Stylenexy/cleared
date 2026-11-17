@@ -80,6 +80,7 @@ contract ClearedVault {
         uint256 indexed batchId, bytes32 indexed ref, address indexed payee, uint256 amount, bytes32 invoiceHash
     );
     event Rejected(uint256 indexed batchId, bytes32 indexed ref, Reason reason);
+    event Withdrawn(address indexed owner, uint256 amount);
 
     modifier onlyOwner() {
         if (msg.sender != owner) revert Unauthorized();
@@ -138,6 +139,7 @@ contract ClearedVault {
 
     function withdraw(uint256 amount) external onlyOwner locked {
         _transfer(abi.encodeCall(token.transfer, (owner, amount)));
+        emit Withdrawn(owner, amount);
     }
 
     function stageBatch(Item[] calldata items) external returns (uint256 id) {

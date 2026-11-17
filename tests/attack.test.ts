@@ -32,7 +32,7 @@ afterEach(() => {
 const hash = keccak256(toBytes("sample"));
 const fields = {
   reference: "INV-1",
-  name: "Kopi Pagi",
+  name: "Northwind Design Studio",
   payee: verifiedAddress,
   amount: "0.25",
   currency: "tUSD8",
@@ -209,7 +209,7 @@ describe("extraction boundary and attack lab", () => {
   it.each(lookalikes)(
     "sample poisoning keeps both address edges while changing the middle: %s",
     (address) => {
-      expect(address).toMatch(/^0x[0-9a-f]{40}$/);
+      expect(address).toMatch(/^0x[0-9a-fA-F]{40}$/);
       expect(address.slice(2, 6)).toBe(verifiedAddress.slice(2, 6));
       expect(address.slice(-4)).toBe(verifiedAddress.slice(-4));
       expect(address.slice(6, -4)).not.toBe(verifiedAddress.slice(6, -4));

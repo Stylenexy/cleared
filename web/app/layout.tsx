@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Navigation } from "./components/navigation";
 import { Arrow, BrandMark } from "./components/brand";
 import "./globals.css";
+// Nonce-bearing Next scripts must be rendered per request, never prerendered.
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.VERCEL_URL

@@ -1,6 +1,7 @@
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { createPublicClient, createWalletClient, http } from "viem";
 import { anvil } from "viem/chains";
+import { KOPI_PAGI, KERTAS_KITA } from "../web/lib/sample-addresses.ts";
 // Deliberately fixed loopback endpoint; this script cannot target Aevum.
 const transport = http("http://127.0.0.1:8545");
 const client = createPublicClient({ chain: anvil, transport });
@@ -50,13 +51,13 @@ async function write(address, name, fn, args) {
   );
 }
 await write(registry, "PayeeRegistry", "register", [
-  "Kopi Pagi",
-  "0x1111111111111111111111111111111111111111",
+  "Northwind Design Studio",
+  KOPI_PAGI,
   "0x" + "00".repeat(32),
 ]);
 await write(registry, "PayeeRegistry", "register", [
-  "Kertas Kita",
-  "0x2222222222222222222222222222222222222222",
+  "Ledgerline Audits",
+  KERTAS_KITA,
   "0x" + "00".repeat(32),
 ]);
 await write(registry, "PayeeRegistry", "registerAgent", [

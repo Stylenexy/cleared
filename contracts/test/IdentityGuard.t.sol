@@ -8,10 +8,11 @@ import {MockUSD8} from "../src/MockUSD8.sol";
 import {IUSD8} from "../src/ClearedVault.sol";
 import {ClearedGuard, IClearedRegistry} from "../../packages/cleared-guard/src/ClearedGuard.sol";
 import {Vm} from "./ClearedVault.t.sol";
+import {SampleAddresses} from "./SampleAddresses.sol";
 
 contract IdentityGuardTest {
     Vm constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
-    address constant VENDOR = address(0x123);
+    address constant VENDOR = SampleAddresses.KOPI_PAGI;
     IdentityRegistry identity;
     PayeeRegistry registry;
     MockUSD8 token;
@@ -95,8 +96,8 @@ contract IdentityGuardTest {
 
     function testCheckoutRejectsLookalike() public {
         vm.expectRevert(ClearedGuard.UnclearedPayee.selector);
-        checkout.pay("Contractor", address(0x124), 1);
-        require(token.balanceOf(address(0x124)) == 0);
+        checkout.pay("Contractor", SampleAddresses.KOPI_PAGI_LOOKALIKE_1, 1);
+        require(token.balanceOf(SampleAddresses.KOPI_PAGI_LOOKALIKE_1) == 0);
     }
 
     function testCheckoutRechecksRemoval() public {

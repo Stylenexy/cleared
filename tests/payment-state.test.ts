@@ -1,3 +1,4 @@
+import { KOPI_PAGI } from "../web/lib/sample-addresses";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readPaymentState } from "../web/lib/payment-state";
 import { validateInvoice } from "../web/lib/invoices";
@@ -11,7 +12,7 @@ vi.mock("../web/lib/client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../web/lib/client")>()),
   reader: () => rpc,
 }));
-const address = "0x1111111111111111111111111111111111111111" as const;
+const address = KOPI_PAGI;
 const config: Config = {
   network: "aevum",
   chainId: 44005,
@@ -26,7 +27,7 @@ const config: Config = {
 const invoice = validateInvoice(
   {
     reference: "1",
-    name: "Kopi Pagi",
+    name: "Northwind Design Studio",
     payee: address,
     amount: "0.25",
     currency: "tUSD8",

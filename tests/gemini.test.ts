@@ -13,7 +13,7 @@ import { GET } from "../web/app/api/config/route";
 
 const fields = {
   reference: "KP-1",
-  name: "Kopi Pagi",
+  name: "Northwind Design Studio",
   payee: verifiedAddress,
   amount: "0.25",
   currency: "tUSD8",
@@ -92,7 +92,7 @@ describe("Gemini extraction adapter", () => {
   });
   it("advertises Gemini capability without exposing credentials", async () => {
     expect(llmAvailable()).toBe(true);
-    const response = await (await GET()).text();
+    const response = await (await GET(new Request("http://localhost/api/config"))).text();
     expect(JSON.parse(response).llmAvailable).toBe(true);
     expect(response).not.toContain("synthetic-gemini-test-value");
   });

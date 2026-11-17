@@ -1,3 +1,4 @@
+import { KOPI_PAGI } from "../web/lib/sample-addresses";
 import { describe, it, expect, vi } from "vitest";
 import { isClearedPayee, assertClearedPayee } from "@cleared/guard";
 import {
@@ -10,12 +11,12 @@ import {
 import { decodeFunctionData, type PublicClient } from "viem";
 import { demoPolicy } from "../web/lib/demo";
 import { validateInvoice } from "../web/lib/invoices";
-const address = "0x1111111111111111111111111111111111111111" as const;
+const address = KOPI_PAGI;
 const hash = ("0x" + "11".repeat(32)) as `0x${string}`;
 const invoice = validateInvoice(
   {
     reference: "1",
-    name: "Kopi Pagi",
+    name: "Northwind Design Studio",
     payee: address,
     amount: "0.25",
     currency: "tUSD8",

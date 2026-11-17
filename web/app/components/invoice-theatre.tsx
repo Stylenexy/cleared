@@ -39,11 +39,7 @@ export function ComparedAddress({
       {Array.from(address).map((c, n) => (
         <span
           key={n}
-          className={
-            active && c.toLowerCase() !== against[n]?.toLowerCase()
-              ? "changed-digit"
-              : undefined
-          }
+          className={active && c !== against[n] ? "changed-digit" : undefined}
         >
           {c}
         </span>
@@ -199,7 +195,7 @@ export function InvoiceTheatre({
             </h3>
             <p>
               {phase === 3
-                ? "This address is not registered to Kopi Pagi."
+                ? "This address is not registered to Northwind Design Studio."
                 : "A familiar name and matching address edges do not establish identity. The registry compares every character."}
             </p>
           </>
@@ -222,7 +218,7 @@ export function InvoiceTheatre({
           </div>
         </div>
         <div className="address-check" data-active={phase >= 2}>
-          <span>Verified destination for Kopi Pagi</span>
+          <span>Verified destination for Northwind Design Studio</span>
           <ComparedAddress
             address={verifiedAddress}
             against={destination}
@@ -237,7 +233,7 @@ export function InvoiceTheatre({
             {phase >= 2 ? (
               <span className="refused-text">
                 {phase === 3
-                  ? "Refused: NameMismatch · this address is not registered to Kopi Pagi"
+                  ? "Refused: NameMismatch · this address is not registered to Northwind Design Studio"
                   : "Address mismatch · destination cannot clear"}
               </span>
             ) : (

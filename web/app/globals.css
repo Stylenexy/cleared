@@ -185,6 +185,8 @@ input::placeholder {
   color: var(--muted);
 }
 input[type="checkbox"] {
+  padding: 0;
+  border: 0;
   accent-color: var(--action);
   width: 18px;
   height: 18px;
@@ -930,8 +932,12 @@ tbody tr:last-child td {
   margin: 20px 0;
   font-size: 14px;
 }
-.key-panel > label input {
+.key-panel > label input:not([type="checkbox"]) {
   width: 100%;
+}
+.checkbox span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .key-panel select {
   width: 100%;

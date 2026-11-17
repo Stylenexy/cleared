@@ -1,33 +1,28 @@
 {
-  "network": "Anvil local only",
-  "stageHash": "0x083adb2e9ffa03dd0d8a4f2ecb888c1d8a2b859c7f23453d1726310dd61777e1",
-  "executeHash": "0x4e91e6503e0f7b2cfb3494a249881ab5a9c9edf2706cd6a3a7c8ab515b5dc34b",
-  "batchId": "1",
+  "network": "Sample simulation only",
+  "source": "web/lib/sample-addresses.ts",
+  "notice": "Authored sample. No transaction sent; no receipt or balance measured.",
   "rows": [
     {
       "reference": "KP-001",
-      "name": "Kopi Pagi",
-      "payee": "0x1111111111111111111111111111111111111111",
+      "name": "Northwind Design Studio",
+      "payee": "0x166F4C0Ffa36b44204374aA51E2cae4C8e151d5A",
       "amount": "0.25",
-      "status": "Paid",
-      "transactionHash": "0x4e91e6503e0f7b2cfb3494a249881ab5a9c9edf2706cd6a3a7c8ab515b5dc34b"
+      "status": "Simulated Paid"
     },
     {
       "reference": "KK-002",
-      "name": "Kertas Kita",
-      "payee": "0x2222222222222222222222222222222222222222",
+      "name": "Ledgerline Audits",
+      "payee": "0xf695d707A5b57FbC7972D0f6e84E1fd04C38E37b",
       "amount": "0.4",
-      "status": "Paid",
-      "transactionHash": "0x4e91e6503e0f7b2cfb3494a249881ab5a9c9edf2706cd6a3a7c8ab515b5dc34b"
+      "status": "Simulated Paid"
     },
     {
       "reference": "KP-003",
-      "name": "Kopi Pagi",
-      "payee": "0x1111111111111111111111111111111111111112",
+      "name": "Northwind Design Studio",
+      "payee": "0x166F5022A68693C76082fEa29649e06d719b1d5A",
       "amount": "0.15",
-      "status": "Name mismatch",
-      "transactionHash": "0x4e91e6503e0f7b2cfb3494a249881ab5a9c9edf2706cd6a3a7c8ab515b5dc34b"
+      "status": "Simulated Name mismatch"
     }
-  ],
-  "poisonBalance": "0"
+  ]
 }

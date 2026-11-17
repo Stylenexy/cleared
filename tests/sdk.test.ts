@@ -1,3 +1,4 @@
+import { KOPI_PAGI, KERTAS_KITA } from "../web/lib/sample-addresses";
 import { describe, it, expect, vi } from "vitest";
 import {
   decodeFunctionData,
@@ -20,12 +21,12 @@ import {
   type Invoice,
   type AgentPolicy,
 } from "@cleared/sdk";
-const addr = "0x1111111111111111111111111111111111111111" as const;
+const addr = KOPI_PAGI;
 const hash = keccak256(toBytes("source"));
 const invoice: Invoice = {
   reference: "INV-1",
-  ref: invoiceRef("Kopi Pagi", "INV-1"),
-  name: "Kopi Pagi",
+  ref: invoiceRef("Northwind Design Studio", "INV-1"),
+  name: "Northwind Design Studio",
   payee: addr,
   amount: 250_000n,
   invoiceHash: hash,
@@ -131,11 +132,39 @@ describe("SDK", () => {
     for (const changed of [
       { amount: 1n },
       { invoiceHash: invoice.ref },
-      { payee: "0x2222222222222222222222222222222222222222" as const },
+      { payee: KERTAS_KITA },
     ])
       expect(
         reconcileRows([invoice], [{ ...payment, ...changed }])[0].status,
-      ).toBe("Payment data mismatch");
+      ).toContain("INV-1 expected 0.25 tUSD8 to");
+  });
+  it("explains a short payment and includes that explanation in CSV", () => {
+    const expected = { ...invoice, reference: "INV-104", amount: 400_000n };
+    const row = reconcileRows(
+      [expected],
+      [{ ...invoice, transactionHash: hash }],
+    )[0];
+    expect(row.explanation).toBe(
+      `INV-104 expected 0.4 tUSD8 to ${addr}; Paid shows 0.25 tUSD8 to ${addr}; short by 0.15 tUSD8.`,
+    );
+    expect(row.status).toBe(row.explanation);
+    const csv = toCsv([row]);
+    expect(csv).toContain('"Explanation"');
+    expect(csv).toContain(row.explanation);
+  });
+  it("explains overpayments, destination changes and document changes separately", () => {
+    const payment = { ...invoice, transactionHash: hash };
+    expect(
+      reconcileRows([invoice], [{ ...payment, amount: 400_000n }])[0]
+        .explanation,
+    ).toContain("over by 0.15 tUSD8");
+    const row = reconcileRows(
+      [invoice],
+      [{ ...payment, payee: KERTAS_KITA, invoiceHash: invoice.ref }],
+    )[0];
+    expect(row.explanation).toContain("recipient address differs");
+    expect(row.explanation).toContain("document hash differs");
+    expect(row.explanation).not.toContain("short by");
   });
   it("explains rejected and unpaid invoices", () => {
     expect(
@@ -180,15 +209,16 @@ describe("SDK", () => {
     const csv = toCsv([
       {
         reference: '=HYPERLINK("bad")',
-        name: "Kopi, Pagi",
+        name: "Northwind, Design Studio",
         payee: addr,
         amount: "0.25",
         status: "Paid",
+        explanation: "Paid in full.",
         transactionHash: hash,
       },
     ]);
     expect(csv).toContain('"\'=HYPERLINK(""bad"")"');
-    expect(csv).toContain('"Kopi, Pagi"');
+    expect(csv).toContain('"Northwind, Design Studio"');
     expect(csv).toContain("\r\n");
   });
   it("preflight respects expiry, revoke, per-item and cumulative limits", () => {

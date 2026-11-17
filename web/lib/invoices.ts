@@ -85,6 +85,7 @@ export async function extractInvoice(
         : "https://api.anthropic.com/v1/messages",
       {
         method: "POST",
+        redirect: "error",
         headers: {
           "Content-Type": "application/json",
           ...(provider === "gemini"

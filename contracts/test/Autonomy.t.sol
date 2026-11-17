@@ -46,8 +46,8 @@ contract AutonomyTest is VaultFixture {
 
     function testChangedAddressRestartsHold() public {
         mature();
-        registry.register("Kopi Pagi", POISON, bytes32(0));
-        require(registry.holdRemaining("Kopi Pagi", POISON) == 1 days);
+        registry.register("Northwind Design Studio", POISON, bytes32(0));
+        require(registry.holdRemaining("Northwind Design Studio", POISON) == 1 days);
         ClearedVault.Item memory it = item(105, 1);
         it.payee = POISON;
         autoExecute(stage(it));
@@ -57,16 +57,16 @@ contract AutonomyTest is VaultFixture {
     function testRegistryChangeAfterStageIsRechecked() public {
         mature();
         uint256 id = stage(item(106, 1));
-        registry.register("Kopi Pagi", POISON, bytes32(0));
-        registry.register("Kopi Pagi", VENDOR, bytes32(0));
+        registry.register("Northwind Design Studio", POISON, bytes32(0));
+        registry.register("Northwind Design Studio", VENDOR, bytes32(0));
         autoExecute(id);
         require(token.balanceOf(VENDOR) == 0);
     }
 
     function testMetadataEditDoesNotRestartHold() public {
         mature();
-        registry.registerWithMetadata("Kopi Pagi", VENDOR, keccak256("new document"), "ipfs://updated");
-        require(registry.holdRemaining("Kopi Pagi", VENDOR) == 0);
+        registry.registerWithMetadata("Northwind Design Studio", VENDOR, keccak256("new document"), "ipfs://updated");
+        require(registry.holdRemaining("Northwind Design Studio", VENDOR) == 0);
         autoExecute(stage(item(107, 1)));
         require(token.balanceOf(VENDOR) == 1);
     }
@@ -159,9 +159,9 @@ contract AutonomyTest is VaultFixture {
 
     function testRemovedAndReaddedPayeeRestartsHold() public {
         mature();
-        registry.remove("Kopi Pagi");
-        registry.register("Kopi Pagi", VENDOR, bytes32(0));
-        require(registry.holdRemaining("Kopi Pagi", VENDOR) == 1 days);
+        registry.remove("Northwind Design Studio");
+        registry.register("Northwind Design Studio", VENDOR, bytes32(0));
+        require(registry.holdRemaining("Northwind Design Studio", VENDOR) == 1 days);
     }
 
     function testOnlyOwnerCanSetDailyLimit() public {
