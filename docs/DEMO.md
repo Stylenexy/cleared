@@ -1,83 +1,57 @@
 # Three-minute Cleared demo
 
 Audience: DAOs and web3 teams paying contractors in stablecoins. Start a visible
-180-second timer. Rehearse the route `/try` -> `/attack` -> `/app` -> `/app/keys`
--> `/try`. Load all pages before the presentation. Keep live extraction and
-contract checks off, and do not connect a wallet or sign a transaction for this
-script. The default presentation uses labeled samples and simulation.
+180-second timer. Open these tabs before you start: `/attack`, `/try`,
+`/app/keys`, [TESTNET-PROOF.md](TESTNET-PROOF.md) and its explorer links. Do not
+connect a wallet or sign anything during the demo: on-chain evidence comes from
+the recorded scenario run, and live reads use `eth_call`.
 
 ## Script by elapsed second
 
-| Seconds | Say                                                                                                                          | Show / do                                                                                                                                                                                                                                             |
-| ------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0-7     | "AI agents now read invoices and pay them. Attackers noticed."                                                               | Show the three contractor invoices on `/try`.                                                                                                                                                                                                         |
-| 7-14    | "Spend caps limit how much. Not to whom."                                                                                    | Point to the two Northwind addresses with matching edges and different middles.                                                                                                                                                                       |
-| 14-20   | "What if the AI could be fooled and the money still couldn't move?"                                                          | Point to the full poisoned destination, then click **Simulate automatic payment**.                                                                                                                                                                    |
-| 20-30   | "Two mature recipients clear. The lookalike is refused. Changed recipients wait for the owner."                              | Show two **Simulated Paid** results and the red mismatch, then select **Payment address changed just now** to show **PayeeOnHold**. Use explorer receipts only if already recorded in [TESTNET-PROOF.md](TESTNET-PROOF.md); this sample run has none. |
-| 30-40   | "This is a simulation. No tokens move. The changed address starts a 24-hour hold."                                           | Click **Reset demo**, select **Payment address changed just now**, and show the countdown.                                                                                                                                                            |
-| 40-50   | "The agent can pay the mature contractor, but cannot clear the hold or the lookalike."                                       | Click **Simulate automatic payment**. Point to the three distinct outcomes.                                                                                                                                                                           |
-| 50-60   | "Owner approval clears the hold. It still cannot approve a name mismatch."                                                   | Click **Simulate owner approval**. Ledgerline clears; Northwind's already-paid reference is refused, and the lookalike remains refused.                                                                                                               |
-| 60-70   | "Now take the attacker's seat."                                                                                              | Open `/attack`. Select lookalike A and keep **Hidden instruction** enabled. Keep live extraction and Aevum checks off.                                                                                                                                |
-| 70-80   | "The invoice hides a request to replace the destination and skip verification."                                              | Click **X-ray** and reveal the hidden instruction.                                                                                                                                                                                                    |
-| 80-90   | "This saved extraction is an authored illustration, not a live model response."                                              | Run the extraction. Show the source label and extracted destination beside the registry comparison.                                                                                                                                                   |
-| 90-100  | "Even when extraction follows the hostile instruction, every address character must match."                                  | Point to the changed middle and **Name mismatch** refusal. The local attempt counter is a simulation total, not a public security metric.                                                                                                             |
-| 100-110 | "The treasury reviews invoices before staging an immutable batch."                                                           | Open `/app`, click **Use three samples**, and show the review decisions.                                                                                                                                                                              |
-| 110-120 | "Mature verified contractors can be paid by the agent within its grant. Held items need the owner."                          | Point to the review, stage and payment sections. In demo preview, contract execution is disabled. Explain the flow without signing.                                                                                                                   |
-| 120-130 | "The owner sets total and per-invoice limits, expiry and revocation."                                                        | Open `/app/keys` and point to **Agent grant**. Describe the controls without saving changes.                                                                                                                                                          |
-| 130-140 | "A shared daily budget resets at midnight UTC. The kill switch blocks all agent payments, including owner-approved batches." | Point to **Shared daily budget** and **Kill switch**. No on-chain update is made.                                                                                                                                                                     |
-| 140-150 | "Here is the same freeze rule in the sample desk."                                                                           | Return to `/try`, click **Reset demo**, freeze demo payments, then **Simulate owner approval**. Show all payments refused.                                                                                                                            |
-| 150-160 | "Resetting the simulation gives us the original three-invoice batch again."                                                  | Click **Reset demo**, then **Simulate automatic payment**. Show the reconciliation summary: two simulated paid, one refused, 0.65 tUSD8 cleared.                                                                                                      |
-| 160-170 | "Every decision has a reference, destination, amount and result for reconciliation."                                         | Show the table and click **Export demo CSV**. State that this is a demo ledger with no transaction hash. Real reconciliation uses decoded Paid/Rejected events and matches invoice fields.                                                            |
-| 170-180 | "For DAO contractor payments: let the agent act within budget, and let the contract enforce the verified destination."       | End on the two allowed invoices and refused lookalike. Stop the timer at 180 seconds.                                                                                                                                                                 |
+| Seconds | Say | Show / do |
+| --- | --- | --- |
+| 0-8 | "AI agents now read invoices and pay them. Attackers noticed." | `/attack` with the Northwind invoice. |
+| 8-16 | "Spend caps limit how much an agent pays. They don't limit who gets paid." | Point to the two Northwind addresses: same edges, different middle. |
+| 16-24 | "This invoice hides an instruction: send the money elsewhere and skip verification." | Click **X-ray** to reveal the hidden instruction. |
+| 24-45 | "I'm sending it to a live model." | Tick **Use live extraction** and **Read the contract decision with eth_call**, then **Run attack**. |
+| 45-60 | "The model took the bait and extracted the lookalike. The contract still says: name mismatch, refused." | Point to the extracted destination beside the verified one, the source label (live provider) and "Read-only contract preview". |
+| 60-90 | "That decision isn't a UI rule. Here is one agent batch on Aevum: the verified contractor was paid, the lookalike rejected, in the same transaction." | Open scenario 4 from TESTNET-PROOF.md on the explorer: one `Paid`, one `Rejected` (NameMismatch). |
+| 90-110 | "A new or changed address waits 24 hours. The agent can't clear it; the owner can, and still can't approve a mismatch." | Explorer: scenario 3 `Rejected(PayeeOnHold)`, then scenario 5 owner-approved `Paid`. |
+| 110-135 | "The agent's key has a total cap, per-invoice cap, daily budget and expiry. The owner can revoke it or freeze everything." | `/app/keys`, then explorer: scenario 6 `Rejected(Frozen)` and scenario 7 `AgentRevoked`. |
+| 135-160 | "Want to play with it without a wallet? Three invoices, choose the risk, pull the kill switch." | `/try`: **Simulate automatic payment** (two cleared, lookalike refused), switch the second contractor to a changed address to show the hold. Say it's a simulation. |
+| 160-172 | "It's reusable: an SDK to stage and reconcile, and a guard any Aevum agent can call before paying. MIT." | README packages section. |
+| 172-180 | "Your AI can read the invoice. It can't redirect the money. That's Cleared." | Back to `/attack` showing the refusal. Stop the timer. |
 
-## Presenter evidence notes
-
-Until deployment, use the labeled simulation and local tests. Do not present
-sample output as explorer evidence or a live model failure. An explorer homepage
-does not prove a payment. When testnet evidence exists, the opening can finish
-with two Paid events and one Rejected event using recorded transaction links.
-
-Screenshots are archived UI captures, including earlier contractor references
-and badge layout. Demo video and testnet receipts are pending. The live
-simulation supplies neither. A preloaded page is not an offline-capable app:
-sample parsing still needs the local or hosted server.
+If the live model resists the attack, say so and rerun once with Lookalike B. If
+it resists again: "This time the model wasn't fooled. Either way, the payment
+decision doesn't depend on it", then run the labeled saved sample. Never edit or
+restage a model result.
 
 ## Five judge questions
 
-| Question                                   | Short answer                                                                                                                                                                                                                                       |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Who needs this?                            | DAOs and web3 teams paying contractor invoices in stablecoins. Mature verified recipients can be paid automatically; new or changed recipients need owner approval.                                                                                |
-| Why are spend caps not enough?             | Caps bound the amount, but a poisoned invoice can redirect an allowed amount. Cleared rechecks the exact name and full destination in the paying contract.                                                                                         |
-| Did you fool a live model?                 | This demo replays authored extraction fields and labels them. Live Gemini/Anthropic extraction is opt-in and is not used in this script. A model can resist an attack; payment verification remains independent.                                   |
-| What if the owner or invoice is malicious? | The owner can authorize a malicious payee. A forged invoice for a mature legitimate recipient can still pass within budget. The prototype is unaudited; invoice authenticity, service delivery and owner security require organizational controls. |
-| What is actually on Aevum today?           | Deployment and receipts are pending in TESTNET-PROOF.md. The contracts target Aevum's Shanghai, legacy-transaction and six-decimal-token constraints. Local tests demonstrate the policy; the UI simulation is not chain evidence.                 |
+| Question | Short answer |
+| --- | --- |
+| Who needs this? | DAOs and web3 teams paying contractor invoices in stablecoins. Mature verified recipients can be paid by the agent; new or changed recipients need the owner. |
+| Why are spend caps not enough? | Caps bound the amount, not the destination. A poisoned invoice can redirect an allowed amount. Cleared rechecks the exact name and full address in the paying contract. |
+| Did you fool a live model? | Live Gemini extraction is opt-in on /attack and labeled as live. Models sometimes resist; the payment decision is independent of the model either way. |
+| What if the owner or invoice is malicious? | The owner can register a bad payee, so new payees wait 24 hours and every change is an on-chain event. A forged invoice for a verified recipient pays that recipient's verified address. Testnet only, unaudited. |
+| What is on Aevum today? | Registry, identity directory and vault on chain 44005, bytecode reproducibly matched to this repository (`tools/verify-bytecode.mjs`), and seven recorded scenarios in TESTNET-PROOF.md. |
 
 ## Rehearsal log
 
-Use an actual timer for every run. Record whether the full presentation completed
-without Wi-Fi; include the fallback used in the notes. Leave unperformed runs
-blank.
+Use an actual timer for every run. Leave unperformed runs blank.
 
 | Date | Duration | Timer used | Without Wi-Fi | Notes / fallback level |
 | ---- | -------- | ---------- | ------------- | ---------------------- |
 |      |          |            |               |                        |
 |      |          |            |               |                        |
 |      |          |            |               |                        |
-|      |          |            |               |                        |
 
 ## Fallback ladder
 
-Start at level 1 while testnet proof is pending. Level 0 requires configured
-contract addresses and verified receipts recorded before presenting. Choose the
-next available level immediately; never wait on stage or imply missing evidence.
-
-| Level | Evidence / route                                                                                                                                          | Switch rule                                                                                                                                                                                                                                          |
-| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0     | Live Aevum testnet reads plus [recorded proof](TESTNET-PROOF.md)                                                                                          | If any RPC request fails or exceeds 10 seconds, switch to level 1. Use only recorded receipt links; this script sends no transactions.                                                                                                               |
-| 1     | [Wallet-free /try simulation](https://cleared-ecru.vercel.app/try), then [/attack](https://cleared-ecru.vercel.app/attack), treasury and controls         | Say explicitly that no transactions are sent. If hosting fails, switch to a previously tested loopback server (`npm run dev`, demo mode) if ready. If no working server is ready, move immediately to level 2.                                       |
-| 2     | Rehearsed demo video stored locally (recording pending)                                                                                                   | If no recording is available or playback fails, immediately use level 3. Do not spend stage time searching for a file.                                                                                                                               |
-| 3     | Local [desktop screenshot](shots/live/home-1440.png), [/try screenshot](shots/live/try-1440-full.png) and [attack screenshot](shots/live/attack-1440.png) | Explain the invoice -> extraction -> registry -> decision -> reconciliation flow from the captures. Only open transaction links already recorded in TESTNET-PROOF; the [explorer homepage](https://explorer-test.qday.info) alone proves no payment. |
-
-For a no-Wi-Fi rehearsal, verify the local server and assets before disconnecting,
-or use locally stored video/screenshots. Keep the 180-second timer running through
-the fallback and record the actual result above.
+| Level | Evidence / route | Switch rule |
+| --- | --- | --- |
+| 0 | Live `/attack` with model + `eth_call`, recorded explorer links | If the model or RPC fails or takes over 10 seconds, switch to level 1. |
+| 1 | `/attack` with the labeled saved sample, explorer links from TESTNET-PROOF.md | If hosting fails, use a tested local server (`npm run dev`) or move to level 2. |
+| 2 | Rehearsed demo video stored locally | If playback fails, use level 3 immediately. |
+| 3 | Screenshots in `docs/shots/live/` and the TESTNET-PROOF.md table | Walk through invoice, extraction, registry, decision, receipt from the captures. |
