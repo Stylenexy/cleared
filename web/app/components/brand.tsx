@@ -1,3 +1,15 @@
+export function BrandImage({ footer = false }: { footer?: boolean }) {
+  return (
+    <img
+      className={footer ? "brand-image footer-mark" : "brand-image"}
+      src="/mark-3d.webp"
+      width={640}
+      height={587}
+      alt=""
+    />
+  );
+}
+
 export function BrandMark({ className = "" }: { className?: string }) {
   return (
     <svg

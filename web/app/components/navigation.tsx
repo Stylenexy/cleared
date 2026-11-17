@@ -1,12 +1,12 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { BrandMark } from "./brand";
+import { BrandImage } from "./brand";
 export function Navigation() {
   const pathname = usePathname();
   return (
     <header className="site-header">
       <a className="wordmark" href="/" aria-label="Cleared home">
-        <BrandMark />
+        <BrandImage />
         Cleared
       </a>
       <nav aria-label="Main navigation">

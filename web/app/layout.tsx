@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Navigation } from "./components/navigation";
-import { Arrow, BrandMark } from "./components/brand";
+import { SiteFooter } from "./components/landing/site-footer";
 import "./globals.css";
 // Nonce-bearing Next scripts must be rendered per request, never prerendered.
 export const dynamic = "force-dynamic";
@@ -41,20 +41,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div id="main-content" tabIndex={-1}>
           {children}
         </div>
-        <footer>
-          <a className="wordmark" href="/">
-            <BrandMark />
-            Cleared
-          </a>
-          <span>
-            Aevum Builder Challenge prototype.
-            <br />
-            Test tokens. Real boundaries.
-          </span>
-          <a href="/try">
-            Open the clearing desk <Arrow />
-          </a>
-        </footer>
+        <SiteFooter />
       </body>
     </html>
   );
