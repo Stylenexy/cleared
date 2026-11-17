@@ -1944,3 +1944,5 @@ footer > a:last-child {
 /* Long addresses wrap inside the invoice so narrow screens never scroll sideways. */
 .invoice-copy { white-space: pre-wrap; overflow-wrap: anywhere; }
 .document-stack, .clearing-document { max-width: 100%; }
+/* Decorative sheets and stamps may extend past narrow viewports; clip them without creating a scroll container. */
+html, body { overflow-x: clip; }
