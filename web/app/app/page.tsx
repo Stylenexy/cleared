@@ -33,6 +33,7 @@ import {
 } from "../../lib/client";
 import { readPaymentState } from "../../lib/payment-state";
 import { demoDecision } from "../../lib/demo";
+import { ClearingFlow, DecisionStamp } from "../components/clearing-flow";
 export default function Treasury() {
   const [config, setConfig] = useState<Config>();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -225,7 +226,11 @@ export default function Treasury() {
     <main className="desk">
       <div className="page-heading">
         <div>
-          <h1>Treasury desk.</h1>
+          <h1>
+            Treasury desk.
+            <br />
+            <span className="chrome">Every payment, checked.</span>
+          </h1>
           <p>
             Contractor invoices, verified destinations and a bounded agent
             budget.
@@ -241,6 +246,12 @@ export default function Treasury() {
           : "Demo preview | no contract configured"}
         . <Link href="/try">Try without a wallet</Link>
       </p>
+      <ClearingFlow
+        step={
+          rows.length ? 4 : batch !== undefined ? 3 : invoices.length ? 2 : 0
+        }
+        busy={busy}
+      />
       {error && (
         <p role="alert" className="notice danger">
           {error}
@@ -307,14 +318,29 @@ export default function Treasury() {
         )}
         <ol className="invoice-list">
           {invoices.map((i, n) => (
-            <li className="invoice" key={n}>
+            <li
+              className="invoice"
+              key={n}
+              data-rejected={
+                !!labels[n] &&
+                labels[n] !== "Verified" &&
+                !labels[n].startsWith("PayeeOnHold")
+              }
+            >
               <div className="receipt-title">
                 <strong>
                   {i.name} | {i.reference}
                 </strong>
                 <span
                   className={
-                    "badge " + (labels[n] === "Verified" ? "safe" : "danger")
+                    "badge " +
+                    (labels[n] === "Verified"
+                      ? "safe"
+                      : labels[n]?.startsWith("PayeeOnHold")
+                        ? "hold"
+                        : labels[n]
+                          ? "danger"
+                          : "")
                   }
                 >
                   {labels[n] ?? "Not checked"}
@@ -324,6 +350,11 @@ export default function Treasury() {
               <p className="amount">
                 {displayAmount(i.amount)} <small>tUSD8</small>
               </p>
+              {labels[n] && !labels[n].startsWith("PayeeOnHold") && (
+                <div className="result-line">
+                  <DecisionStamp rejected={labels[n] !== "Verified"} />
+                </div>
+              )}
               {holds[n] > 0n && (
                 <p>
                   Hold remaining: {holdClock(holds[n])}. Refresh to read the
@@ -337,6 +368,12 @@ export default function Treasury() {
             </li>
           ))}
         </ol>
+        {!invoices.length && (
+          <div className="empty-state">
+            Your clearing desk is ready. Upload an invoice or load the three
+            samples to inspect every destination.
+          </div>
+        )}
         <p>
           New or changed recipients are held for 24 hours. A batch staged during
           a hold requires owner approval even after the timer expires. Rejected
@@ -429,8 +466,20 @@ export default function Treasury() {
         <h2>4. Reconcile</h2>
         {rows.length ? (
           <>
-            <div className="table-wrap">
+            <div className="reconciliation-summary">
+              <DecisionStamp rejected={false} children="RECONCILED" />
+              <p>Confirmed contract events matched to invoice references.</p>
+            </div>
+            <div
+              className="table-wrap"
+              tabIndex={0}
+              role="region"
+              aria-label="Confirmed reconciliation table"
+            >
               <table>
+                <caption className="sr-only">
+                  Confirmed invoice reconciliation
+                </caption>
                 <thead>
                   <tr>
                     <th>Reference</th>

@@ -9,6 +9,7 @@ import {
 import { recordAttack, type AttackLedger } from "../../lib/demo";
 import type { Config } from "../../lib/client";
 import type { SerializedInvoice } from "../../lib/invoice-wire";
+import { ClearingFlow, DecisionStamp } from "../components/clearing-flow";
 interface Result {
   invoice: SerializedInvoice;
   extractionSource: string;
@@ -88,8 +89,11 @@ export default function Attack() {
     result.invoice.name === "Kopi Pagi";
   return (
     <main className="desk">
-      <p className="eyebrow">Attacker's seat</p>
-      <h1>Can you redirect the invoice?</h1>
+      <h1>
+        Can you redirect the invoice?
+        <br />
+        <span className="chrome">Take your best shot.</span>
+      </h1>
       <p>
         Choose a lookalike, edit the invoice, and hide an instruction. The
         extractor prepares fields. The contract policy checks who can be paid.
@@ -99,78 +103,91 @@ export default function Attack() {
         {ledger.centsLost}. This page never sends a transaction. The counter is
         stored in this browser and can be reset.
       </p>
-      <section className="key-panel">
-        <label>
-          Pre-generated lookalike address
-          <select
-            value={address}
-            onChange={(e) => select(e.target.value, hidden)}
+      <ClearingFlow step={result ? 3 : busy ? 1 : 0} busy={busy} />
+      <section
+        className="key-panel attack-editor"
+        aria-label="Edit the attack invoice"
+      >
+        <div>
+          <label>
+            Invoice text
+            <textarea
+              aria-label="Invoice text"
+              rows={13}
+              maxLength={20000}
+              value={text}
+              disabled={busy}
+              onChange={(e) => {
+                setText(e.target.value);
+                setResult(undefined);
+              }}
+            />
+          </label>
+          <p className="muted">
+            {text.length.toLocaleString("en-US")} / 20,000 characters. Changing
+            the lookalike restores the sample.
+          </p>
+        </div>
+        <div className="attack-controls">
+          <label>
+            Pre-generated lookalike address
+            <select
+              value={address}
+              disabled={busy}
+              onChange={(e) => select(e.target.value, hidden)}
+            >
+              {lookalikes.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              disabled={busy}
+              checked={hidden}
+              onChange={(e) => select(address, e.target.checked)}
+            />
+            Inject a hidden payment instruction (restores the sample invoice)
+          </label>
+          {config?.llmAvailable && (
+            <label className="checkbox">
+              <input
+                type="checkbox"
+                disabled={busy}
+                checked={live}
+                onChange={(e) => setLive(e.target.checked)}
+              />
+              Use live model extraction (invoice text is sent to the configured
+              provider)
+            </label>
+          )}
+          {config?.network === "aevum" && config.vault && (
+            <label className="checkbox">
+              <input
+                type="checkbox"
+                disabled={busy}
+                checked={contract}
+                onChange={(e) => setContract(e.target.checked)}
+              />
+              Read the Aevum contract decision with eth_call
+            </label>
+          )}
+          <p>
+            {live
+              ? "Live extraction requested. A model may resist the attack; success is never assumed."
+              : "No live model requested. Exact samples replay authored cached fields; edited templates use deterministic extraction."}
+          </p>
+          <button
+            className="primary"
+            disabled={busy || !text.trim()}
+            onClick={attack}
           >
-            {lookalikes.map((a) => (
-              <option key={a} value={a}>
-                {a}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="checkbox">
-          <input
-            type="checkbox"
-            checked={hidden}
-            onChange={(e) => select(address, e.target.checked)}
-          />
-          Inject a hidden payment instruction (restores the sample invoice)
-        </label>
-        <label>
-          Invoice text
-          <textarea
-            aria-label="Invoice text"
-            rows={13}
-            maxLength={20000}
-            value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-              setResult(undefined);
-            }}
-          />
-        </label>
-        <p className="muted">
-          {text.length.toLocaleString("en-US")} / 20,000 characters. Changing
-          the lookalike restores the sample.
-        </p>
-        {config?.llmAvailable && (
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={live}
-              onChange={(e) => setLive(e.target.checked)}
-            />
-            Use live model extraction (invoice text is sent to the configured
-            provider)
-          </label>
-        )}
-        {config?.network === "aevum" && config.vault && (
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={contract}
-              onChange={(e) => setContract(e.target.checked)}
-            />
-            Read the Aevum contract decision with eth_call
-          </label>
-        )}
-        <p>
-          {live
-            ? "Live extraction requested. A model may resist the attack; success is never assumed."
-            : "No live model requested. Exact samples replay authored cached fields; edited templates use deterministic extraction."}
-        </p>
-        <button
-          className="primary"
-          disabled={busy || !text.trim()}
-          onClick={attack}
-        >
-          {busy ? "Extracting and checking..." : "Run attack"}
-        </button>
+            {busy ? "Extracting and checking..." : "Run attack"}
+          </button>
+        </div>
       </section>
       {error && (
         <p role="alert" className="notice danger">
@@ -215,8 +232,11 @@ export default function Attack() {
           </section>
           <section className="receipt">
             <h2>
-              {result.rejected ? "Rejected" : "Allowed by current policy"}
+              {result.rejected
+                ? "Destination refused."
+                : "Destination cleared."}
             </h2>
+            <DecisionStamp rejected={result.rejected} />
             <p className={"badge " + (result.rejected ? "danger" : "safe")}>
               {result.decision}
             </p>

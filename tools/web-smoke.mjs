@@ -22,6 +22,38 @@ assert.equal(config.network, "demo");
 assert.equal(config.chainId, 44005);
 assert.equal(config.vault, undefined);
 assert.equal(config.llmAvailable, false);
+for (const name of [
+  "favicon.svg",
+  "cleared-mark.svg",
+  "og.png",
+  "apple-touch-icon.png",
+  "fonts/archivo-wide.woff2",
+  "fonts/manrope-latin.woff2",
+  "samples/01-kopi.txt",
+]) {
+  const response = await fetch(base + "/" + name);
+  assert.equal(response.status, 200, name);
+  const served = Buffer.from(await response.arrayBuffer());
+  const source = await readFile("web/public/" + name);
+  const mirror = await readFile("public/" + name);
+  assert.deepEqual(served, source, name + " served source");
+  assert.deepEqual(mirror, source, name + " root build mirror");
+}
+const home = await fetch(base).then((r) => r.text());
+const cssUrls = [...home.matchAll(/href="([^\"]+\.css[^\"]*)"/g)].map(
+  (m) => m[1],
+);
+const css = (
+  await Promise.all(
+    cssUrls.map((url) =>
+      fetch(base + url.replaceAll("&amp;", "&")).then((r) => r.text()),
+    ),
+  )
+).join("\n");
+assert.match(css, /navigation:\s*auto/);
+assert.match(css, /prefers-reduced-motion/);
+assert.match(css, /view-transition-name:\s*clearing-document/);
+assert.ok(!home.includes("eyebrow"));
 const form = new FormData();
 for (const name of ["01-kopi", "02-kertas", "03-beracun"])
   form.append(
@@ -55,5 +87,5 @@ assert.equal(data.extractionSource, "cached-sample");
 assert.equal(data.decisionSource, "sample-policy-simulation");
 assert.equal(data.decision, "Name mismatch");
 console.log(
-  "Production HTTP smoke PASS: 5 English pages, demo config, 3 PDF uploads, cached attack rejected. No browser or transaction.",
+  "Production HTTP smoke PASS: 5 English pages, demo config, public assets and root mirror, transition/reduced-motion CSS, 3 PDF uploads, cached attack rejected. No browser or transaction.",
 );

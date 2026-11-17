@@ -42,6 +42,8 @@ npm run dev
 
 Open http://127.0.0.1:3000/try yourself. The default network mode is demo; it never consults old local deployment files. PowerShell users may need npm.cmd instead of npm.
 
+The root Vercel configuration builds the web workspace and includes the local SDK and guard. See [deployment settings](docs/DEPLOY.md) and the [visual direction and motion contract](DESIGN.md). No deployment is required to run the demo.
+
 For a separate, explicitly local transaction demonstration:
 
 ```sh

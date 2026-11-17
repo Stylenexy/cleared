@@ -174,7 +174,11 @@ export default function Keys() {
   }
   return (
     <main className="desk">
-      <h1>Agent controls.</h1>
+      <h1>
+        Agent controls.
+        <br />
+        <span className="chrome">Room to act. Limits to keep.</span>
+      </h1>
       <p>
         Mature recipients can be paid automatically. New or changed recipients
         need owner approval. All payments remain subject to the shared daily
@@ -219,7 +223,6 @@ export default function Keys() {
             : "Payments enabled. Only invoices allowed by the contract can settle."}
         </p>
         <button
-          className="danger"
           disabled={busy || !wallet || !config?.vault}
           onClick={() => run(toggleFreeze)}
         >
@@ -360,7 +363,6 @@ export default function Keys() {
             Save new grant
           </button>
           <button
-            className="danger"
             disabled={busy || !wallet || !policy?.version || policy.revoked}
             onClick={() => run(() => mutate("revoke"))}
           >

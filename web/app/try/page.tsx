@@ -14,6 +14,7 @@ import {
 import { demoPolicy, demoVerified } from "../../lib/demo";
 import { readPaymentState } from "../../lib/payment-state";
 import type { Config } from "../../lib/client";
+import { ClearingFlow, DecisionStamp } from "../components/clearing-flow";
 export default function Try() {
   const [invoices, setInvoices] = useState<Invoice[]>([]),
     [config, setConfig] = useState<Config>();
@@ -51,12 +52,13 @@ export default function Try() {
       .catch((e) => setError(e.message));
   }, []);
   useEffect(() => {
+    if (hold <= 0n) return;
     const timer = setInterval(
       () => setHold((h) => (h > 0n ? h - 1n : 0n)),
       1000,
     );
     return () => clearInterval(timer);
-  }, []);
+  }, [hold > 0n]);
   const demoInvoices = invoices.map((i, n) =>
     scenario === "changed" && n === 1
       ? { ...i, payee: "0x2222222222222222222222222222222222222223" as const }
@@ -116,14 +118,40 @@ export default function Try() {
       setBusy(false);
     }
   }
+  function exportDemo() {
+    const csv = [
+      ["Reference", "Payee", "tUSD8", "Simulated result"],
+      ...demoInvoices.map((i, n) => [
+        i.reference,
+        i.name,
+        displayAmount(i.amount),
+        results[n] ?? "Not run",
+      ]),
+    ]
+      .map((row) =>
+        row.map((value) => '"' + value.replaceAll('"', '""') + '"').join(","),
+      )
+      .join("\r\n");
+    const url = URL.createObjectURL(
+      new Blob(["\uFEFF" + csv], { type: "text/csv" }),
+    );
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "cleared-demo-reconciliation.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
   useEffect(() => {
     if (config?.network === "aevum" && config.vault && invoices.length)
       void readLive();
   }, [config, invoices]);
   return (
     <main className="desk">
-      <p className="eyebrow">No wallet. No installation.</p>
-      <h1>Try Cleared.</h1>
+      <h1>
+        Try Cleared.
+        <br />
+        <span className="chrome">See what clears.</span>
+      </h1>
       <p>
         Three contractor invoices. Two verified destinations. One lookalike.
         Explore which payments the policy allows.
@@ -132,6 +160,10 @@ export default function Try() {
         Sample simulation. No tokens move, no transactions are sent, and no
         model is called.
       </p>
+      <ClearingFlow
+        step={results.length ? 4 : invoices.length ? 2 : 0}
+        busy={!invoices.length && !error}
+      />
       {error && (
         <p role="alert" className="notice danger">
           {error}
@@ -152,7 +184,7 @@ export default function Try() {
               <option value="changed">Payment address changed just now</option>
             </select>
           </label>
-          <button className="danger" onClick={() => setFrozen((f) => !f)}>
+          <button aria-pressed={frozen} onClick={() => setFrozen((f) => !f)}>
             {frozen
               ? "Resume demo payments"
               : "Kill switch: freeze demo payments"}
@@ -163,19 +195,31 @@ export default function Try() {
           tUSD8 | {frozen ? "Frozen" : "Enabled"}
         </p>
         {scenario !== "trusted" && (
-          <p className="notice danger">
+          <p className="notice hold">
             PayeeOnHold | {holdClock(hold)} remaining | owner approval required
           </p>
         )}
         <ol className="invoice-list">
           {demoInvoices.map((i, n) => (
-            <li className="invoice" key={i.ref}>
+            <li
+              className="invoice"
+              key={i.ref}
+              data-rejected={!isVerified(i, n)}
+              data-held={isVerified(i, n) && n === 1 && hold > 0n}
+            >
               <div className="receipt-title">
                 <strong>
                   {i.name} | {i.reference}
                 </strong>
                 <span
-                  className={"badge " + (isVerified(i, n) ? "safe" : "danger")}
+                  className={
+                    "badge " +
+                    (!isVerified(i, n)
+                      ? "danger"
+                      : n === 1 && hold > 0n
+                        ? "hold"
+                        : "safe")
+                  }
                 >
                   {isVerified(i, n)
                     ? n === 1 && hold > 0n
@@ -188,7 +232,12 @@ export default function Try() {
               <p className="amount">
                 {displayAmount(i.amount)} <small>tUSD8</small>
               </p>
-              {results[n] && <p role="status">{results[n]}</p>}
+              {results[n] && (
+                <div className="result-line" role="status">
+                  <DecisionStamp rejected={results[n] !== "Simulated Paid"} />
+                  <span>{results[n]}</span>
+                </div>
+              )}
             </li>
           ))}
         </ol>
@@ -220,6 +269,76 @@ export default function Try() {
           still block payment. Daily budget resets at 00:00 UTC in the contract.
         </p>
       </section>
+      {results.length > 0 && (
+        <section aria-label="Simulated reconciliation">
+          <h2>
+            Every decision.
+            <br />
+            <span className="chrome">Accounted for.</span>
+          </h2>
+          <div className="reconciliation-summary" role="status">
+            <p>
+              <strong>
+                {results.filter((r) => r === "Simulated Paid").length}
+              </strong>
+              Simulated paid
+            </p>
+            <p>
+              <strong>
+                {results.filter((r) => r !== "Simulated Paid").length}
+              </strong>
+              Refused
+            </p>
+            <p>
+              Demo ledger only.
+              <br />
+              No transaction hash exists.
+            </p>
+          </div>
+          <div
+            className="table-wrap"
+            tabIndex={0}
+            role="region"
+            aria-label="Demo reconciliation table"
+          >
+            <table>
+              <caption className="sr-only">Simulated invoice outcomes</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Reference</th>
+                  <th scope="col">Payee</th>
+                  <th scope="col">tUSD8</th>
+                  <th scope="col">Simulated result</th>
+                </tr>
+              </thead>
+              <tbody>
+                {demoInvoices.map((i, n) => (
+                  <tr key={i.ref}>
+                    <td>{i.reference}</td>
+                    <td>{i.name}</td>
+                    <td>{displayAmount(i.amount)}</td>
+                    <td>{results[n]}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="actions">
+            <button onClick={exportDemo}>Export demo CSV ↓</button>
+            <a
+              href="https://explorer-test.qday.info"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Explore Aevum ↗
+            </a>
+          </div>
+          <p className="muted">
+            The explorer opens the public testnet, not a receipt for this
+            simulation.
+          </p>
+        </section>
+      )}
       <section>
         <h2>Aevum read-only checks</h2>
         {config?.network === "aevum" && config.vault ? (
@@ -250,9 +369,9 @@ export default function Try() {
           Edit an invoice and hide an instruction. Compare extracted fields with
           the payment policy.
         </p>
-        <Link className="button" href="/attack">
+        <a className="button" href="/attack">
           Open attack lab
-        </Link>{" "}
+        </a>{" "}
         <Link href="/app">Open treasury desk</Link>
       </section>
     </main>

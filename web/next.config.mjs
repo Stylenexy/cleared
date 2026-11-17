@@ -1,7 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 export default {
-  transpilePackages: ["@cleared/sdk"],
+  transpilePackages: ["@cleared/sdk", "@cleared/guard"],
   outputFileTracingRoot: path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
     "..",
