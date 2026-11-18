@@ -91,6 +91,7 @@ export function AppShell({
           {navigation.map((item) => (
             <Link
               key={item.href}
+              data-demo={{ "/try": "nav-try", "/attack": "nav-attack", "/app": "nav-treasury", "/app/keys": "nav-controls" }[item.href]}
               href={item.href}
               aria-current={active === item.href ? "page" : undefined}
               title={item.label}

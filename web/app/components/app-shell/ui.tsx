@@ -254,6 +254,7 @@ export function Drawer({
       <div className="drawer-heading">
         <h2 id={titleId}>{title}</h2>
         <button
+          data-demo="invoice-close"
           autoFocus
           type="button"
           onClick={onClose}
@@ -297,6 +298,7 @@ export function InvoiceTable({
     <>
       {invoices.length ? (
         <div
+          data-demo="invoice-table"
           className="table-wrap app-invoice-table"
           role="region"
           aria-label="Invoices"
@@ -319,6 +321,7 @@ export function InvoiceTable({
               {invoices.map((item, n) => (
                 <tr
                   key={item.ref + n}
+                  data-demo={`invoice-row-${n + 1}`}
                   data-selected={selected === n}
                   onClick={(event) => {
                     event.currentTarget.querySelector("button")?.focus();
@@ -430,7 +433,7 @@ export function InvoiceTable({
                   {Math.max(invoice.payee.length, registered.length)} characters
                   differ
                 </p>
-                <dl className="app-fields diff-fields">
+                <dl data-demo="invoice-registry" className="app-fields diff-fields">
                   <div>
                     <dt>Invoice</dt>
                     <dd>

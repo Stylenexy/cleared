@@ -183,6 +183,7 @@ export default function Try() {
             <label>
               Second contractor{" "}
               <select
+                data-demo="try-risk"
                 aria-label="Recipient risk"
                 value={scenario}
                 onChange={(e) => changeScenario(e.target.value)}
@@ -194,7 +195,7 @@ export default function Try() {
                 </option>
               </select>
             </label>
-            <button aria-pressed={frozen} onClick={() => setFrozen((f) => !f)}>
+            <button data-demo="try-freeze" aria-pressed={frozen} onClick={() => setFrozen((f) => !f)}>
               {frozen
                 ? "Resume demo payments"
                 : "Kill switch: freeze demo payments"}
@@ -205,7 +206,7 @@ export default function Try() {
             tUSD8 · {frozen ? "Frozen" : "Enabled"}
           </p>
           {scenario !== "trusted" && (
-            <p className="notice hold">
+            <p data-demo="try-hold" className="notice hold">
               PayeeOnHold · {holdClock(hold)} remaining · owner approval
               required
             </p>
@@ -238,14 +239,16 @@ export default function Try() {
             <button
               className="primary"
               disabled={!invoices.length}
+              data-demo="try-pay"
               onClick={() => simulate(false)}
             >
               Simulate automatic payment
             </button>
-            <button disabled={!invoices.length} onClick={() => simulate(true)}>
+            <button data-demo="try-approve" disabled={!invoices.length} onClick={() => simulate(true)}>
               Simulate owner approval
             </button>
             <button
+              data-demo="try-reset"
               onClick={() => {
                 setSpent(0n);
                 setPaid([]);
@@ -264,7 +267,7 @@ export default function Try() {
           </p>
         </section>
         {results.length > 0 && (
-          <section aria-label="Simulated reconciliation">
+          <section data-demo="try-result" aria-label="Simulated reconciliation">
             <h2>Simulation ledger</h2>
             <div className="reconciliation-summary" role="status">
               <p>

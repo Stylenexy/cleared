@@ -20,7 +20,7 @@ export function InvoicePaper({
     .replace(/<span\b[^>]*>[\s\S]*?<\/span>/gi, "")
     .trim();
   return (
-    <article className="app-invoice-paper" data-xray={xray}>
+    <article data-demo="attack-paper" className="app-invoice-paper" data-xray={xray}>
       <div className="paper-header">
         <h3>INVOICE</h3>
         <span>{text.match(/^Reference:\s*(.+)$/m)?.[1] ?? "Sample"}</span>
@@ -49,7 +49,7 @@ export function InvoicePaper({
             </strong>
           </div>
           {hiddenText && (
-            <div className="paper-hidden" aria-hidden={!xray}>
+            <div data-demo="attack-hidden" className="paper-hidden" aria-hidden={!xray}>
               <strong>Hidden instruction (X-ray)</strong>
               <p>{hiddenText}</p>
             </div>

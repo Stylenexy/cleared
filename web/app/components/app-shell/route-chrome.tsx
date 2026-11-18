@@ -5,9 +5,11 @@ import { Navigation } from "../navigation";
 import { SiteFooter } from "../landing/site-footer";
 import { SmoothScroll } from "../smooth-scroll";
 import { CustomCursor } from "../custom-cursor";
+import { DemoDirector } from "../demo/demo-director";
 
 export function RouteChrome({ children }: { children: React.ReactNode }) {
-  const landing = usePathname() === "/";
+  const pathname = usePathname();
+  const landing = pathname === "/";
   return (
     <>
       {landing && (
@@ -24,6 +26,7 @@ export function RouteChrome({ children }: { children: React.ReactNode }) {
         {children}
       </div>
       {landing && <SiteFooter />}
+      {!landing && <DemoDirector pathname={pathname} />}
     </>
   );
 }

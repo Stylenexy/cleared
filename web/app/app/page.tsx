@@ -534,7 +534,7 @@ export default function Treasury() {
           )}
         </section>
         {config?.network === "aevum" && (
-          <section id="ledger" aria-labelledby="ledger-heading">
+          <section data-demo="treasury-ledger" id="ledger" aria-labelledby="ledger-heading">
             <h2 id="ledger-heading">Aevum ledger</h2>
             <p>
               Every decision the vault has made on Aevum testnet. Read from

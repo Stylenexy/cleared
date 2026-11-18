@@ -128,7 +128,7 @@ export default function Attack() {
               Edit a test invoice (PDF text). X-ray reveals hidden instructions.
             </p>
             <div className="lab-toolbar" role="group" aria-label="Invoice view">
-              <button aria-pressed={xray} onClick={() => setXray(!xray)}>
+              <button data-demo="attack-xray" aria-pressed={xray} onClick={() => setXray(!xray)}>
                 X-ray
               </button>
               <button
@@ -201,6 +201,7 @@ export default function Attack() {
                   <input
                     type="checkbox"
                     disabled={busy}
+                    data-demo="attack-sample-mode"
                     checked={live}
                     onChange={(e) => setLive(e.target.checked)}
                   />
@@ -215,6 +216,7 @@ export default function Attack() {
                   <input
                     type="checkbox"
                     disabled={busy}
+                    data-demo="attack-contract"
                     checked={contract}
                     onChange={(e) => setContract(e.target.checked)}
                   />
@@ -229,6 +231,7 @@ export default function Attack() {
               <button
                 className="primary"
                 disabled={busy || !text.trim()}
+                data-demo="attack-run"
                 onClick={attack}
               >
                 {busy ? "Extracting and checking…" : "Run attack"}
@@ -244,7 +247,7 @@ export default function Attack() {
               <h2>Result</h2>
               {result ? (
                 <>
-                  <div className="attack-comparison">
+                  <div data-demo="attack-result" className="attack-comparison">
                     <span>What the AI read</span>
                     <AddressDiff
                       address={result.invoice.payee}

@@ -249,7 +249,7 @@ export default function Keys() {
               Refresh controls
             </button>
             {policy ? (
-              <dl>
+              <dl data-demo="controls-grant">
                 <div>
                   <dt>Status</dt>
                   <dd>
@@ -408,7 +408,7 @@ export default function Keys() {
             </div>
           </div>
         </section>
-        <section className="settings-row danger-zone">
+        <section data-demo="controls-danger" className="settings-row danger-zone">
           <div className="settings-label">
             <h2>Danger zone</h2>
             <p>Emergency controls that stop payments and revoke access.</p>
