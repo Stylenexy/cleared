@@ -100,7 +100,21 @@ export function summarize(rows: readonly LedgerRow[]) {
 export interface LedgerResponse {
   rows: LedgerRow[];
   summary: ReturnType<typeof summarize>;
-  source: "explorer-test.qday.info";
+  source: "explorer-test.qday.info" | "rpc-test.qday.info";
   fetchedAt: string;
   truncated: boolean;
+}
+
+/** Inclusive eth_getLogs ranges of at most `size` blocks (Aevum limit 1,000), newest `cap` ranges only. */
+export function rpcRanges(
+  from: bigint,
+  latest: bigint,
+  size = 1000n,
+  cap = 400,
+): [bigint, bigint][] {
+  const out: [bigint, bigint][] = [];
+  if (latest < from) return out;
+  for (let a = from; a <= latest; a += size)
+    out.push([a, a + size - 1n > latest ? latest : a + size - 1n]);
+  return out.slice(-cap);
 }

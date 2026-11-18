@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { encodeAbiParameters, encodeEventTopics, type Hex } from "viem";
 import { vaultAbi, reasons } from "@cleared/sdk";
-import { parseLedger, summarize, type ExplorerLog } from "../web/lib/ledger";
+import { parseLedger, rpcRanges, summarize, type ExplorerLog } from "../web/lib/ledger";
 
 const config = vi.hoisted(() => ({ publicConfig: vi.fn() }));
 vi.mock("../web/lib/public-config", () => config);
@@ -271,6 +271,35 @@ describe("ledger API", () => {
       expect(body).toContain("The explorer did not answer.");
     },
   );
+  it("falls back to the public RPC when the explorer API is down", async () => {
+    config.publicConfig.mockResolvedValue({ network: "aevum", vault: agent, rpc: "https://rpc-test.qday.info", deployBlock: "1" });
+    const paid = log("Paid");
+    upstream.mockImplementation(async (url: string | URL, init?: RequestInit) => {
+      if (String(url).includes("explorer-test")) return new Response("down", { status: 502 });
+      const body = JSON.parse(String(init?.body));
+      if (body.method === "eth_blockNumber") return Response.json({ jsonrpc: "2.0", id: 1, result: "0x7d0" });
+      return Response.json({
+        jsonrpc: "2.0",
+        id: 1,
+        result: [
+          {
+            transactionHash: paid.transaction_hash,
+            blockNumber: `0x${Number(paid.block_number).toString(16)}`,
+            logIndex: `0x${paid.index.toString(16)}`,
+            topics: paid.topics,
+            data: paid.data,
+          },
+        ],
+      });
+    });
+    const response = await GET(request());
+    expect(response.status).toBe(200);
+    const data = await response.json();
+    expect(data.source).toBe("rpc-test.qday.info");
+    expect(data.summary.paid).toBeGreaterThanOrEqual(1);
+    const rpcCalls = upstream.mock.calls.filter(([u]) => String(u).includes("rpc-test"));
+    expect(rpcCalls.length).toBeGreaterThan(1);
+  });
   it("guards cross-origin requests and limits requests per minute", async () => {
     expect(
       (await GET(request("", { origin: "https://other.example" }))).status,
@@ -281,5 +310,22 @@ describe("ledger API", () => {
     for (let i = 0; i < 20; i++)
       expect((await GET(request())).status).toBe(200);
     expect((await GET(request())).status).toBe(429);
+  });
+});
+
+describe("rpcRanges (explorer fallback)", () => {
+  it("splits into inclusive ranges of at most 1,000 blocks and keeps the newest", () => {
+    expect(rpcRanges(100n, 2599n)).toEqual([
+      [100n, 1099n],
+      [1100n, 2099n],
+      [2100n, 2599n],
+    ]);
+    expect(rpcRanges(5n, 4n)).toEqual([]);
+    const capped = rpcRanges(0n, 999_999n, 1000n, 3);
+    expect(capped).toEqual([
+      [997_000n, 997_999n],
+      [998_000n, 998_999n],
+      [999_000n, 999_999n],
+    ]);
   });
 });

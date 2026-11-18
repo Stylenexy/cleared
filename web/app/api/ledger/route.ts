@@ -3,6 +3,7 @@ import { publicConfig } from "../../../lib/public-config";
 import { ApiError, apiFailure, guardRequest } from "../../../lib/api-security";
 import {
   parseLedger,
+  rpcRanges,
   summarize,
   type LedgerResponse,
 } from "../../../lib/ledger";
@@ -27,6 +28,80 @@ const pageSchema = z.object({
     .record(z.string(), z.union([z.string(), z.number().finite(), z.boolean()]))
     .nullable(),
 });
+const quantity = z.string().regex(/^0x[\da-f]+$/i);
+const rpcLog = z.object({
+  transactionHash: hash,
+  blockNumber: quantity,
+  logIndex: quantity,
+  topics: z.array(hash).max(4),
+  data: hex,
+});
+type Item = z.infer<typeof pageSchema>["items"][number];
+
+/** Fallback when the explorer API is down: read the vault's events straight from the public RPC. */
+async function rpcLogs(
+  rpc: string,
+  address: string,
+  fromBlock: string,
+): Promise<Item[]> {
+  const call = async (method: string, params: unknown[]) => {
+    const response = await fetch(rpc, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+      signal: AbortSignal.timeout(8_000),
+      cache: "no-store",
+    });
+    if (!response.ok) throw new ApiError(502, "The explorer did not answer.");
+    const body = (await response.json()) as {
+      result?: unknown;
+      error?: unknown;
+    };
+    if (body.error !== undefined || body.result === undefined)
+      throw new ApiError(502, "The explorer did not answer.");
+    return body.result;
+  };
+  const latest = BigInt(
+    z
+      .string()
+      .regex(/^0x[\da-f]+$/i)
+      .parse(await call("eth_blockNumber", [])),
+  );
+  const ranges = rpcRanges(BigInt(fromBlock), latest);
+  const items: Item[] = [];
+  let next = 0;
+  await Promise.all(
+    Array.from({ length: 12 }, async () => {
+      while (next < ranges.length) {
+        const [a, b] = ranges[next++];
+        const logs = z
+          .array(rpcLog)
+          .parse(
+            await call("eth_getLogs", [
+              {
+                address,
+                fromBlock: `0x${a.toString(16)}`,
+                toBlock: `0x${b.toString(16)}`,
+              },
+            ]),
+          );
+        for (const log of logs)
+          items.push({
+            transaction_hash: log.transactionHash,
+            block_number: Number(BigInt(log.blockNumber)),
+            index: Number(BigInt(log.logIndex)),
+            topics: log.topics,
+            data: log.data,
+          });
+      }
+    }),
+  );
+  return items.sort(
+    (x, y) =>
+      Number(y.block_number) - Number(x.block_number) || y.index - x.index,
+  );
+}
+
 let cache: { vault: string; expires: number; data: LedgerResponse } | undefined;
 export async function GET(request: Request) {
   try {
@@ -35,23 +110,31 @@ export async function GET(request: Request) {
     if (config.network !== "aevum" || !("vault" in config) || !config.vault)
       throw new ApiError(404, "The Aevum ledger is not configured.");
     if (!cache || cache.vault !== config.vault || cache.expires <= Date.now()) {
-      const items: z.infer<typeof pageSchema>["items"] = [];
+      let items: z.infer<typeof pageSchema>["items"] = [];
       let params: z.infer<typeof pageSchema>["next_page_params"] = null;
+      let source: LedgerResponse["source"] = "explorer-test.qday.info";
       const signal = AbortSignal.timeout(10_000);
-      for (let page = 0; page < 5; page++) {
-        const url = new URL(
-          `https://explorer-test.qday.info/api/v2/addresses/${config.vault}/logs`,
-        );
-        if (params)
-          for (const [key, value] of Object.entries(params))
-            url.searchParams.set(key, String(value));
-        const response = await fetch(url, { signal, cache: "no-store" });
-        if (!response.ok)
-          throw new ApiError(502, "The explorer did not answer.");
-        const result = pageSchema.parse(await response.json());
-        items.push(...result.items);
-        params = result.next_page_params;
-        if (!params) break;
+      try {
+        for (let page = 0; page < 5; page++) {
+          const url = new URL(
+            `https://explorer-test.qday.info/api/v2/addresses/${config.vault}/logs`,
+          );
+          if (params)
+            for (const [key, value] of Object.entries(params))
+              url.searchParams.set(key, String(value));
+          const response = await fetch(url, { signal, cache: "no-store" });
+          if (!response.ok)
+            throw new ApiError(502, "The explorer did not answer.");
+          const result = pageSchema.parse(await response.json());
+          items.push(...result.items);
+          params = result.next_page_params;
+          if (!params) break;
+        }
+      } catch {
+        // The explorer API is down: same events, read from the public RPC instead.
+        items = await rpcLogs(config.rpc, config.vault, config.deployBlock);
+        params = null;
+        source = "rpc-test.qday.info";
       }
       const unique = [
         ...new Map(
@@ -61,11 +144,12 @@ export async function GET(request: Request) {
       const rows = parseLedger(unique);
       cache = {
         vault: config.vault,
-        expires: Date.now() + 30_000,
+        expires:
+          Date.now() + (source === "rpc-test.qday.info" ? 120_000 : 30_000),
         data: {
           rows,
           summary: summarize(rows),
-          source: "explorer-test.qday.info",
+          source,
           fetchedAt: new Date().toISOString(),
           truncated: params !== null,
         },
