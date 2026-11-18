@@ -15,7 +15,7 @@ gitleaks git --redact
 
 `npm run setup` obtains the verified compiler and Foundry tooling. On PowerShell, `npm.cmd` can be used if the npm script shim is restricted. None of the test commands needs a wallet, private environment file, faucet, live provider or testnet transaction.
 
-Verified: 70 Foundry + 212 Vitest tests. The test runners print the authoritative totals when the suite changes.
+Verified: 70 Foundry + 300 Vitest tests. The test runners print the authoritative totals when the suite changes.
 
 ## What the suites prove
 
@@ -51,7 +51,7 @@ Check `/attack` manually at 1440 and 360 pixels before presenting. The checkbox 
 
 ## Testnet proof preparation
 
-`tools/testnet-proof.mjs` is an explicit broadcast tool for later use. It is never called by build, tests, samples or the local demo. `docs/TESTNET-PROOF.md` remains pending until actual receipts are recorded.
+`tools/testnet-proof.mjs` is an explicit broadcast tool for later use. It is never called by build, tests, samples or the local demo. It was run once on 18 Nov 2026 (run r202611181345); `docs/TESTNET-PROOF.md` holds those receipts.
 
 Before invoking it, deploy the Cleared contracts on chain 44005, fund the owner with at least 1 tUSD8 and test gas, and fund a dedicated agent with test gas. Register **Northwind Design Studio** to the intended `PROOF_TRUSTED_PAYEE` and wait the full 24-hour trust delay. Leave the vault unfrozen with at least 0.30 tUSD8 daily budget remaining. Use a dedicated proof vault/agent: the script grants and finally revokes that agent.
 
@@ -78,7 +78,7 @@ When ready to broadcast, invoke `node tools/testnet-proof.mjs` explicitly. It fi
 6. Stage a trusted invoice, turn the kill switch on, execute and decode `Rejected(Frozen)`; the vault is always resumed afterwards, even if a step fails.
 7. Revoke the dedicated agent, decode `AgentRevoked`, and verify state plus `previewPayment` refusal.
 
-The recorder writes transaction hashes and direct explorer links to `docs/TESTNET-PROOF.md` after each confirmed, verified receipt, including setup/staging rows. The report stays marked **INCOMPLETE** until all seven scenarios pass. Failures stop execution; already confirmed transactions remain real and are not rolled back. Do not blindly rerun after a partial failure or reuse a run ID: inspect receipts and use a fresh dedicated run. No proof script was executed to produce the currently pending report.
+The recorder writes transaction hashes and direct explorer links to `docs/TESTNET-PROOF.md` after each confirmed, verified receipt, including setup/staging rows. The report stays marked **INCOMPLETE** until all seven scenarios pass. Failures stop execution; already confirmed transactions remain real and are not rolled back. Do not blindly rerun after a partial failure or reuse a run ID: inspect receipts and use a fresh dedicated run. The current report comes from the 18 Nov 2026 run, with all seven scenarios verified.
 
 Every broadcast hash is printed and appended to the ignored `.local/proof-sent.log` before the script waits for its receipt, so an RPC failure never loses a sent transaction. Reads retry transient RPC errors three times; writes are never resent automatically. Preflight requires enough test gas for 8 owner and 9 agent transactions at the current gas price.
 

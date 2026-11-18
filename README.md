@@ -10,6 +10,8 @@ Cleared is for **web3 teams and DAOs paying contractor invoices in stablecoins**
 
 Aevum Builder Challenge #1, primary track: Native AI Assistants.
 
+**Watch it run itself (90 seconds, simulation, no wallet):** https://cleared-ecru.vercel.app/try?demo=1. Clerk, the assistant, drives the real interface with a visible cursor across Try it, Attack lab, Treasury and Controls. You can pause, skip or exit at any time.
+
 Try it, no wallet: https://cleared-ecru.vercel.app/try · Attack it with a live model: https://cleared-ecru.vercel.app/attack
 
 ### Proof in 20 seconds
@@ -17,7 +19,7 @@ Try it, no wallet: https://cleared-ecru.vercel.app/try · Attack it with a live 
 - **Deployed on Aevum testnet** (chain 44005, block 3380779): [ClearedVault](https://explorer-test.qday.info/address/0x8fba7dd67e294b3ba5ca164748b9f41c03bad13c) · [PayeeRegistry](https://explorer-test.qday.info/address/0xad297045531da0e71b9ecd3de215d2b63cb74e1d) · [IdentityRegistry](https://explorer-test.qday.info/address/0xBC4A33597D5f0faf11d157dE6dE74cD4E96E088f).
 - **Same code as this repository:** `forge build && node tools/verify-bytecode.mjs` compares the live runtime bytecode, including the Solidity metadata hash, with your local build. The Aevum explorer's verifier currently lists no Solidity compilers, so this script is the reproducible check.
 - **Every vault decision, no wallet:** the [Aevum ledger](https://cleared-ecru.vercel.app/app#ledger) lists the vault's Paid, Rejected (with reason), Staged, freeze and agent events, read from the public explorer API, with transaction links.
-- **Seven payment scenarios on-chain** (Paid, PayeeOnHold, one batch with the verified contractor paid and its lookalike refused, owner approval, kill switch, key revoke): [docs/TESTNET-PROOF.md](docs/TESTNET-PROOF.md). The run waits for the 24-hour trust delay of the registered contractor and is scheduled for 18 Nov 2026; until then that file says pending.
+- **Seven payment scenarios on-chain** (Paid, PayeeOnHold, one batch with the verified contractor paid and its lookalike refused, owner approval, kill switch, key revoke): all seven verified on 18 Nov 2026 (run r202611181345), every receipt linked in [docs/TESTNET-PROOF.md](docs/TESTNET-PROOF.md). The batch that pays the verified contractor and refuses its lookalike in the same transaction: [0xddffc6c3…64e4](https://explorer-test.qday.info/tx/0xddffc6c3955e69fc5b991103c0d69a9a51cd22f23c84251f87155e78ac8464e4).
 
 First commit: 17 Nov 2026
 
@@ -169,7 +171,7 @@ The treasury accepts TXT, CSV and text PDFs: at most 10 files, 2 MB each, 10 pag
 
 Network configuration follows the [Aevum Starter Kit](https://github.com/qday-io/aevum-starter-kit): chain **44005**, HTTPS RPC https://rpc-test.qday.info, explorer https://explorer-test.qday.info, tUSD8 **0x456569838f1d43009A91ebA4263147Afd7233483**, **6 decimals**. Solidity targets **Shanghai**. Writes are **legacy type 0**; event requests span at most **1,000 inclusive blocks**. No WebSocket, Cancun opcodes, Kernel, ERC-4337 bundler or paymaster dependency is required.
 
-contracts/script/DeployAevum.s.sol deployed the contracts on 17 Nov 2026. The registry constructor also creates the identity directory. Northwind Design Studio and Ledgerline Audits are registered to the same public sample addresses the demo uses, so the web's on-chain checks agree with the samples. Those addresses are derived from public seeds ([docs/SAMPLES.md](docs/SAMPLES.md)); nobody holds their keys, so the 0.10 tUSD8 proof payments to them are unrecoverable test tokens. A real treasury registers addresses its contractors control. Ledgerline was registered later ([0x89fac2d0…0590](https://explorer-test.qday.info/tx/0x89fac2d01df0fa5f8f9a0ebe8f30877995ac7ed4bd2ec193fd430b0a977f0590)), so it stays on hold until 18 Nov 2026 14:40 WIB.
+contracts/script/DeployAevum.s.sol deployed the contracts on 17 Nov 2026. The registry constructor also creates the identity directory. Northwind Design Studio and Ledgerline Audits are registered to the same public sample addresses the demo uses, so the web's on-chain checks agree with the samples. Those addresses are derived from public seeds ([docs/SAMPLES.md](docs/SAMPLES.md)); nobody holds their keys, so the 0.10 tUSD8 proof payments to them are unrecoverable test tokens. A real treasury registers addresses its contractors control. Ledgerline was registered later ([0x89fac2d0…0590](https://explorer-test.qday.info/tx/0x89fac2d01df0fa5f8f9a0ebe8f30877995ac7ed4bd2ec193fd430b0a977f0590)), with a 24-hour trust hold ending 18 Nov 2026 14:40 WIB.
 
 | Testnet evidence | Address / transaction / explorer |
 | --- | --- |
@@ -178,14 +180,14 @@ contracts/script/DeployAevum.s.sol deployed the contracts on 17 Nov 2026. The re
 | ClearedVault | [0x8fba7dd67e294b3ba5ca164748b9f41c03bad13c](https://explorer-test.qday.info/address/0x8fba7dd67e294b3ba5ca164748b9f41c03bad13c) · deploy [0x1059ce46…561f](https://explorer-test.qday.info/tx/0x1059ce4659213cccc1d7299fe2297b3afee328fbe0590381d04736b6686b561f) |
 | Contractor registered (starts the 24-hour hold) | [0x67bb8a70…a7ba](https://explorer-test.qday.info/tx/0x67bb8a70e40b4ae515f6940fe49e79497467352eb292b403704b54ffc152a7ba), block 3380840 |
 | Deployment block and source | Block 3380779. `contracts/` is unchanged since the commit "Realistic poisoning sample addresses…"; `tools/verify-bytecode.mjs` reports MATCH for all three contracts |
-| 1. Deposit, 2. agent auto-pays the mature contractor (`Paid`) | Scheduled 18 Nov 2026, links in [TESTNET-PROOF.md](docs/TESTNET-PROOF.md) |
-| 3. New recipient held (`Rejected(PayeeOnHold)`) | Same run |
-| 4. One batch: verified address `Paid`, lookalike `Rejected(NameMismatch)` | Same run |
-| 5. Owner approves the held recipient (`Paid`) | Same run |
-| 6. Kill switch on: staged payment `Rejected(Frozen)` | Same run |
-| 7. Agent key revoked (`AgentRevoked`) | Same run |
+| 1. Deposit, 2. agent auto-pays the mature contractor (`Paid`) | [0x1fdaddf4…7bdf](https://explorer-test.qday.info/tx/0x1fdaddf4a2f8462ded8a28e013f2b164976952d16b0263a9341034c159227bdf) · [0x6d796e1e…c622](https://explorer-test.qday.info/tx/0x6d796e1eb4c3ca385c88ba3a4a01b8a8edb44d51e16b092abea6ef54e17bc622) (run r202611181345, all rows in [TESTNET-PROOF.md](docs/TESTNET-PROOF.md)) |
+| 3. New recipient held (`Rejected(PayeeOnHold)`) | [0xcd92f4c1…5729](https://explorer-test.qday.info/tx/0xcd92f4c1078e4b4c03c74d7782d2e69c1934c9216fcd9c728d2937a6e9345729) |
+| 4. One batch: verified address `Paid`, lookalike `Rejected(NameMismatch)` | [0xddffc6c3…64e4](https://explorer-test.qday.info/tx/0xddffc6c3955e69fc5b991103c0d69a9a51cd22f23c84251f87155e78ac8464e4) |
+| 5. Owner approves the held recipient (`Paid`) | [0x586eeeeb…c4ac](https://explorer-test.qday.info/tx/0x586eeeeb389fee332e2c21eacda77dc2625a229ce07ac014acef389b4b65c4ac) |
+| 6. Kill switch on: staged payment `Rejected(Frozen)` | [0x49df7a28…d34e](https://explorer-test.qday.info/tx/0x49df7a28ac6fd764a7bb5ff420efd61670657e3b03cd055424480c01a702d34e) (vault resumed afterwards) |
+| 7. Agent key revoked (`AgentRevoked`) | [0xfff1e2d9…df57](https://explorer-test.qday.info/tx/0xfff1e2d9746c09aee56380a9b56d2a5b617080284d0b123936b78eac10acdf57) (dedicated proof agent) |
 | Public demo | https://cleared-ecru.vercel.app |
-| Demo recording | Recorded after the scenario run |
+| Self-running demo | https://cleared-ecru.vercel.app/try?demo=1 (narrated walkthrough video to follow) |
 
 `docs/local-proof.json` and `docs/local-reconciliation.csv` are authored sample simulations using the current destinations. They contain no transaction hashes and are not chain evidence. See [testing](docs/TESTING.md) for executable verification and [testnet proof preparation](docs/TESTING.md#testnet-proof-preparation) for the seven-scenario recorder and its local fork rehearsal.
 
@@ -194,8 +196,8 @@ contracts/script/DeployAevum.s.sol deployed the contracts on 17 Nov 2026. The re
 | Criterion                                     | Implementation                                                                                             | Remaining evidence                                            |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | 1. User experience and presentation           | English UI, full addresses, explicit risk decisions, hold timer, wallet-free /try                          | Manual desktop/mobile visual review                           |
-| 2. Clear and well-structured demo             | Three invoices, editable attack lab, extraction beside decision, freeze scenario                           | Scenario receipts (18 Nov) and video                          |
-| 3. Comprehensive documentation                | Setup, architecture, API packages, reproduction, controls and honest limitations                           | Scenario rows of the evidence table                           |
+| 2. Clear and well-structured demo             | Self-running narrated demo, three invoices, editable attack lab, extraction beside decision, freeze scenario | Narrated video                                                |
+| 3. Comprehensive documentation                | Setup, architecture, API packages, reproduction, controls and honest limitations                           | Recorded walkthrough video                                    |
 | 4. Innovation and originality                 | Destination identity plus staged-held approval, bounded autonomy and adversarial demo                      | Validation with DAO treasurers                                |
 | 5. Technical quality and platform integration | Shanghai, legacy transactions, six decimals, chunked logs, tested contracts and minimal identity directory | Explorer source verification once Aevum's verifier supports Solidity |
 | 6. Real-world utility and market potential    | Stablecoin contractor invoices for web3 teams and DAOs; small businesses are a secondary example           | Pilot organizations and accounting integrations               |
@@ -212,7 +214,7 @@ npm run build
 npm run check:contrast
 ```
 
-Verified: 70 Foundry + 232 Vitest tests. See [TESTING.md](docs/TESTING.md) for commands, test coverage and boundaries.
+Verified: 70 Foundry + 300 Vitest tests. See [TESTING.md](docs/TESTING.md) for commands, test coverage and boundaries.
 
 The production HTTP smoke in tools/web-smoke.mjs checks five pages, PDF uploads, configuration and a saved attack over loopback without launching a browser. Run a production web server first. No network writes are used by the smoke.
 
@@ -226,7 +228,7 @@ Review state is held in page memory. The attack counter uses browser localStorag
 
 ## Roadmap and business hypothesis
 
-1. Done: Aevum testnet deployment with reproducible bytecode check. Next: recorded scenario hashes and a rehearsed demo video.
+1. Done: Aevum testnet deployment with reproducible bytecode check and seven recorded on-chain scenarios. Next: a rehearsed demo video.
 2. DAO/team pilot: verify contractors and changed-address workflows, integrate invoice queues and accounting exports, adopt multisig ownership.
 3. After audit: persistent settlement indexing, reorg handling, authenticated team roles, provider budgets and production monitoring.
 
