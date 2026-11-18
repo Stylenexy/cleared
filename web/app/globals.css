@@ -7954,3 +7954,103 @@ html.lenis body {
 .product-app .table-wrap {
   position: relative;
 }
+
+/* Inner app polish (18 Nov): no landing navbar offset, calm environment block, readable grant stats. */
+body:has(.product-app) {
+  padding-top: 0;
+}
+.product-app .app-network {
+  display: grid;
+  gap: 10px;
+  padding: 16px 12px 0;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+}
+.product-app .app-network p.app-env-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--text-2);
+}
+.product-app .app-env-name {
+  color: var(--text);
+  font-weight: 600;
+}
+.product-app .app-env-meta,
+.product-app .app-env-state {
+  margin-left: auto;
+}
+.product-app .app-env-meta {
+  font-family: var(--font-code);
+  font-size: 12px;
+  color: var(--muted);
+}
+.product-app .app-env-label {
+  padding-left: 16px;
+}
+.product-app .app-env-state {
+  font-weight: 600;
+}
+.product-app .app-env-state.is-live {
+  color: var(--positive);
+}
+.product-app .app-env-state.is-frozen {
+  color: var(--warning);
+}
+.product-app .key-panel dl {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.product-app .key-panel dl > div:nth-child(1) {
+  grid-row: 1;
+  grid-column: 1;
+}
+.product-app .key-panel dl > div:nth-child(5) {
+  grid-row: 1;
+  grid-column: 2 / 4;
+}
+.product-app .key-panel dl > div {
+  padding: 14px 16px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.product-app .key-panel dt {
+  margin-bottom: 4px;
+}
+.product-app .key-panel dd {
+  text-align: left;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 1099px) {
+  .product-app .app-compact-status .app-network {
+    gap: 8px 20px;
+  }
+  .product-app .app-compact-status .app-env-meta,
+  .product-app .app-compact-status .app-env-state {
+    margin-left: 0;
+  }
+  .product-app .app-compact-status .app-env-label {
+    padding-left: 0;
+  }
+}
+@media (max-width: 767px) {
+  .product-app .key-panel dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .product-app .key-panel dl > div:nth-child(1) {
+    grid-row: auto;
+    grid-column: auto;
+  }
+  .product-app .key-panel dl > div:nth-child(5) {
+    grid-row: auto;
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 1099px) and (min-width: 768px) {
+  .product-app .app-sidebar .app-network {
+    display: none;
+  }
+}

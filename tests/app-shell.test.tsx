@@ -71,7 +71,8 @@ describe("inner application presentation", () => {
         <main />
       </AppShell>,
     );
-    expect(html).toContain("Local Anvil · chain 31337");
+    expect(html).toContain("Local Anvil");
+    expect(html).toContain("31337");
     expect(html).not.toContain("Aevum testnet");
   });
   it("mounts the existing marketing chrome only on the landing route", () => {

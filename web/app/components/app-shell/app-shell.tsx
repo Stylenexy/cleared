@@ -30,22 +30,40 @@ function NetworkStatus({
   config?: Config;
   frozen?: boolean;
 }) {
+  const name = config
+    ? config.network === "aevum"
+      ? "Aevum testnet"
+      : config.network === "local"
+        ? "Local Anvil"
+        : "Demo mode"
+    : "Loading network…";
+  const chain =
+    config?.network === "aevum"
+      ? "44005"
+      : config?.network === "local"
+        ? "31337"
+        : undefined;
   return (
     <div className="app-network" role="status">
-      <p>
+      <p className="app-env-row">
         <span className={config ? "network-dot" : "network-dot pending"} />
-        {config
-          ? config.network === "aevum"
-            ? "Aevum testnet · chain 44005"
-            : config.network === "local"
-              ? "Local Anvil · chain 31337"
-              : "Demo mode"
-          : "Loading network…"}
+        <span className="app-env-name">{name}</span>
+        {chain && (
+          <span className="app-env-meta" title={`Chain ID ${chain}`}>
+            {chain}
+          </span>
+        )}
       </p>
       {frozen !== undefined && (
-        <span className={"status-chip " + (frozen ? "warning" : "positive")}>
-          Payments: {frozen ? "Frozen" : "Live"}
-        </span>
+        <p
+          className="app-env-row"
+          aria-label={`Payments: ${frozen ? "Frozen" : "Live"}`}
+        >
+          <span className="app-env-label">Payments</span>
+          <span className={"app-env-state " + (frozen ? "is-frozen" : "is-live")}>
+            {frozen ? "Frozen" : "Live"}
+          </span>
+        </p>
       )}
     </div>
   );
