@@ -37,8 +37,11 @@ export function SmoothScroll() {
       lenis.on("scroll", ScrollTrigger.update);
       const tick = (time: number) => lenis.raf(time * 1000);
       gsap.ticker.add(tick);
+      // Lenis and ScrollTrigger share one clock; GSAP must not rewind time after a slow frame.
+      gsap.ticker.lagSmoothing(0);
       ScrollTrigger.refresh();
       return () => {
+        gsap.ticker.lagSmoothing(500, 33);
         gsap.ticker.remove(tick);
         lenis.off("scroll", ScrollTrigger.update);
         lenis.destroy();

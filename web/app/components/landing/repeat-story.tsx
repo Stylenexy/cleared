@@ -20,7 +20,6 @@ export function RepeatStory() {
             start: "top top",
             end: "+=240%",
             pin: true,
-            anticipatePin: 1,
             scrub: 0.7,
           },
         });

@@ -42,7 +42,6 @@ export function ProcessStory() {
             end: "+=560%",
             pin: true,
             scrub: 0.8,
-            anticipatePin: 1,
           },
         });
         // The first word rises while the section scrolls in, so the screen is never empty.

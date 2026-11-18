@@ -8429,3 +8429,67 @@ body:has(.product-app) {
 section.demo-narration {
   padding: 14px 16px 12px;
 }
+
+/* Scroll comfort (18 Nov): the photo fades and grain are painted once instead of masked every frame,
+   so pinned scenes stay smooth on slower laptops. Same look: photos still fade into the page at both ends. */
+.story-wallpaper {
+  -webkit-mask-image: none;
+  mask-image: none;
+  contain: paint;
+}
+.story-wallpaper::after {
+  opacity: 1;
+  background-image: linear-gradient(
+    to bottom,
+    var(--background) 0,
+    transparent 16%,
+    transparent 84%,
+    var(--background) 100%
+  );
+  background-size: auto;
+}
+
+/* Phone legibility (18 Nov): the landing on touch screens keeps every reading label at 11px or more,
+   buttons at 13px, and the header opaque enough that scrolled titles never show through it. */
+@media (max-width: 767px) {
+  .signal-header.site-header {
+    background: rgba(11, 15, 20, 0.96);
+  }
+  .signal-header nav a {
+    font-size: 12px;
+  }
+  .desk-pill,
+  .desk-pill .pill-body,
+  .footer-story .desk-pill {
+    font-size: 13px;
+  }
+  .widget-intro p,
+  .story-caption p,
+  .process-last-word small,
+  .signal-landing .clerk-preview-note,
+  .repeat-note {
+    font-size: 12px;
+  }
+  .skill-list,
+  .skill-list li,
+  .skill-sticker,
+  .section-rule > span,
+  .process-story li,
+  .desk-widget > small,
+  .widget-face .widget-status,
+  .signal-landing .registered-address code,
+  .signal-landing .story-address-row > span:first-child,
+  .signal-ledger .landing-ledger-top > span,
+  .signal-ledger .landing-ledger-table th,
+  .signal-ledger .landing-ledger-empty small,
+  .footer-status,
+  .footer-bottom {
+    font-size: 11px;
+  }
+  .footer-column h2 {
+    font-size: 12px;
+  }
+  .footer-column a {
+    font-size: 13px;
+  }
+}

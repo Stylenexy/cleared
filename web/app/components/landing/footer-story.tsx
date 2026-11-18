@@ -21,7 +21,6 @@ export function FooterStory() {
             start: "top top",
             end: "+=180%",
             pin: true,
-            anticipatePin: 1,
             scrub: 0.8,
           },
         });

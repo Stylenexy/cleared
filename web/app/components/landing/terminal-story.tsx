@@ -38,7 +38,6 @@ export function TerminalStory() {
             end: () =>
               `+=${window.innerHeight * (window.innerWidth < 768 ? 0.8 : 2)}`,
             pin: true,
-            anticipatePin: 1,
             scrub: 0.8,
           },
         });
