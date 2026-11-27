@@ -8835,3 +8835,28 @@ button:disabled:hover {
     font-size: 12px;
   }
 }
+
+/* ── Polish 27 Nov: last small-print stragglers ── */
+.signal-header .nav-cta .pill-body {
+  font-size: 13px;
+}
+.signal-landing .desk-actions .pill-body {
+  font-size: 14px;
+}
+.signal-landing .stamp-slip span {
+  font: 600 11px / 1.3 var(--font-body);
+}
+.signal-landing .printed-receipt strong {
+  font-size: 12px;
+}
+.signal-landing .printed-receipt small {
+  font-size: 11px;
+}
+.signal-landing .hold-dial strong span,
+.signal-landing .story-address-row > span:first-child {
+  font-size: 11px;
+}
+.product-app .paper-caption,
+.product-app .lab-toolbar > span {
+  font-size: 12px;
+}
