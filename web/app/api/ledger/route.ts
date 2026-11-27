@@ -7,6 +7,7 @@ import {
   summarize,
   type LedgerResponse,
 } from "../../../lib/ledger";
+import snapshot from "../../../lib/ledger-snapshot.json";
 
 export const dynamic = "force-dynamic";
 const hex = z.string().regex(/^0x(?:[\da-f]{2})*$/i);
@@ -43,7 +44,7 @@ async function rpcLogs(
   rpc: string,
   address: string,
   fromBlock: string,
-): Promise<Item[]> {
+): Promise<{ items: Item[]; truncated: boolean }> {
   const call = async (method: string, params: unknown[]) => {
     const response = await fetch(rpc, {
       method: "POST",
@@ -68,6 +69,11 @@ async function rpcLogs(
       .parse(await call("eth_blockNumber", [])),
   );
   const ranges = rpcRanges(BigInt(fromBlock), latest);
+  // rpcRanges keeps the newest ranges only; say so instead of implying a complete record.
+  const truncated =
+    latest >= BigInt(fromBlock) &&
+    ranges.length > 0 &&
+    ranges[0][0] > BigInt(fromBlock);
   const items: Item[] = [];
   let next = 0;
   await Promise.all(
@@ -96,11 +102,11 @@ async function rpcLogs(
       }
     }),
   );
-  return items.sort(
-    (x, y) =>
-      Number(y.block_number) - Number(x.block_number) || y.index - x.index,
-  );
+  return { items, truncated };
 }
+
+/** Vault events frozen from the RPC by tools/ledger-snapshot.mjs (each row keeps its tx hash). */
+const frozen = snapshot.logs as Item[];
 
 let cache: { vault: string; expires: number; data: LedgerResponse } | undefined;
 export async function GET(request: Request) {
@@ -113,6 +119,7 @@ export async function GET(request: Request) {
       let items: z.infer<typeof pageSchema>["items"] = [];
       let params: z.infer<typeof pageSchema>["next_page_params"] = null;
       let source: LedgerResponse["source"] = "explorer-test.qday.info";
+      let rpcTruncated = false;
       const signal = AbortSignal.timeout(10_000);
       try {
         for (let page = 0; page < 5; page++) {
@@ -132,10 +139,20 @@ export async function GET(request: Request) {
         }
       } catch {
         // The explorer API is down: same events, read from the public RPC instead.
-        items = await rpcLogs(config.rpc, config.vault, config.deployBlock);
+        // Blocks up to the snapshot are already known; only newer blocks are scanned.
+        const known =
+          config.vault.toLowerCase() === snapshot.vault
+            ? BigInt(snapshot.throughBlock) + 1n
+            : BigInt(config.deployBlock);
+        const from =
+          known > BigInt(config.deployBlock) ? known : BigInt(config.deployBlock);
+        const fresh = await rpcLogs(config.rpc, config.vault, from.toString());
+        items = fresh.items;
         params = null;
+        rpcTruncated = fresh.truncated;
         source = "rpc-test.qday.info";
       }
+      if (config.vault.toLowerCase() === snapshot.vault) items.push(...frozen);
       const unique = [
         ...new Map(
           items.map((item) => [`${item.transaction_hash}:${item.index}`, item]),
@@ -151,7 +168,7 @@ export async function GET(request: Request) {
           summary: summarize(rows),
           source,
           fetchedAt: new Date().toISOString(),
-          truncated: params !== null,
+          truncated: params !== null || rpcTruncated,
         },
       };
     }

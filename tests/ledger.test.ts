@@ -300,6 +300,27 @@ describe("ledger API", () => {
     const rpcCalls = upstream.mock.calls.filter(([u]) => String(u).includes("rpc-test"));
     expect(rpcCalls.length).toBeGreaterThan(1);
   });
+  it("serves the frozen snapshot and scans only newer blocks when the explorer is down", async () => {
+    const snapshot = (await import("../web/lib/ledger-snapshot.json")).default;
+    config.publicConfig.mockResolvedValue({ network: "aevum", vault: snapshot.vault, rpc: "https://rpc-test.qday.info", deployBlock: String(snapshot.fromBlock) });
+    const latest = snapshot.throughBlock + 2500;
+    const scanned: string[] = [];
+    upstream.mockImplementation(async (url: string | URL, init?: RequestInit) => {
+      if (String(url).includes("explorer-test")) throw new Error("down");
+      const body = JSON.parse(String(init?.body));
+      if (body.method === "eth_blockNumber") return Response.json({ jsonrpc: "2.0", id: 1, result: `0x${latest.toString(16)}` });
+      scanned.push(body.params[0].fromBlock);
+      return Response.json({ jsonrpc: "2.0", id: 1, result: [] });
+    });
+    const data = await (await GET(request())).json();
+    expect(data.source).toBe("rpc-test.qday.info");
+    expect(data.truncated).toBe(false);
+    expect(data.rows.length).toBe(snapshot.logs.length);
+    expect(data.summary.paid).toBeGreaterThanOrEqual(2);
+    expect(data.summary.refused).toBeGreaterThanOrEqual(1);
+    expect(scanned.length).toBe(3);
+    expect(Math.min(...scanned.map((b) => Number(b)))).toBe(snapshot.throughBlock + 1);
+  });
   it("guards cross-origin requests and limits requests per minute", async () => {
     expect(
       (await GET(request("", { origin: "https://other.example" }))).status,
