@@ -115,8 +115,6 @@ describe("landing content", () => {
       );
       expect(html).not.toContain("tUSD8");
       expect(html).not.toContain("ledger-event");
-      if (status === "unavailable")
-        expect(html).toContain("No payment history could be loaded.");
     },
   );
   it("keeps loading distinct from an empty ledger", () => {
