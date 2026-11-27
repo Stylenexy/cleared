@@ -8860,3 +8860,96 @@ button:disabled:hover {
 .product-app .lab-toolbar > span {
   font-size: 12px;
 }
+
+/* ── Polish 27 Nov, round 2 ── */
+/* One continuous background: the safety heading sits on the page, not on a photo band. */
+.signal-landing .safety-photo-header {
+  padding-block: 24px 0;
+}
+/* Safety cards hold their content without a dead band. */
+.signal-landing .safety-card {
+  min-height: 310px;
+}
+/* No rule lines left between sections. */
+.product-app .clearing-flow {
+  border-bottom: 0;
+}
+.product-app .attack-result,
+.product-app .attempt-history {
+  border-top: 0;
+  padding-top: 8px;
+}
+.site-footer,
+.signal-landing .site-footer {
+  border-top: 0;
+}
+.site-footer .footer-bottom {
+  border-top: 0;
+  font: 400 13px / 1.6 var(--font-body);
+}
+.site-footer .live-dot {
+  display: none;
+}
+/* The demo hint stays inside the sidebar on desktop. */
+@media (min-width: 1100px) {
+  .demo-launcher-wrap .demo-hint {
+    width: 208px;
+    bottom: 60px;
+  }
+}
+/* Phones: Clerk's head sits in the top status row and scrolls away with the page; no hint bubble. */
+@media (max-width: 767px) {
+  .demo-launcher-wrap {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    bottom: auto;
+  }
+  .demo-launcher-wrap .demo-launcher {
+    height: 40px;
+    padding: 3px 10px 3px 3px;
+  }
+  .demo-launcher-wrap .demo-launcher-head img {
+    width: 32px;
+    height: 32px;
+  }
+  .demo-launcher-wrap .demo-hint {
+    display: none;
+  }
+}
+/* Phones: each ledger row becomes a small stacked block, nothing cut at the edge. */
+@media (max-width: 480px) {
+  .signal-landing .landing-ledger-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .signal-landing .landing-ledger-table,
+  .signal-landing .landing-ledger-table table,
+  .signal-landing .landing-ledger-table tbody,
+  .signal-landing .landing-ledger-table tr,
+  .signal-landing .landing-ledger-table td {
+    display: block;
+    width: 100%;
+    overflow: visible;
+  }
+  .signal-landing .landing-ledger-table tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2px 12px;
+    padding: 12px 0;
+  }
+  .signal-landing .landing-ledger-table td {
+    padding: 0;
+    border: 0;
+  }
+  .signal-landing .landing-ledger-table td:nth-child(2) {
+    grid-row: 2;
+  }
+  .signal-landing .landing-ledger-table td:nth-child(3),
+  .signal-landing .landing-ledger-table td:last-child {
+    text-align: right;
+  }
+}
