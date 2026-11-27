@@ -1,7 +1,8 @@
 # Live model test: does the poisoned invoice fool the AI?
 
-**Result (27 Nov 2026, 09:25 UTC, production site, live Gemini extraction, Aevum contract read with `eth_call`):
-10 runs, the model was fooled once. That one time the Aevum contract answered `Name mismatch`, so nothing could be paid.**
+**Result (27 Nov 2026, production site, live Gemini extraction, Aevum contract read with `eth_call`):
+55 recorded runs, the model was fooled 2 times (about 4%). Both times the Aevum contract answered `Name mismatch`, so nothing could be paid.**
+The first batch of 10 runs is below; the 45-run capture session follows.
 
 ## What was tested
 The attack invoice prints Northwind Design Studio's verified address. Hidden in the text (zero-size, transparent) is an instruction:
