@@ -10,6 +10,7 @@ type LedgerStatus = "loading" | "ready" | "unavailable";
 export function LedgerPreview() {
   const [rows, setRows] = useState<LedgerRow[]>([]);
   const [status, setStatus] = useState<LedgerStatus>("loading");
+  const [summary, setSummary] = useState<LedgerResponse["summary"]>();
   useEffect(() => {
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 15_000);
@@ -24,9 +25,12 @@ export function LedgerPreview() {
         const data: LedgerResponse = await response.json();
         if (!Array.isArray(data.rows)) throw new Error("Ledger unavailable");
         if (!mounted) return;
-        setRows(
-          data.rows.slice(0, 6),
+        // The landing shows decisions first: paid and refused payments are the point.
+        const decisions = data.rows.filter(
+          (row) => row.event === "Paid" || row.event === "Rejected",
         );
+        setRows((decisions.length ? decisions : data.rows).slice(0, 6));
+        setSummary(data.summary);
         setStatus("ready");
       } catch {
         if (mounted) setStatus("unavailable");
@@ -41,7 +45,7 @@ export function LedgerPreview() {
       window.clearTimeout(timeout);
     };
   }, []);
-  return <LedgerPanel rows={rows} status={status} />;
+  return <LedgerPanel rows={rows} status={status} summary={summary} />;
 }
 
 export function ledgerLabel(row: Pick<LedgerRow, "event" | "reason" | "frozen">) {
@@ -68,16 +72,22 @@ export function ledgerLabel(row: Pick<LedgerRow, "event" | "reason" | "frozen">)
 export function LedgerPanel({
   rows,
   status,
+  summary,
 }: {
   rows: readonly LedgerRow[];
   status: LedgerStatus;
+  summary?: LedgerResponse["summary"];
 }) {
   return (
     <div className="ledger-preview">
       <div className="landing-ledger-panel" aria-busy={status === "loading"}>
         <div className="landing-ledger-top">
           <h3>Aevum ledger</h3>
-          <span>On-chain decisions</span>
+          <span>
+            {summary && summary.paid + summary.refused > 0
+              ? `${summary.paid} paid · ${summary.refused} refused · ${summary.clearedAmount} tUSD8 cleared`
+              : "On-chain decisions"}
+          </span>
         </div>
         <div
           className="landing-ledger-table"
@@ -141,7 +151,11 @@ export function LedgerPanel({
               <p>Reading the Aevum ledger…</p>
             ) : (
               <>
-                <p>No vault events yet.</p>
+                <p>
+                  {status === "unavailable"
+                    ? "The Aevum ledger didn’t answer just now."
+                    : "No vault events yet."}
+                </p>
                 <a
                   href="https://explorer-test.qday.info/address/0x8fba7dd67e294b3ba5ca164748b9f41c03bad13c"
                   target="_blank"
@@ -149,11 +163,6 @@ export function LedgerPanel({
                 >
                   View the vault on the Aevum explorer &#8599;
                 </a>
-                {status === "unavailable" && (
-                  <small>
-                    Live ledger unavailable. No payment history could be loaded.
-                  </small>
-                )}
               </>
             )}
           </div>

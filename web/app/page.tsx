@@ -24,7 +24,7 @@ export default function Home() {
       >
         <div className="section-rule">
           <h2 id="ledger-title">The record speaks.</h2>
-          <span>Live from Aevum</span>
+          <p>Every row is an Aevum testnet transaction you can open.</p>
         </div>
         <div className="signal-ledger-grid">
           <LedgerPreview />

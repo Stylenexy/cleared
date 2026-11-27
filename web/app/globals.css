@@ -8527,3 +8527,104 @@ section.demo-narration {
     min-height: 4.5em;
   }
 }
+
+/* ── Polish 27 Nov: the intro zooms into Clerk's paper as soft light, never as a flat block ── */
+.signal-landing .intro-card-flash {
+  inset: -25%;
+  border-radius: 0;
+  background: radial-gradient(
+    closest-side,
+    #f6f9fe 0%,
+    #e6f6ffd9 38%,
+    #9fe3ff59 66%,
+    #00bfff00 100%
+  );
+  mix-blend-mode: screen;
+}
+
+/* ── Polish 27 Nov: section headings are headings (no rule line, no corner label) ── */
+.signal-landing .section-rule {
+  display: block;
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: 34px;
+}
+.signal-landing .section-rule h2 {
+  font: 800 clamp(30px, 3.4vw, 52px) / 1.05 var(--font-display);
+  letter-spacing: -0.045em;
+}
+.signal-landing .section-rule > p {
+  margin: 12px 0 0;
+  max-width: 560px;
+  font: 400 clamp(15px, 1.2vw, 18px) / 1.5 var(--font-body);
+  color: var(--text-2);
+}
+/* Card illustrations read at a glance: sentence case, 12px floor, mono only for addresses and codes. */
+.signal-landing .skill-list {
+  text-transform: none;
+  font: 500 14px / 1.7 var(--font-body);
+  color: var(--text-2);
+}
+.signal-landing .skill-demo {
+  font: 500 13px / 1.6 var(--font-body);
+}
+.signal-landing .skill-demo > span,
+.signal-landing .skill-hold > span,
+.signal-landing .skill-switch + span,
+.signal-landing .switch-off-label,
+.signal-landing .switch-on-label {
+  font: 500 12px / 1.45 var(--font-body);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-2);
+}
+.signal-landing .skill-registry > div:nth-of-type(2),
+.signal-landing .skill-ledger code {
+  font: 500 12px / 1.6 var(--font-code);
+}
+.signal-landing .skill-registry > div,
+.signal-landing .skill-ledger > div {
+  font-size: 13px;
+}
+.signal-landing .skill-registry .skill-result {
+  font: 600 12px / 1.4 var(--font-body);
+  color: var(--accent-strong);
+}
+.signal-landing .skill-switch span {
+  font: 700 12px var(--font-body);
+}
+@media (max-width: 767px) {
+  .signal-landing .section-rule h2 {
+    font-size: 30px;
+  }
+  .signal-landing .skill-demo {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    margin-top: 18px;
+  }
+  .signal-landing .safety-card {
+    min-height: 0;
+  }
+}
+
+/* ── Polish 27 Nov: the landing ledger is readable at a glance ── */
+.signal-landing .landing-ledger-top > span {
+  font: 600 13px / 1.4 var(--font-body);
+  color: var(--accent-strong);
+}
+.signal-landing .landing-ledger-table th {
+  font-size: 12px;
+}
+.signal-landing .landing-ledger-table td {
+  font-size: 14px;
+}
+.signal-landing .landing-ledger-table td code {
+  font-size: 13px;
+}
+.signal-landing .landing-ledger-link {
+  font-size: 14px;
+}
+.signal-landing .landing-ledger-empty small {
+  font-size: 12px;
+}

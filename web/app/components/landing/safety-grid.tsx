@@ -5,28 +5,24 @@ const skills = [
   {
     title: "Payee registry",
     href: "/try",
-    sticker: "Name-exact",
     kind: "registry",
     list: ["One name", "One verified address", "Exact match"],
   },
   {
     title: "24-hour hold",
     href: "/try",
-    sticker: "Day one",
     kind: "hold",
     list: ["New payee", "Changed address", "Time to review"],
   },
   {
     title: "Kill switch",
     href: "/app/keys",
-    sticker: "One tap",
     kind: "switch",
     list: ["Owner control", "All agent payments", "Frozen at once"],
   },
   {
     title: "Live ledger",
     href: "/app#ledger",
-    sticker: "On-chain",
     kind: "ledger",
     list: ["Paid or rejected", "Reason attached", "Public record"],
   },
@@ -41,7 +37,7 @@ export function SafetyGrid() {
       <div className="section-rule safety-photo-header photo-section">
         <Wallpaper scene="steel" />
         <h2 id="safety-title">How it stays safe</h2>
-        <span>Contract-enforced</span>
+        <p>Four rules the contract enforces, whatever the AI reads.</p>
       </div>
       <div className="safety-grid">
         {skills.map((skill) => (
@@ -55,21 +51,20 @@ export function SafetyGrid() {
             <span className="skill-index">
               <Arrow />
             </span>
-            <span className="skill-sticker">{skill.sticker} ↗</span>
             <div
               className={`skill-demo skill-${skill.kind}`}
               aria-hidden="true"
             >
               {skill.kind === "registry" && (
                 <>
-                  <span>NAME → DESTINATION</span>
+                  <span>Name → destination</span>
                   <div>
                     Northwind <i>↗</i>
                   </div>
                   <div>
                     0x166F4C0F…1d5A <i>✓</i>
                   </div>
-                  <span className="skill-result">EXACT MATCH</span>
+                  <span className="skill-result">Exact match</span>
                 </>
               )}
               {skill.kind === "hold" && (
@@ -78,7 +73,7 @@ export function SafetyGrid() {
                     <i />
                     <strong>24h</strong>
                   </div>
-                  <span>NEW ADDRESS / ON HOLD</span>
+                  <span>New address on hold</span>
                 </>
               )}
               {skill.kind === "switch" && (
@@ -87,15 +82,15 @@ export function SafetyGrid() {
                     <span>OFF</span>
                     <i />
                   </div>
-                  <span className="switch-off-label">PAYMENTS ENABLED</span>
+                  <span className="switch-off-label">Payments enabled</span>
                   <span className="switch-on-label">
-                    ALL AGENT PAYMENTS FROZEN
+                    All agent payments frozen
                   </span>
                 </>
               )}
               {skill.kind === "ledger" && (
                 <>
-                  <span>ILLUSTRATED DECISIONS</span>
+                  <span>Illustrated decisions</span>
                   <div>
                     <span>↗ Paid</span>
                     <code>Verified</code>
