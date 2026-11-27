@@ -367,7 +367,9 @@ export default function Try() {
           <a className="button" href="/attack">
             Open attack lab
           </a>{" "}
-          <Link href="/app">Open treasury desk</Link>
+          <Link className="button button-quiet" href="/app">
+            Open treasury desk
+          </Link>
         </section>
       </main>
     </AppShell>

@@ -61,7 +61,9 @@ describe("landing content", () => {
       'aria-label="Let your agent pay. Keep the last word."',
     );
     expect(html).toContain("Hi, I&#x27;m Clerk.");
-    expect(html).toContain("I check every payment before it leaves.");
+    expect(html).toContain(
+      "I read your invoices and pay them. A contract decides who gets paid.",
+    );
     expect(html).toContain("/clerk-hd/hi.webp");
     expect(html).toContain("/clerk-hd/present.webp");
     expect(html).not.toContain('class="eyebrow');
@@ -99,7 +101,11 @@ describe("landing content", () => {
       const html = renderToStaticMarkup(
         <LedgerPanel rows={[]} status={status} />,
       );
-      expect(html).toContain("No vault events yet.");
+      expect(html).toContain(
+        status === "ready"
+          ? "No vault events yet."
+          : "The Aevum ledger didn’t answer just now.",
+      );
       expect(html).toContain("/clerk-hd/tablet.webp");
       expect(html).not.toContain("Refreshes when you reload.");
       expect(html).not.toContain("spinner-dot");

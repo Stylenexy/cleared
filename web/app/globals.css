@@ -8764,3 +8764,74 @@ section.demo-narration {
     margin: 0 auto -6px;
   }
 }
+
+/* ── Polish 27 Nov: inner app ── */
+/* Sections breathe instead of being ruled off. */
+.product-app .desk > section {
+  border-bottom: 0;
+  padding-block: 32px;
+}
+.product-app .app-disclaimer {
+  border-top: 0;
+}
+/* Disabled controls stay readable and say "not now" by tone, not by fading out. */
+button:disabled,
+button.primary:disabled,
+button.danger:disabled {
+  opacity: 1;
+  background: var(--surface);
+  border-color: var(--border-strong);
+  color: var(--text-2);
+}
+button:disabled:hover {
+  background: var(--surface);
+}
+.button.button-quiet {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+.button.button-quiet:hover {
+  background: var(--surface-hover);
+  border-color: var(--line);
+}
+/* On desktop the live-demo button lives in the sidebar, above the network status, never over content. */
+@media (min-width: 1100px) {
+  .demo-launcher-wrap {
+    left: 16px;
+    right: auto;
+    bottom: 128px;
+    width: 208px;
+  }
+  .demo-launcher-wrap .demo-launcher {
+    width: 100%;
+  }
+  .product-app .app-workspace {
+    padding-bottom: 24px;
+  }
+}
+@media (min-width: 1100px) {
+  .demo-launcher-wrap .demo-hint {
+    left: 0;
+    right: auto;
+  }
+}
+/* On phones it shrinks to Clerk's head, so it covers almost nothing. */
+@media (max-width: 767px) {
+  .demo-launcher-wrap .demo-launcher > span:last-child {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .demo-launcher-wrap .demo-launcher {
+    padding-right: 12px;
+  }
+}
+@media (max-width: 767px) {
+  .product-app .clearing-flow li {
+    font-size: 12px;
+  }
+}
