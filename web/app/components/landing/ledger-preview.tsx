@@ -116,7 +116,7 @@ export function LedgerPanel({
                       {ledgerLabel(row)}
                     </span>
                   </td>
-                  <td>
+                  <td className={row.payee ? undefined : "is-empty"}>
                     {row.payee ? (
                       <code title={row.payee}>
                         {row.payee.slice(0, 6)}…{row.payee.slice(-4)}
@@ -125,7 +125,9 @@ export function LedgerPanel({
                       "—"
                     )}
                   </td>
-                  <td>{row.amount ? `${row.amount} tUSD8` : "—"}</td>
+                  <td className={row.amount ? undefined : "is-empty"}>
+                    {row.amount ? `${row.amount} tUSD8` : "—"}
+                  </td>
                   <td>
                     <a
                       href={`https://explorer-test.qday.info/tx/${row.txHash}`}
@@ -136,8 +138,8 @@ export function LedgerPanel({
                         ? "Paid"
                         : row.event === "Rejected"
                           ? (row.reason ?? "Refused")
-                          : "View tx"}{" "}
-                      &#8599;
+                          : "View tx"}
+                      {" "}&#8599;
                     </a>
                   </td>
                 </tr>

@@ -152,7 +152,9 @@ describe("landing content", () => {
     expect(html).toContain(`title="${KOPI_PAGI}"`);
     expect(html).toContain("0x166F…1d5A");
     expect(html).toContain("NameMismatch");
-    expect(html).toMatch(/Refused<\/span><\/td><td>—<\/td><td>—<\/td>/);
+    expect(html).toMatch(
+      /Refused<\/span><\/td><td class="is-empty">—<\/td><td class="is-empty">—<\/td>/,
+    );
     expect(html).toContain('href="https://explorer-test.qday.info/tx/test-rejected"');
     expect(html).toContain("/clerk-hd/tablet.webp");
     expect(html).not.toContain("No vault events yet.");

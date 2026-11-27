@@ -8969,3 +8969,8 @@ button:disabled:hover {
 .signal-landing .landing-ledger-link {
   margin-top: 18px;
 }
+@media (max-width: 480px) {
+  .signal-landing .landing-ledger-table td.is-empty {
+    display: none;
+  }
+}
