@@ -14,6 +14,8 @@ Aevum Builder Challenge #1, primary track: Native AI Assistants.
 
 **Watch it run itself (90 seconds, simulation, no wallet):** https://cleared-ecru.vercel.app/try?demo=1. Clerk, the assistant, drives the real interface with a visible cursor across Try it, Attack lab, Treasury and Controls. You can pause, skip or exit at any time.
 
+**Watch the 1:38 video:** https://youtu.be/O4x1mSt2NHw
+
 Try it, no wallet: https://cleared-ecru.vercel.app/try · Attack it with a live model: https://cleared-ecru.vercel.app/attack
 
 ### Proof in 20 seconds
@@ -197,7 +199,8 @@ contracts/script/DeployAevum.s.sol deployed the contracts on 17 Nov 2026. The re
 | 6. Kill switch on: staged payment `Rejected(Frozen)` | [0x49df7a28…d34e](https://explorer-test.qday.info/tx/0x49df7a28ac6fd764a7bb5ff420efd61670657e3b03cd055424480c01a702d34e) (vault resumed afterwards) |
 | 7. Agent key revoked (`AgentRevoked`) | [0xfff1e2d9…df57](https://explorer-test.qday.info/tx/0xfff1e2d9746c09aee56380a9b56d2a5b617080284d0b123936b78eac10acdf57) (dedicated proof agent) |
 | Public demo | https://cleared-ecru.vercel.app |
-| Self-running demo | https://cleared-ecru.vercel.app/try?demo=1 (narrated 1:45 video linked from the DoraHacks BUIDL page) |
+| Self-running demo | https://cleared-ecru.vercel.app/try?demo=1 |
+| Demo video (1:38) | https://youtu.be/O4x1mSt2NHw |
 
 `docs/local-proof.json` and `docs/local-reconciliation.csv` are authored sample simulations using the current destinations. They contain no transaction hashes and are not chain evidence. See [testing](docs/TESTING.md) for executable verification and [testnet proof preparation](docs/TESTING.md#testnet-proof-preparation) for the seven-scenario recorder and its local fork rehearsal.
 
@@ -206,7 +209,7 @@ contracts/script/DeployAevum.s.sol deployed the contracts on 17 Nov 2026. The re
 | Criterion | What we built | Evidence you can open | Not done yet (honest) |
 | --- | --- | --- | --- |
 | 1. User experience and presentation | Landing that says who it is for in the first screen; wallet-free /try; full addresses; explicit decisions; hold timer; works at 360 px | [Live site](https://cleared-ecru.vercel.app), [screenshots](docs/shots/live/) | No usability test with real treasurers |
-| 2. Clear and well-structured demo | Self-running demo where Clerk drives the real UI; three invoices; editable attack lab; narrated 1:45 video | [/try?demo=1](https://cleared-ecru.vercel.app/try?demo=1), video: see the DoraHacks BUIDL page | |
+| 2. Clear and well-structured demo | Self-running demo where Clerk drives the real UI; three invoices; editable attack lab; narrated 1:38 video | [/try?demo=1](https://cleared-ecru.vercel.app/try?demo=1), [1:38 video](https://youtu.be/O4x1mSt2NHw) | |
 | 3. Comprehensive documentation | Setup, architecture, packages, reproduction scripts, controls, limits | This README, [TESTING.md](docs/TESTING.md), [DEMO.md](docs/DEMO.md) | |
 | 4. Innovation and originality | Spend caps limit *how much*; Cleared limits *to whom*: destination identity, 24-hour hold, bounded agent grant, adversarial demo | [LIVE-MODEL-TEST.md](docs/LIVE-MODEL-TEST.md): the model was fooled 2 times in 55 recorded runs, the contract refused both | Not validated with DAO treasurers |
 | 5. Technical quality and platform integration | Aevum testnet (Shanghai, legacy txs, six-decimal tUSD8, 1,000-block log ranges), bytecode check, 70 Foundry + 304 Vitest tests | [TESTNET-PROOF.md](docs/TESTNET-PROOF.md), `tools/verify-bytecode.mjs` | Explorer source verification waits for Aevum's Solidity verifier |
@@ -238,7 +241,7 @@ Review state is held in page memory. The attack counter uses browser localStorag
 
 ## Roadmap and business hypothesis
 
-1. Done: Aevum testnet deployment with reproducible bytecode check and seven recorded on-chain scenarios, a self-running demo, a narrated 1:45 video and a measured live-model attack test.
+1. Done: Aevum testnet deployment with reproducible bytecode check and seven recorded on-chain scenarios, a self-running demo, a narrated 1:38 video and a measured live-model attack test.
 2. DAO/team pilot: verify contractors and changed-address workflows, integrate invoice queues and accounting exports, adopt multisig ownership.
 3. After audit: persistent settlement indexing, reorg handling, authenticated team roles, provider budgets and production monitoring.
 
