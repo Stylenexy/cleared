@@ -39,7 +39,7 @@ export function ProcessStory() {
           scrollTrigger: {
             trigger: scope,
             start: "top top",
-            end: "+=560%",
+            end: "+=380%",
             pin: true,
             scrub: 0.8,
           },

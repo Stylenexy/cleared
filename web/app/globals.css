@@ -8628,3 +8628,139 @@ section.demo-narration {
 .signal-landing .landing-ledger-empty small {
   font-size: 12px;
 }
+
+/* ── Polish 27 Nov: Read / Compare / Refuse keeps its cards in their own lanes ── */
+.signal-landing .process-story[data-animated="true"] .process-paper {
+  left: 3.5%;
+  width: clamp(220px, 19vw, 290px);
+  min-height: 280px;
+}
+.signal-landing .process-story[data-animated="true"] .process-paper:nth-child(2) {
+  left: auto;
+  right: 3.5%;
+}
+.signal-landing .process-paper h3 {
+  font-size: 28px;
+}
+.signal-landing .process-paper p {
+  font-size: 16px;
+}
+.signal-landing .process-paper ul {
+  padding-top: 26px;
+  font: 600 13px / 1.75 var(--font-body);
+  text-transform: none;
+  color: var(--paper-ink);
+}
+.signal-landing .process-last-word p {
+  font: 500 clamp(17px, 1.5vw, 22px) / 1.4 var(--font-body);
+  color: var(--text);
+  gap: 28px;
+}
+.signal-landing .process-last-word small {
+  font-size: 13px;
+  color: var(--text-2);
+}
+@media (max-width: 767px) {
+  .signal-landing .process-last-word p {
+    font-size: 16px;
+    gap: 16px;
+  }
+  .signal-landing .process-last-word p > span:first-child,
+  .signal-landing .process-last-word p > span:last-child {
+    font-size: 34px;
+  }
+}
+
+/* ── Polish 27 Nov: small print everywhere clears a readable floor ── */
+.signal-landing .widget-intro p,
+.signal-landing .story-caption p,
+.signal-landing .repeat-note {
+  font-size: clamp(14px, 1.05vw, 16px);
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.signal-landing .widget-status {
+  font: 600 11px / 1.4 var(--font-body);
+  letter-spacing: 0.02em;
+}
+.signal-landing .desk-widget small,
+.signal-landing .clerk-preview-note {
+  font-size: 12px;
+  color: var(--text-2);
+}
+.signal-landing .hold-dial strong span {
+  font: 600 10px var(--font-body);
+  letter-spacing: 0.08em;
+}
+.signal-landing .intro-scroll {
+  font-size: 13px;
+}
+.signal-landing .printed-receipt {
+  font-size: 12px;
+}
+.signal-landing .printed-receipt > span {
+  font: 700 11px / 1.4 var(--font-body);
+  letter-spacing: 0.04em;
+  color: #9a3b12;
+}
+.signal-landing .printed-receipt strong {
+  color: var(--action, #0870c8);
+}
+.signal-landing .printed-receipt dt,
+.signal-landing .printed-receipt dd {
+  font-size: 12px;
+}
+.signal-landing .printed-receipt small {
+  font: 600 10px / 1.4 var(--font-body);
+}
+.signal-landing .conviction-sticker span {
+  font-size: 11px;
+}
+.site-footer .footer-status,
+.site-footer .footer-bottom span {
+  font-size: 13px;
+}
+.site-footer .footer-column h2 {
+  font-size: 13px;
+}
+.site-footer .footer-column a {
+  font-size: 14px;
+}
+.site-footer .footer-pill-links .pill-body {
+  font-size: 14px;
+}
+.signal-landing .registered-address,
+.signal-landing .registered-address code {
+  font-size: 13px;
+}
+
+/* ── Polish 27 Nov: navigation reads at 13px; on phones it steps aside while you scroll down ── */
+.signal-header nav a {
+  font-size: 13px;
+}
+@media (max-width: 767px) {
+  .signal-header nav a {
+    font-size: 12px;
+    padding-inline: 4px;
+  }
+}
+@media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+  .signal-header.site-header[data-hidden="true"] {
+    transform: translate(-50%, -140%);
+  }
+}
+@media (max-width: 767px) {
+  .signal-landing .skill-list {
+    position: static;
+    margin-top: 16px;
+  }
+  .signal-landing .footer-story .printer-assembly {
+    margin-top: 40px;
+  }
+  .signal-landing .footer-story .printed-receipt {
+    position: relative;
+    inset: auto;
+    width: 58%;
+    margin: 0 auto -6px;
+  }
+}
