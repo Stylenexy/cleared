@@ -216,7 +216,7 @@ npm run build
 npm run check:contrast
 ```
 
-Verified: 70 Foundry + 303 Vitest tests. See [TESTING.md](docs/TESTING.md) for commands, test coverage and boundaries.
+Verified: 70 Foundry + 304 Vitest tests. See [TESTING.md](docs/TESTING.md) for commands, test coverage and boundaries.
 
 The production HTTP smoke in tools/web-smoke.mjs checks five pages, PDF uploads, configuration and a saved attack over loopback without launching a browser. Run a production web server first. No network writes are used by the smoke.
 
