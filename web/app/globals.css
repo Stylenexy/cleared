@@ -8963,7 +8963,7 @@ button:disabled:hover {
 }
 @media (max-width: 767px) {
   .product-app .app-compact-status {
-    padding-right: 72px;
+    padding-right: 104px;
   }
 }
 .signal-landing .landing-ledger-link {
