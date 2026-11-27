@@ -3,6 +3,8 @@ import { displayAmount } from "@cleared/sdk";
 import { useEffect, useRef, useState } from "react";
 import {
   attackText,
+  capturedLiveDate,
+  capturedLiveText,
   lookalikes,
   verifiedAddress,
 } from "../../lib/attack-samples";
@@ -304,7 +306,9 @@ export default function Attack() {
                     {result.extractionSource === "provider"
                       ? "Live model response"
                       : result.extractionSource === "cached-sample"
-                        ? "Authored cached sample · no model called"
+                        ? text === capturedLiveText
+                          ? `Saved live model response, captured ${capturedLiveDate} · no model called now`
+                          : "Authored cached sample · no model called"
                         : "Template parser · no model called"}
                   </p>
                   <dl>
