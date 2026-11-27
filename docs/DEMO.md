@@ -33,7 +33,7 @@ restage a model result.
 | --- | --- |
 | Who needs this? | DAOs and web3 teams paying contractor invoices in stablecoins. Mature verified recipients can be paid by the agent; new or changed recipients need the owner. |
 | Why are spend caps not enough? | Caps bound the amount, not the destination. A poisoned invoice can redirect an allowed amount. Cleared rechecks the exact name and full address in the paying contract. |
-| Did you fool a live model? | Live Gemini extraction is opt-in on /attack and labeled as live. Models sometimes resist; the payment decision is independent of the model either way. |
+| Did you fool a live model? | Yes, sometimes. In 10 measured live runs on 27 Nov the model followed the hidden instruction once, and the Aevum contract answered `Name mismatch` ([LIVE-MODEL-TEST.md](LIVE-MODEL-TEST.md)). A model that resists 9 times in 10 is still not a payment policy; the contract is. |
 | What if the owner or invoice is malicious? | The owner can register a bad payee, so new payees wait 24 hours and every change is an on-chain event. A forged invoice for a verified recipient pays that recipient's verified address. Testnet only, unaudited. |
 | What is on Aevum today? | Registry, identity directory and vault on chain 44005, bytecode reproducibly matched to this repository (`tools/verify-bytecode.mjs`), and seven recorded scenarios in TESTNET-PROOF.md. |
 
