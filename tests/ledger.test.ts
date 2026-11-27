@@ -321,6 +321,19 @@ describe("ledger API", () => {
     expect(scanned.length).toBe(3);
     expect(Math.min(...scanned.map((b) => Number(b)))).toBe(snapshot.throughBlock + 1);
   });
+  it("still answers from the snapshot when the explorer and the RPC are both down", async () => {
+    const snapshot = (await import("../web/lib/ledger-snapshot.json")).default;
+    config.publicConfig.mockResolvedValue({ network: "aevum", vault: snapshot.vault, rpc: "https://rpc-test.qday.info", deployBlock: String(snapshot.fromBlock) });
+    upstream.mockImplementation(async () => {
+      throw new Error("down");
+    });
+    const response = await GET(request());
+    expect(response.status).toBe(200);
+    const data = await response.json();
+    expect(data.source).toBe("snapshot");
+    expect(data.truncated).toBe(true);
+    expect(data.rows.length).toBe(snapshot.logs.length);
+  });
   it("guards cross-origin requests and limits requests per minute", async () => {
     expect(
       (await GET(request("", { origin: "https://other.example" }))).status,

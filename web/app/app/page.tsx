@@ -558,10 +558,17 @@ export default function Treasury() {
                   · {ledger.summary.clearedAmount} tUSD8 cleared
                 </p>
                 <p>
-                  Totals cover the loaded events from {ledger.source}. Read at{" "}
-                  {ledger.fetchedAt}.
+                  Totals cover the loaded events from{" "}
+                  {ledger.source === "explorer-test.qday.info"
+                    ? "the Aevum explorer"
+                    : ledger.source === "rpc-test.qday.info"
+                      ? "the public Aevum RPC and a frozen snapshot of earlier vault events"
+                      : "a frozen snapshot of the vault's on-chain events (explorer and RPC unreachable)"}
+                  . Read at {ledger.fetchedAt}.
                   {ledger.truncated &&
-                    " Only the latest five explorer pages are shown; older events are excluded from these totals."}
+                    (ledger.source === "explorer-test.qday.info"
+                      ? " Only the latest five explorer pages are shown; older events are excluded from these totals."
+                      : " The newest blocks could not all be scanned, so the latest events may be missing from these totals.")}
                   {ledgerError &&
                     " These are the last successfully loaded events."}
                 </p>

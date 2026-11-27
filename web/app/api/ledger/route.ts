@@ -120,7 +120,7 @@ export async function GET(request: Request) {
       let params: z.infer<typeof pageSchema>["next_page_params"] = null;
       let source: LedgerResponse["source"] = "explorer-test.qday.info";
       let rpcTruncated = false;
-      const signal = AbortSignal.timeout(10_000);
+      const signal = AbortSignal.timeout(4_000);
       try {
         for (let page = 0; page < 5; page++) {
           const url = new URL(
@@ -146,11 +146,19 @@ export async function GET(request: Request) {
             : BigInt(config.deployBlock);
         const from =
           known > BigInt(config.deployBlock) ? known : BigInt(config.deployBlock);
-        const fresh = await rpcLogs(config.rpc, config.vault, from.toString());
-        items = fresh.items;
         params = null;
-        rpcTruncated = fresh.truncated;
-        source = "rpc-test.qday.info";
+        try {
+          const fresh = await rpcLogs(config.rpc, config.vault, from.toString());
+          items = fresh.items;
+          rpcTruncated = fresh.truncated;
+          source = "rpc-test.qday.info";
+        } catch (error) {
+          // Explorer and RPC both down: the frozen on-chain snapshot still answers, labelled as such.
+          if (config.vault.toLowerCase() !== snapshot.vault) throw error;
+          items = [];
+          rpcTruncated = true;
+          source = "snapshot";
+        }
       }
       if (config.vault.toLowerCase() === snapshot.vault) items.push(...frozen);
       const unique = [
@@ -162,7 +170,7 @@ export async function GET(request: Request) {
       cache = {
         vault: config.vault,
         expires:
-          Date.now() + (source === "rpc-test.qday.info" ? 120_000 : 30_000),
+          Date.now() + (source === "explorer-test.qday.info" ? 30_000 : 120_000),
         data: {
           rows,
           summary: summarize(rows),

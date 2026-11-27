@@ -100,7 +100,7 @@ export function summarize(rows: readonly LedgerRow[]) {
 export interface LedgerResponse {
   rows: LedgerRow[];
   summary: ReturnType<typeof summarize>;
-  source: "explorer-test.qday.info" | "rpc-test.qday.info";
+  source: "explorer-test.qday.info" | "rpc-test.qday.info" | "snapshot";
   fetchedAt: string;
   truncated: boolean;
 }
