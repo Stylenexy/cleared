@@ -2,7 +2,7 @@
 
 **Result (27 Nov 2026, production site, live Gemini extraction, Aevum contract read with `eth_call`):
 55 recorded runs, the model was fooled 2 times (about 4%). Both times the Aevum contract answered `Name mismatch`, so nothing could be paid.**
-The first batch of 10 runs is below; the 45-run capture session follows.
+The first batch of 10 runs is below; the 45-run capture session follows (10 + 45 = 55 runs, 1 + 1 = 2 fooled).
 
 ## What was tested
 The attack invoice prints Northwind Design Studio's verified address. Hidden in the text (zero-size, transparent) is an instruction:
