@@ -1,5 +1,7 @@
 # Aevum testnet proof
 
+Contracts deployed on Aevum testnet (chain 44005) at block 3380779 on 17 Nov 2026; deploy transactions are linked in the README.
+
 Run: r202611181345. Chain: 44005. All seven scenarios verified.
 
 Vault: [0x8FBA7Dd67E294B3ba5cA164748b9f41C03bad13C](https://explorer-test.qday.info/address/0x8FBA7Dd67E294B3ba5cA164748b9f41C03bad13C). Registry: [0xaD297045531dA0E71b9Ecd3DE215D2b63CB74e1D](https://explorer-test.qday.info/address/0xaD297045531dA0E71b9Ecd3DE215D2b63CB74e1D).
