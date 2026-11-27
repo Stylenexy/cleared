@@ -7,7 +7,7 @@ import { typingTimeline } from "../../../lib/landing-animation";
 
 const GREETING = [
   "Hi, I'm Clerk.",
-  "I read your invoices and pay them. A contract decides who gets paid.",
+  "I read your DAO’s invoices and pay them in stablecoins. A contract decides who gets paid.",
 ];
 
 export function ClerkIntro() {

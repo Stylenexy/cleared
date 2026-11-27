@@ -62,7 +62,7 @@ describe("landing content", () => {
     );
     expect(html).toContain("Hi, I&#x27;m Clerk.");
     expect(html).toContain(
-      "I read your invoices and pay them. A contract decides who gets paid.",
+      "I read your DAO’s invoices and pay them in stablecoins. A contract decides who gets paid.",
     );
     expect(html).toContain("/clerk-hd/hi.webp");
     expect(html).toContain("/clerk-hd/present.webp");
