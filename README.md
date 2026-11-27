@@ -25,6 +25,14 @@ Try it, no wallet: https://cleared-ecru.vercel.app/try · Attack it with a live 
 
 First commit: 17 Nov 2026
 
+## Why this matters
+
+Paying the wrong address is an old fraud with a new target. The FBI's 2024 Internet Crime Report counts **21,442 business email compromise complaints and $2,770,151,146 in reported losses** in one year: invoices and payment instructions quietly redirected to an attacker ([IC3 2024 report](https://www.ic3.gov/AnnualReport/Reports/2024_ic3report.pdf)). When an AI agent reads those invoices and pays them in stablecoins, a redirected address settles in seconds and cannot be recalled.
+
+Spending caps answer *how much* an agent may pay. Cleared answers *to whom*: the contract pays only a name and address pair that is in the payee registry and has passed a 24-hour hold, whatever the model extracted.
+
+**Pilot ask.** If you pay contractors from a DAO or web3 treasury, I would like 15 minutes: (1) how do you verify a contractor's address today, (2) how often does a payee change their address, (3) would a 24-hour hold on new or changed addresses be acceptable. Open an issue in this repository or reply on the DoraHacks BUIDL page.
+
 ## Tech stack
 
 Solidity 0.8.28 + Foundry, Next.js, React, viem, pdf-lib, Vitest, Vercel, LLM adapters Gemini/Anthropic.
@@ -195,16 +203,16 @@ contracts/script/DeployAevum.s.sol deployed the contracts on 17 Nov 2026. The re
 
 ## Eight judging criteria
 
-| Criterion                                     | Implementation                                                                                             | Remaining evidence                                            |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| 1. User experience and presentation           | English UI, full addresses, explicit risk decisions, hold timer, wallet-free /try                          | Manual desktop/mobile visual review                           |
-| 2. Clear and well-structured demo             | Self-running narrated demo, three invoices, editable attack lab, extraction beside decision, freeze scenario | Narrated video                                                |
-| 3. Comprehensive documentation                | Setup, architecture, API packages, reproduction, controls and honest limitations                           | Recorded walkthrough video                                    |
-| 4. Innovation and originality                 | Destination identity plus staged-held approval, bounded autonomy and adversarial demo                      | Validation with DAO treasurers                                |
-| 5. Technical quality and platform integration | Shanghai, legacy transactions, six decimals, chunked logs, tested contracts and minimal identity directory | Explorer source verification once Aevum's verifier supports Solidity |
-| 6. Real-world utility and market potential    | Stablecoin contractor invoices for web3 teams and DAOs; small businesses are a secondary example           | Pilot organizations and accounting integrations               |
-| 7. Safety, trust and controls                 | Identity recheck, trust delay, daily/grant caps, expiry, revoke, freeze, unique refs and atomic transfers  | Independent audit and multisig operations                     |
-| 8. Ecosystem contribution                     | MIT SDK, Solidity/TS guard, Checkout example, tests and documented Aevum constraints                       | Public repository, package publication and developer feedback |
+| Criterion | What we built | Evidence you can open | Not done yet (honest) |
+| --- | --- | --- | --- |
+| 1. User experience and presentation | Landing that says who it is for in the first screen; wallet-free /try; full addresses; explicit decisions; hold timer; works at 360 px | [Live site](https://cleared-ecru.vercel.app), [screenshots](docs/shots/live/) | No usability test with real treasurers |
+| 2. Clear and well-structured demo | Self-running demo where Clerk drives the real UI; three invoices; editable attack lab; narrated 1:45 video | [/try?demo=1](https://cleared-ecru.vercel.app/try?demo=1), video: see the DoraHacks BUIDL page | |
+| 3. Comprehensive documentation | Setup, architecture, packages, reproduction scripts, controls, limits | This README, [TESTING.md](docs/TESTING.md), [DEMO.md](docs/DEMO.md) | |
+| 4. Innovation and originality | Spend caps limit *how much*; Cleared limits *to whom*: destination identity, 24-hour hold, bounded agent grant, adversarial demo | [LIVE-MODEL-TEST.md](docs/LIVE-MODEL-TEST.md): the model was fooled 1 in 10, the contract refused it | Not validated with DAO treasurers |
+| 5. Technical quality and platform integration | Aevum testnet (Shanghai, legacy txs, six-decimal tUSD8, 1,000-block log ranges), bytecode check, 70 Foundry + 304 Vitest tests | [TESTNET-PROOF.md](docs/TESTNET-PROOF.md), `tools/verify-bytecode.mjs` | Explorer source verification waits for Aevum's Solidity verifier |
+| 6. Real-world utility and market potential | Stablecoin contractor invoices for web3 teams and DAOs | Business hypothesis below | No pilot, users or revenue yet |
+| 7. Safety, trust and controls | Identity recheck, trust delay, daily and grant caps, expiry, revoke, kill switch, unique refs, atomic transfers | Scenarios 1-7 in [TESTNET-PROOF.md](docs/TESTNET-PROOF.md), [live ledger](https://cleared-ecru.vercel.app/app#ledger) | Not audited; no multisig owner yet |
+| 8. Ecosystem contribution | MIT `@cleared/sdk` and `@cleared/guard`, Solidity guard modifier, Checkout example, documented Aevum constraints | [packages/](packages/) | Not yet published to npm |
 
 ## Verify
 
