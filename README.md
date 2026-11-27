@@ -8,6 +8,8 @@ Cleared is for **web3 teams and DAOs paying contractor invoices in stablecoins**
 
 > Cleared lets an AI agent prepare and pay your stablecoin invoices, but the contract, not the AI, decides who can be paid: a poisoned invoice can fool the model and still can't move a cent to a lookalike.
 
+Measured, not assumed: in 10 live runs against the deployed site on 27 Nov 2026, the model followed a hidden instruction once and extracted a lookalike address. That one time, the Aevum contract answered `Name mismatch`. Details and a script to rerun it: [docs/LIVE-MODEL-TEST.md](docs/LIVE-MODEL-TEST.md).
+
 Aevum Builder Challenge #1, primary track: Native AI Assistants.
 
 **Watch it run itself (90 seconds, simulation, no wallet):** https://cleared-ecru.vercel.app/try?demo=1. Clerk, the assistant, drives the real interface with a visible cursor across Try it, Attack lab, Treasury and Controls. You can pause, skip or exit at any time.
@@ -18,7 +20,7 @@ Try it, no wallet: https://cleared-ecru.vercel.app/try · Attack it with a live 
 
 - **Deployed on Aevum testnet** (chain 44005, block 3380779): [ClearedVault](https://explorer-test.qday.info/address/0x8fba7dd67e294b3ba5ca164748b9f41c03bad13c) · [PayeeRegistry](https://explorer-test.qday.info/address/0xad297045531da0e71b9ecd3de215d2b63cb74e1d) · [IdentityRegistry](https://explorer-test.qday.info/address/0xBC4A33597D5f0faf11d157dE6dE74cD4E96E088f).
 - **Same code as this repository:** `forge build && node tools/verify-bytecode.mjs` compares the live runtime bytecode, including the Solidity metadata hash, with your local build. The Aevum explorer's verifier currently lists no Solidity compilers, so this script is the reproducible check.
-- **Every vault decision, no wallet:** the [Aevum ledger](https://cleared-ecru.vercel.app/app#ledger) lists the vault's Paid, Rejected (with reason), Staged, freeze and agent events, read from the public explorer API, with transaction links.
+- **Every vault decision, no wallet:** the [Aevum ledger](https://cleared-ecru.vercel.app/app#ledger) lists the vault's Paid, Rejected (with reason), Staged, freeze and agent events, read from the public explorer API (with a public-RPC fallback and a frozen snapshot of past events, so the record stays readable when the explorer is down), with transaction links.
 - **Seven payment scenarios on-chain** (Paid, PayeeOnHold, one batch with the verified contractor paid and its lookalike refused, owner approval, kill switch, key revoke): all seven verified on 18 Nov 2026 (run r202611181345), every receipt linked in [docs/TESTNET-PROOF.md](docs/TESTNET-PROOF.md). The batch that pays the verified contractor and refuses its lookalike in the same transaction: [0xddffc6c3…64e4](https://explorer-test.qday.info/tx/0xddffc6c3955e69fc5b991103c0d69a9a51cd22f23c84251f87155e78ac8464e4).
 
 First commit: 17 Nov 2026
@@ -163,7 +165,7 @@ extractInvoice() is the shared extraction boundary for /attack and the invoice p
 - Input is bounded to **20,000 characters**, output to 600 tokens, response size is checked, and a 20-second timeout applies. JSON must contain exactly reference, name, payee, amount and currency. Amount is a positive decimal string with at most six fractional digits in uint256 range; currency must be tUSD8. Names are bounded to 160 UTF-8 bytes. Unknown fields, malformed addresses, Markdown and truncated responses are rejected.
 - Without a key, exact attack fixtures replay **authored saved fields**, explicitly labeled cached illustration. These are staged demonstrations, not captured live-model responses. Editing input prevents an unrelated cached result from being replayed; labeled TXT templates use deterministic extraction instead.
 - Freeform extraction requires the live provider. Provider failures are surfaced; they do not silently become a fake live success. A model may resist an attack. The UI only calls it fooled when the extracted sample vendor has a changed destination, and identifies whether the output was live or staged.
-- Unit tests use synthetic credentials and mocked fetch only. No real LLM, paid API or Aevum RPC is called in tests. No live-provider reliability claim is made.
+- Unit tests use synthetic credentials and mocked fetch only. No real LLM, paid API or Aevum RPC is called in tests. No live-provider reliability claim is made; the one live measurement is in [docs/LIVE-MODEL-TEST.md](docs/LIVE-MODEL-TEST.md).
 
 The treasury accepts TXT, CSV and text PDFs: at most 10 files, 2 MB each, 10 pages per PDF, 50 invoices per batch. Scanned PDFs/OCR are unsupported. Hashes cover original TXT/PDF bytes; CSV hashes cover serialized row fields. Exact business references prevent repeated payment even across file formats. CSV exports neutralize spreadsheet formulas.
 
@@ -187,7 +189,7 @@ contracts/script/DeployAevum.s.sol deployed the contracts on 17 Nov 2026. The re
 | 6. Kill switch on: staged payment `Rejected(Frozen)` | [0x49df7a28…d34e](https://explorer-test.qday.info/tx/0x49df7a28ac6fd764a7bb5ff420efd61670657e3b03cd055424480c01a702d34e) (vault resumed afterwards) |
 | 7. Agent key revoked (`AgentRevoked`) | [0xfff1e2d9…df57](https://explorer-test.qday.info/tx/0xfff1e2d9746c09aee56380a9b56d2a5b617080284d0b123936b78eac10acdf57) (dedicated proof agent) |
 | Public demo | https://cleared-ecru.vercel.app |
-| Self-running demo | https://cleared-ecru.vercel.app/try?demo=1 (narrated walkthrough video to follow) |
+| Self-running demo | https://cleared-ecru.vercel.app/try?demo=1 (narrated 1:45 video linked from the DoraHacks BUIDL page) |
 
 `docs/local-proof.json` and `docs/local-reconciliation.csv` are authored sample simulations using the current destinations. They contain no transaction hashes and are not chain evidence. See [testing](docs/TESTING.md) for executable verification and [testnet proof preparation](docs/TESTING.md#testnet-proof-preparation) for the seven-scenario recorder and its local fork rehearsal.
 
@@ -214,7 +216,7 @@ npm run build
 npm run check:contrast
 ```
 
-Verified: 70 Foundry + 300 Vitest tests. See [TESTING.md](docs/TESTING.md) for commands, test coverage and boundaries.
+Verified: 70 Foundry + 303 Vitest tests. See [TESTING.md](docs/TESTING.md) for commands, test coverage and boundaries.
 
 The production HTTP smoke in tools/web-smoke.mjs checks five pages, PDF uploads, configuration and a saved attack over loopback without launching a browser. Run a production web server first. No network writes are used by the smoke.
 
@@ -228,7 +230,7 @@ Review state is held in page memory. The attack counter uses browser localStorag
 
 ## Roadmap and business hypothesis
 
-1. Done: Aevum testnet deployment with reproducible bytecode check and seven recorded on-chain scenarios. Next: a rehearsed demo video.
+1. Done: Aevum testnet deployment with reproducible bytecode check and seven recorded on-chain scenarios, a self-running demo, a narrated 1:45 video and a measured live-model attack test.
 2. DAO/team pilot: verify contractors and changed-address workflows, integrate invoice queues and accounting exports, adopt multisig ownership.
 3. After audit: persistent settlement indexing, reorg handling, authenticated team roles, provider budgets and production monitoring.
 

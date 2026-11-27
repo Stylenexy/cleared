@@ -15,7 +15,7 @@ gitleaks git --redact
 
 `npm run setup` obtains the verified compiler and Foundry tooling. On PowerShell, `npm.cmd` can be used if the npm script shim is restricted. None of the test commands needs a wallet, private environment file, faucet, live provider or testnet transaction.
 
-Verified: 70 Foundry + 300 Vitest tests. The test runners print the authoritative totals when the suite changes.
+Verified: 70 Foundry + 303 Vitest tests. The test runners print the authoritative totals when the suite changes.
 
 ## What the suites prove
 
