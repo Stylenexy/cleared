@@ -8953,3 +8953,19 @@ button:disabled:hover {
     text-align: right;
   }
 }
+@media (max-width: 480px) {
+  .signal-landing .landing-ledger-table table {
+    min-width: 0;
+  }
+  .signal-landing .landing-ledger-table tr {
+    border-bottom: 1px solid #3c4b5d88;
+  }
+}
+@media (max-width: 767px) {
+  .product-app .app-compact-status {
+    padding-right: 72px;
+  }
+}
+.signal-landing .landing-ledger-link {
+  margin-top: 18px;
+}
