@@ -8493,3 +8493,37 @@ section.demo-narration {
     font-size: 13px;
   }
 }
+
+/* ── Polish 27 Nov: hero says what Cleared is in the first screen ───────────── */
+.signal-landing .hero-sub {
+  max-width: 640px;
+  margin: -12px auto 0;
+  font: 400 clamp(16px, 1.35vw, 20px) / 1.55 var(--font-body);
+  color: var(--text-2);
+  text-wrap: balance;
+}
+.signal-landing .hero-actions .pill-body {
+  font-size: 15px;
+  padding-inline: 26px;
+  min-height: 52px;
+}
+.signal-landing .hero-actions .pill-arrow {
+  width: 52px;
+  min-height: 52px;
+}
+.signal-landing .hero-quiet-link {
+  font-size: 15px;
+}
+.signal-landing .signal-header .desk-pill {
+  font-size: 13px;
+}
+@media (max-width: 767px) {
+  .signal-landing .hero-sub {
+    margin-top: -8px;
+    padding-inline: 6px;
+    font-size: 16px;
+  }
+  .signal-landing .clerk-speech p:last-of-type {
+    min-height: 4.5em;
+  }
+}

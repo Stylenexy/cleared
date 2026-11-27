@@ -5,7 +5,10 @@ import { DESK_MOTION, gsap } from "./motion";
 import { Wallpaper } from "./wallpaper";
 import { typingTimeline } from "../../../lib/landing-animation";
 
-const GREETING = ["Hi, I'm Clerk.", "I check every payment before it leaves."];
+const GREETING = [
+  "Hi, I'm Clerk.",
+  "I read your invoices and pay them. A contract decides who gets paid.",
+];
 
 export function ClerkIntro() {
   const root = useRef<HTMLElement>(null);
@@ -19,12 +22,12 @@ export function ClerkIntro() {
         const lines = scope.querySelectorAll<HTMLElement>(".clerk-speech p");
         const clock = { elapsed: 0 };
         const typing = gsap.to(clock, {
-          elapsed: 5200,
-          duration: 5.2,
+          elapsed: 7200,
+          duration: 7.2,
           ease: "none",
           repeat: -1,
           onUpdate: () =>
-            typingTimeline(GREETING, clock.elapsed, 2600, 2600).forEach(
+            typingTimeline(GREETING, clock.elapsed, 3800, 3400).forEach(
               (line, index) => {
                 if (lines[index].textContent !== line)
                   lines[index].textContent = line;

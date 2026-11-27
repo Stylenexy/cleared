@@ -122,12 +122,17 @@ export function DeskIntro() {
             </em>
           </span>
         </h1>
+        <p className="hero-sub">
+          For DAOs and web3 teams paying contractors in stablecoins. Your AI
+          agent reads each invoice and prepares the payment; an Aevum contract
+          refuses any address that isn’t the verified one.
+        </p>
         <div className="hero-actions">
-          <PillLink href="/attack" primary>
-            Open the attack lab
+          <PillLink href="/try?demo=1" primary>
+            Watch the 90-second demo
           </PillLink>
-          <a className="hero-quiet-link" href="/try">
-            or try three invoices →
+          <a className="hero-quiet-link" href="/attack">
+            or try to fool it yourself →
           </a>
         </div>
       </section>
